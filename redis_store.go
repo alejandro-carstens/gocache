@@ -17,35 +17,40 @@ func (this *RedisStore) get(key string) *redis.StringCmd {
 }
 
 func (this *RedisStore) Get(key string) interface{} {
-	value, err := this.get(key).Result()
-
+	intVal, err := this.get(key).Int64()
+	
 	if err != nil {
-		value = ""
-	}
-
-	if value == "" {
-		floatVal, err := this.GetFloat(key)
-
+		
+		floatVal, err := this.get(key).Float64()
+		
 		if err != nil {
-			intVal, err := this.GetInt(key)
-
+			value, err := this.get(key).Result()
+		
 			if err != nil {
 				panic(err)
 			}
-
-			return intVal
+			
+			val, err := util.Decode(value)
+		
+			if err != nil {
+				panic(err)
+			}
+			
+			return val	
 		}
-
+		
+		if &floatVal == nil {
+			panic("Float value is nil.")
+		}
+		
 		return floatVal
 	}
-
-	val, err := util.Decode(value)
-
-	if err != nil {
-		panic(err)
+	
+	if &intVal == nil {
+		panic("Int value is nil.")
 	}
-
-	return val
+	
+	return intVal
 }
 
 func (this *RedisStore) GetFloat(key string) (float64, error) {

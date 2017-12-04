@@ -16,6 +16,22 @@ func TestPutGet(t *testing.T) {
 		t.Error("Expected value, got ", got)
 	}
 
+	cache.Put("key", 1, 1)
+
+	got = cache.Get("key")
+
+	if got != int64(1) {
+		t.Error("Expected 1, got ", got)
+	}
+
+	cache.Put("key", 2.99, 1)
+
+	got = cache.Get("key")
+
+	if got != float64(2.99) {
+		t.Error("Expected 2.99, got", got)
+	}
+
 	cache.Forget("key")
 }
 
@@ -26,7 +42,7 @@ func TestPutGetInt(t *testing.T) {
 
 	got, err := cache.GetInt("key")
 
-	if got != 100 || err != nil {
+	if got != int64(100) || err != nil {
 		t.Error("Expected 100, got ", got)
 	}
 
