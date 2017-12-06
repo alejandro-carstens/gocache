@@ -4,7 +4,6 @@ import (
 	"github.com/go-redis/redis"
 	"strconv"
 	"time"
-	"util"
 )
 
 type RedisStore struct {
@@ -18,38 +17,38 @@ func (this *RedisStore) get(key string) *redis.StringCmd {
 
 func (this *RedisStore) Get(key string) interface{} {
 	intVal, err := this.get(key).Int64()
-	
+
 	if err != nil {
-		
+
 		floatVal, err := this.get(key).Float64()
-		
+
 		if err != nil {
 			value, err := this.get(key).Result()
-		
+
 			if err != nil {
 				panic(err)
 			}
-			
-			val, err := util.Decode(value)
-		
+
+			val, err := SimpleDecode(value)
+
 			if err != nil {
 				panic(err)
 			}
-			
-			return val	
+
+			return val
 		}
-		
+
 		if &floatVal == nil {
 			panic("Float value is nil.")
 		}
-		
+
 		return floatVal
 	}
-	
+
 	if &intVal == nil {
 		panic("Int value is nil.")
 	}
-	
+
 	return intVal
 }
 
@@ -88,7 +87,7 @@ func (this *RedisStore) Put(key string, value interface{}, minutes int) {
 		panic(err)
 	}
 
-	if util.IsNumeric(value) {
+	if IsNumeric(value) {
 		err = this.Client.Set(this.Prefix+key, value, time).Err()
 
 		if err != nil {
@@ -98,7 +97,7 @@ func (this *RedisStore) Put(key string, value interface{}, minutes int) {
 		return
 	}
 
-	val, err := util.Encode(value)
+	val, err := Encode(value)
 
 	if err != nil {
 		panic(err)
@@ -112,7 +111,7 @@ func (this *RedisStore) Put(key string, value interface{}, minutes int) {
 }
 
 func (this *RedisStore) Forever(key string, value interface{}) {
-	if util.IsNumeric(value) {
+	if IsNumeric(value) {
 		err := this.Client.Set(this.Prefix+key, value, 0).Err()
 
 		if err != nil {
@@ -128,7 +127,7 @@ func (this *RedisStore) Forever(key string, value interface{}) {
 		return
 	}
 
-	val, err := util.Encode(value)
+	val, err := Encode(value)
 
 	if err != nil {
 		panic(err)
