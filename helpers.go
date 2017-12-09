@@ -21,7 +21,7 @@ func SimpleDecode(value string) (string, error) {
 		panic(err)
 	}
 
-	return value, err
+	return string(value), err
 }
 
 func Decode(value string, entity interface{}) (interface{}, error) {

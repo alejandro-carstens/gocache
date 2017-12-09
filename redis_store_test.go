@@ -5,6 +5,11 @@ import (
 	"testing"
 )
 
+type Example struct {
+	Name        string
+	Description string
+}
+
 func TestPutGet(t *testing.T) {
 	cache := getCache()
 
@@ -114,6 +119,25 @@ func TestForever(t *testing.T) {
 	}
 
 	cache.Forget("key")
+}
+
+func TestStoreStruct(t *testing.T) {
+	cache := getCache()
+
+	var example Example
+
+	example.Name = "Alejandro"
+	example.Description = "Whatever"
+
+	cache.Put("key", example, 10)
+
+	var newExample Example
+
+	cache.GetStruct("key", &newExample)
+
+	if newExample != example {
+		t.Error("The structs are not the same", newExample)
+	}
 }
 
 func getCache() RedisStore {

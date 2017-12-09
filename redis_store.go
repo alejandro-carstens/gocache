@@ -227,3 +227,13 @@ func (this *RedisStore) Tags(names []string) *RedisTaggedCache {
 
 	return taggedCache
 }
+
+func (this *RedisStore) GetStruct(key string, entity interface{}) (interface{}, error) {
+	value, err := this.get(key).Result()
+
+	if err != nil {
+		panic(err)
+	}
+
+	return Decode(value, entity)
+}
