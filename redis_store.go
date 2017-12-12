@@ -26,6 +26,10 @@ func (this *RedisStore) Get(key string) interface{} {
 			value, err := this.get(key).Result()
 
 			if err != nil {
+				if err.Error() == "redis: nil" {
+					return "0"
+				}
+
 				panic(err)
 			}
 

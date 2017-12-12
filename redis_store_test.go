@@ -138,6 +138,8 @@ func TestStoreStruct(t *testing.T) {
 	if newExample != example {
 		t.Error("The structs are not the same", newExample)
 	}
+
+	cache.Forget("key")
 }
 
 func getCache() RedisStore {
