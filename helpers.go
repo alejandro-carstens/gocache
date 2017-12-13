@@ -1,6 +1,7 @@
 package cache
 
 import (
+	"bytes"
 	"encoding/json"
 )
 
@@ -47,4 +48,26 @@ func IsNumeric(s interface{}) bool {
 	default:
 		return false
 	}
+}
+
+func GetTaggedManyKey(prefix string, key string) string {
+	count := len(prefix) + 41
+
+	sub := ""
+	subs := []string{}
+
+	runes := bytes.Runes([]byte(key))
+	l := len(runes)
+
+	for i, r := range runes {
+		sub = sub + string(r)
+		if (i+1)%count == 0 {
+			subs = append(subs, sub)
+			sub = ""
+		} else if (i + 1) == l {
+			subs = append(subs, sub)
+		}
+	}
+
+	return subs[1]
 }

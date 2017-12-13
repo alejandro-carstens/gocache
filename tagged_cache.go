@@ -40,12 +40,19 @@ func (this *TaggedCache) Flush() bool {
 
 func (this *TaggedCache) Many(keys []string) map[string]interface{} {
 	taggedKeys := make([]string, len(keys))
+	values := make(map[string]interface{})
 
 	for i, key := range keys {
 		taggedKeys[i] = this.taggedItemKey(key)
 	}
 
-	return this.Many(taggedKeys)
+	results := this.Store.Many(taggedKeys)
+
+	for i, result := range results {
+		values[GetTaggedManyKey(this.GetPrefix(), i)] = result
+	}
+
+	return values
 }
 
 func (this *TaggedCache) PutMany(values map[string]interface{}, minutes int) {
@@ -55,7 +62,7 @@ func (this *TaggedCache) PutMany(values map[string]interface{}, minutes int) {
 		taggedMap[this.taggedItemKey(key)] = value
 	}
 
-	this.PutMany(taggedMap, minutes)
+	this.Store.PutMany(taggedMap, minutes)
 }
 
 func (this *TaggedCache) GetPrefix() string {

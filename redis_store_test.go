@@ -142,6 +142,34 @@ func TestStoreStruct(t *testing.T) {
 	cache.Forget("key")
 }
 
+func TestPutGetMany(t *testing.T) {
+	cache := getCache()
+
+	keys := make(map[string]interface{})
+
+	keys["key_1"] = "value"
+	keys["key_2"] = int64(100)
+	keys["key_3"] = float64(9.99)
+
+	cache.PutMany(keys, 10)
+
+	result_keys := make([]string, 3)
+
+	result_keys[0] = "key_1"
+	result_keys[1] = "key_2"
+	result_keys[2] = "key_3"
+
+	results := cache.Many(result_keys)
+
+	for i, result := range results {
+		if result != keys[i] {
+			t.Error("Expected got", results["key_1"])
+		}
+	}
+
+	cache.Flush()
+}
+
 func getCache() RedisStore {
 	redisClient := database.Redis{}
 
