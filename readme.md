@@ -1,7 +1,7 @@
 ## Golavel Cache
 
-- The goal of this project is to implement a driver/data store agnostic caching system 
-via a common interface. It is inspired by Laravel's Illuminate Cache
+Golavel Cache allows you to implement a data-store agnostic caching system 
+via a common interface.
 
 ## Todo List
 
