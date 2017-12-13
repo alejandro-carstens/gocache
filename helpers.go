@@ -56,15 +56,14 @@ func GetTaggedManyKey(prefix string, key string) string {
 	sub := ""
 	subs := []string{}
 
-	runes := bytes.Runes([]byte(key))
-	l := len(runes)
+	runs := bytes.Runes([]byte(key))
 
-	for i, r := range runes {
-		sub = sub + string(r)
+	for i, run := range runs {
+		sub = sub + string(run)
 		if (i+1)%count == 0 {
 			subs = append(subs, sub)
 			sub = ""
-		} else if (i + 1) == l {
+		} else if (i + 1) == len(runs) {
 			subs = append(subs, sub)
 		}
 	}
