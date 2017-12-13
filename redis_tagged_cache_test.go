@@ -143,6 +143,29 @@ func TestPutGetManyWithTags(t *testing.T) {
 	cache.Tags(tags).Flush()
 }
 
+func TestPutGetStructWithTags(t *testing.T) {
+	cache := getCache()
+
+	tags := tags()
+
+	var example Example
+
+	example.Name = "Alejandro"
+	example.Description = "Whatever"
+
+	cache.Tags(tags).Put("key", example, 10)
+
+	var newExample Example
+
+	cache.Tags(tags).GetStruct("key", &newExample)
+
+	if newExample != example {
+		t.Error("The structs are not the same", newExample)
+	}
+
+	cache.Forget("key")
+}
+
 func tags() []string {
 	tags := make([]string, 1)
 

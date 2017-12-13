@@ -121,7 +121,7 @@ func TestForever(t *testing.T) {
 	cache.Forget("key")
 }
 
-func TestStoreStruct(t *testing.T) {
+func TestPutGetStruct(t *testing.T) {
 	cache := getCache()
 
 	var example Example

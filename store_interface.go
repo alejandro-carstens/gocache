@@ -20,4 +20,6 @@ type StoreInterface interface {
 	Many(keys []string) map[string]interface{}
 
 	PutMany(values map[string]interface{}, minutes int)
+
+	GetStruct(key string, entity interface{}) (interface{}, error)
 }
