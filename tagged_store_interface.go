@@ -1,6 +1,6 @@
 package cache
 
-type StoreInterface interface {
+type TaggedStoreInterface interface {
 	Get(key string) interface{}
 
 	Put(key string, value interface{}, minutes int)
@@ -11,13 +11,7 @@ type StoreInterface interface {
 
 	Forget(key string) bool
 
-	Forever(key string, value interface{})
-
 	Flush() bool
-
-	GetInt(key string) (int64, error)
-
-	GetFloat(key string) (float64, error)
 
 	GetPrefix() string
 
@@ -27,5 +21,7 @@ type StoreInterface interface {
 
 	GetStruct(key string, entity interface{}) (interface{}, error)
 
-	Tags(names []string) TaggedStoreInterface
+	Forever(key string, value interface{})
+
+	TagFlush()
 }

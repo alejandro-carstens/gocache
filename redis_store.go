@@ -218,7 +218,7 @@ func (this *RedisStore) Lrange(key string, start int64, stop int64) []string {
 	return this.Client.LRange(key, start, stop).Val()
 }
 
-func (this *RedisStore) Tags(names []string) *RedisTaggedCache {
+func (this *RedisStore) Tags(names []string) TaggedStoreInterface {
 	taggedCache := &RedisTaggedCache{
 		TaggedCache{
 			Store: this,

@@ -1,7 +1,7 @@
 package cache
 
 import (
-	"config"
+	// "config"
 	"testing"
 )
 
@@ -170,11 +170,14 @@ func TestPutGetMany(t *testing.T) {
 	cache.Flush()
 }
 
-func getCache() RedisStore {
-	redisClient := database.Redis{}
+func getCache() StoreInterface {
 
-	return RedisStore{
-		Client: redisClient.Client(),
-		Prefix: "golavel:",
-	}
+	params := make(map[string]interface{})
+
+	params["address"] = "localhost:6379"
+	params["password"] = ""
+	params["database"] = 0
+	params["prefix"] = "golavel:"
+
+	return Cache("redis", params)
 }

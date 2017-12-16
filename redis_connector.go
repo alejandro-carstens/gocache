@@ -10,7 +10,7 @@ func (this *RedisConnector) Connect(params map[string]interface{}) StoreInterfac
 	params = this.validate(params)
 
 	return &RedisStore{
-		Client: this.client(params["address"].(string), params["password"].(string), params["default_db"].(int)),
+		Client: this.client(params["address"].(string), params["password"].(string), params["database"].(int)),
 		Prefix: params["prefix"].(string),
 	}
 }
