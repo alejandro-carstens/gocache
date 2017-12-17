@@ -12,13 +12,13 @@ func TestRedisConnection(t *testing.T) {
 	params["database"] = 0
 	params["prefix"] = "golavel:"
 
-	redis_connector := new(RedisConnector)
+	redisConnector := new(RedisConnector)
 
-	redis_store := redis_connector.Connect(params)
+	redisStore := redisConnector.Connect(params)
 
-	_, ok := redis_store.(StoreInterface)
+	_, ok := redisStore.(StoreInterface)
 
 	if !ok {
-		t.Error("Expected StoreInterface got", redis_store)
+		t.Error("Expected StoreInterface got", redisStore)
 	}
 }

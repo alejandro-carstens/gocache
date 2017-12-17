@@ -11,9 +11,9 @@ func TestMemcacheConnector(t *testing.T) {
 	params["server 1"] = "localhost:11211"
 	params["prefix"] = "golavel"
 
-	memcache_connector := new(MemcacheConnector)
+	memcacheConnector := new(MemcacheConnector)
 
-	mc := memcache_connector.Connect(params)
+	mc := memcacheConnector.Connect(params)
 
 	mc.Set(&memcache.Item{Key: "foo", Value: []byte("my value")})
 
