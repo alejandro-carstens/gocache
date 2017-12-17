@@ -171,7 +171,6 @@ func TestPutGetMany(t *testing.T) {
 }
 
 func getCache() StoreInterface {
-
 	params := make(map[string]interface{})
 
 	params["address"] = "localhost:6379"

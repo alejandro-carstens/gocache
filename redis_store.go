@@ -219,7 +219,7 @@ func (this *RedisStore) Lrange(key string, start int64, stop int64) []string {
 }
 
 func (this *RedisStore) Tags(names []string) TaggedStoreInterface {
-	taggedCache := &RedisTaggedCache{
+	return &RedisTaggedCache{
 		TaggedCache{
 			Store: this,
 			Tags: TagSet{
@@ -228,8 +228,6 @@ func (this *RedisStore) Tags(names []string) TaggedStoreInterface {
 			},
 		},
 	}
-
-	return taggedCache
 }
 
 func (this *RedisStore) GetStruct(key string, entity interface{}) (interface{}, error) {
