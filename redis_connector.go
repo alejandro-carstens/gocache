@@ -15,11 +15,11 @@ func (this *RedisConnector) Connect(params map[string]interface{}) StoreInterfac
 	}
 }
 
-func (this *RedisConnector) client(address string, password string, default_db int) redis.Client {
+func (this *RedisConnector) client(address string, password string, database int) redis.Client {
 	return *redis.NewClient(&redis.Options{
 		Addr:     address,
 		Password: password,
-		DB:       default_db,
+		DB:       database,
 	})
 }
 
@@ -34,6 +34,10 @@ func (this *RedisConnector) validate(params map[string]interface{}) map[string]i
 
 	if _, ok := params["password"]; !ok {
 		panic("You need to specify a password for your redis server.")
+	}
+
+	if _, ok := params["prefix"]; !ok {
+		panic("You need to specify a caching prefix.")
 	}
 
 	return params

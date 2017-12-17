@@ -6,7 +6,7 @@ It is currently a work in progress.
 
 ## Todo List
 
-- Memcached implementation
+- Memcache implementation
 - Gocache implementation
 - LMDB implementation
 - BlockDB implementation
