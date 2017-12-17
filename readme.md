@@ -6,7 +6,6 @@ It is currently a work in progress.
 
 ## Todo List
 
-- Redis client connection tests
 - Memcached implementation
 - Gocache implementation
 - LMDB implementation
