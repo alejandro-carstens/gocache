@@ -1,27 +1,27 @@
 package cache
 
 import (
-	"fmt"
 	"github.com/bradfitz/gomemcache/memcache"
 )
 
 type MemcacheConnector struct{}
 
 // To return StoreInterface
-func (this *MemcacheConnector) Connect(params map[string]interface{}) memcache.Client {
+func (this *MemcacheConnector) Connect(params map[string]interface{}) *MemcacheStore {
 	params = this.validate(params)
 
 	prefix := params["prefix"].(string)
 
 	delete(params, "prefix")
 
-	fmt.Println(prefix) // Placeholder for until we have the MemcacheStore
-
-	return this.client(params)
+	return &MemcacheStore{
+		Client: this.client(params),
+		Prefix: prefix,
+	}
 }
 
 func (this *MemcacheConnector) client(params map[string]interface{}) memcache.Client {
-	servers := make([]string, len(params))
+	servers := make([]string, len(params)-1)
 
 	for _, param := range params {
 		servers = append(servers, param.(string))

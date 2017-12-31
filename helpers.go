@@ -70,3 +70,13 @@ func GetTaggedManyKey(prefix string, key string) string {
 
 	return subs[1]
 }
+
+func TrailingZeros() string {
+	v := ""
+
+	for i := 0; i < 250-32; i++ {
+		v = v + "0"
+	}
+
+	return v
+}
