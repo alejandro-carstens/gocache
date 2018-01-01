@@ -14,15 +14,11 @@ func TestMemcacheConnector(t *testing.T) {
 
 	mc := memcacheConnector.Connect(params)
 
-	mc.Put("fo0", "bar", 1)
+	mc.Put("foo", "bar", 1)
 
-	// got, err := mc.Get("foo")
+	got := mc.Get("foo")
 
-	// if err != nil {
-	// 	panic(err)
-	// }
-
-	// if string(got.Value) != "my value" {
-	// 	t.Error("Expected my value got", got)
-	// }
+	if got != "bar" {
+		t.Error("Expected bar got", got)
+	}
 }

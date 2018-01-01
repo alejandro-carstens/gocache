@@ -3,6 +3,8 @@ package cache
 import (
 	"bytes"
 	"encoding/json"
+	"math"
+	"strconv"
 )
 
 func Encode(item interface{}) (string, error) {
@@ -71,12 +73,22 @@ func GetTaggedManyKey(prefix string, key string) string {
 	return subs[1]
 }
 
-func TrailingZeros() string {
-	v := ""
+func IsStringNumeric(value string) bool {
+	_, err := strconv.ParseFloat(value, 64)
 
-	for i := 0; i < 250-32; i++ {
-		v = v + "0"
+	return err == nil
+}
+
+func StringToFloat64(value string) float64 {
+	val, err := strconv.ParseFloat(value, 64)
+
+	if err != nil {
+		panic(err)
 	}
 
-	return v
+	return val
+}
+
+func IsFloat(value float64) bool {
+	return value == math.Trunc(value)
 }
