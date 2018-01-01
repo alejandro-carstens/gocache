@@ -20,10 +20,6 @@ func Encode(item interface{}) (string, error) {
 func SimpleDecode(value string) (string, error) {
 	err := json.Unmarshal([]byte(value), &value)
 
-	if err != nil {
-		panic(err)
-	}
-
 	return string(value), err
 }
 
@@ -90,5 +86,5 @@ func StringToFloat64(value string) float64 {
 }
 
 func IsFloat(value float64) bool {
-	return value == math.Trunc(value)
+	return value != math.Trunc(value)
 }

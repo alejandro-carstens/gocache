@@ -1,6 +1,7 @@
 package cache
 
 import (
+	"errors"
 	"github.com/bradfitz/gomemcache/memcache"
 )
 
@@ -27,7 +28,7 @@ func (this *MemcacheStore) get(key string) string {
 	value, err := SimpleDecode(string(item.Value))
 
 	if err != nil {
-		panic(err)
+		return string(item.Value)
 	}
 
 	return value
@@ -49,24 +50,24 @@ func (this *MemcacheStore) Get(key string) interface{} {
 	return value
 }
 
-func (this *MemcacheStore) GetFloat(key string) float64 {
+func (this *MemcacheStore) GetFloat(key string) (float64, error) {
 	value := this.get(key)
 
 	if !IsStringNumeric(value) {
-		panic("The passed in value is non numeric.")
+		return 0.0, errors.New("Invalid numeric value")
 	}
 
-	return StringToFloat64(value)
+	return StringToFloat64(value), nil
 }
 
-func (this *MemcacheStore) GetInt(key string) int64 {
+func (this *MemcacheStore) GetInt(key string) (int64, error) {
 	value := this.get(key)
 
 	if !IsStringNumeric(value) {
-		panic("The passed in value is non numeric.")
+		return 0, errors.New("Invalid numeric value")
 	}
 
-	return int64(StringToFloat64(value))
+	return int64(StringToFloat64(value)), nil
 }
 
 func (this *MemcacheStore) item(key string, value interface{}, minutes int) *memcache.Item {
