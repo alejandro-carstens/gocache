@@ -144,6 +144,12 @@ func (this *MemcacheStore) Flush() bool {
 	return true
 }
 
+func (this *MemcacheStore) GetStruct(key string, entity interface{}) (interface{}, error) {
+	value := this.get(key)
+
+	return Decode(value, entity)
+}
+
 func (this *MemcacheStore) getItemValue(itemValue []byte) string {
 	value, err := SimpleDecode(string(itemValue))
 

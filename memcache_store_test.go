@@ -30,6 +30,8 @@ func TestMemcachePutGet(t *testing.T) {
 	if gotFloat != float64(10.1) {
 		t.Error("Expected bar 10.1", gotFloat)
 	}
+
+	cache.Forget("foo")
 }
 
 func TestMemcacheGetInt(t *testing.T) {
@@ -62,6 +64,8 @@ func TestMemcacheGetFloat(t *testing.T) {
 	if got != float64(10.0) {
 		t.Error("Expected bar 10.0", got)
 	}
+
+	cache.Forget("foo")
 }
 
 func TestMemcacheIncrementDecrement(t *testing.T) {
@@ -102,6 +106,8 @@ func TestMemcacheIncrementDecrement(t *testing.T) {
 	if got != int64(0) {
 		t.Error("Expected bar 0", got)
 	}
+
+	cache.Flush()
 }
 
 func TestMemcachePutManyGetMany(t *testing.T) {
@@ -128,6 +134,45 @@ func TestMemcachePutManyGetMany(t *testing.T) {
 			t.Error("Expected got", result)
 		}
 	}
+
+	cache.Flush()
+}
+
+func TestMemcacheForever(t *testing.T) {
+	cache := getMemcacheCache()
+
+	expected := "value"
+
+	cache.Forever("key", expected)
+
+	got := cache.Get("key")
+
+	if got != expected {
+		t.Error("Expected "+expected+", got ", got)
+	}
+
+	cache.Forget("key")
+}
+
+func TestMemcachePutGetStruct(t *testing.T) {
+	cache := getMemcacheCache()
+
+	var example Example
+
+	example.Name = "Alejandro"
+	example.Description = "Whatever"
+
+	cache.Put("key", example, 10)
+
+	var newExample Example
+
+	cache.GetStruct("key", &newExample)
+
+	if newExample != example {
+		t.Error("The structs are not the same", newExample)
+	}
+
+	cache.Forget("key")
 }
 
 func getMemcacheCache() *MemcacheStore {
