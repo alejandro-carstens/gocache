@@ -18,6 +18,10 @@ func (this *MemcacheStore) Put(key string, value interface{}, minutes int) {
 	}
 }
 
+func (this *MemcacheStore) Forever(key string, value interface{}) {
+	this.Put(key, value, 0)
+}
+
 func (this *MemcacheStore) get(key string) string {
 	item, err := this.Client.Get(this.GetPrefix() + key)
 
@@ -118,6 +122,26 @@ func (this *MemcacheStore) Many(keys []string) map[string]interface{} {
 	}
 
 	return items
+}
+
+func (this *MemcacheStore) Forget(key string) bool {
+	err := this.Client.Delete(this.GetPrefix() + key)
+
+	if err != nil {
+		return false
+	}
+
+	return true
+}
+
+func (this *MemcacheStore) Flush() bool {
+	err := this.Client.DeleteAll()
+
+	if err != nil {
+		return false
+	}
+
+	return true
 }
 
 func (this *MemcacheStore) getItemValue(itemValue []byte) string {
