@@ -64,6 +64,72 @@ func TestMemcacheGetFloat(t *testing.T) {
 	}
 }
 
+func TestMemcacheIncrementDecrement(t *testing.T) {
+	cache := getMemcacheCache()
+
+	got := cache.Increment("key", 2)
+
+	if got != int64(2) {
+		t.Error("Expected bar 2", got)
+	}
+
+	got = cache.Increment("key", 8)
+
+	if got != int64(10) {
+		t.Error("Expected bar 10", got)
+	}
+
+	got = cache.Decrement("key", 10)
+
+	if got != int64(0) {
+		t.Error("Expected bar 0", got)
+	}
+
+	got = cache.Decrement("key1", 0)
+
+	if got != int64(0) {
+		t.Error("Expected bar 0", got)
+	}
+
+	got = cache.Increment("key1", 10)
+
+	if got != int64(10) {
+		t.Error("Expected bar 10", got)
+	}
+
+	got = cache.Decrement("key1", 10)
+
+	if got != int64(0) {
+		t.Error("Expected bar 0", got)
+	}
+}
+
+func TestMemcachePutManyGetMany(t *testing.T) {
+	cache := getMemcacheCache()
+
+	keys := make(map[string]interface{})
+
+	keys["foo_1"] = "value"
+	keys["foo_2"] = int64(100)
+	keys["foo_3"] = float64(9.99)
+
+	cache.PutMany(keys, 10)
+
+	result_keys := make([]string, 3)
+
+	result_keys[0] = "foo_1"
+	result_keys[1] = "foo_2"
+	result_keys[2] = "foo_3"
+
+	results := cache.Many(result_keys)
+
+	for i, result := range results {
+		if result != keys[i] {
+			t.Error("Expected got", result)
+		}
+	}
+}
+
 func getMemcacheCache() *MemcacheStore {
 	params := make(map[string]interface{})
 
