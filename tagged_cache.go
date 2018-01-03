@@ -80,3 +80,7 @@ func (this *TaggedCache) taggedItemKey(key string) string {
 func (this *TaggedCache) GetStruct(key string, entity interface{}) (interface{}, error) {
 	return this.Store.GetStruct(this.taggedItemKey(key), entity)
 }
+
+func (this *TaggedCache) TagFlush() {
+	this.Tags.Reset()
+}

@@ -22,7 +22,7 @@ func (this *TagSet) resetTag(name string) string {
 	return id
 }
 
-func (this *TagSet) reset() {
+func (this *TagSet) Reset() {
 	for i, name := range this.Names {
 		this.Names[i] = this.resetTag(name)
 	}

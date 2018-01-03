@@ -150,6 +150,16 @@ func (this *MemcacheStore) GetStruct(key string, entity interface{}) (interface{
 	return Decode(value, entity)
 }
 
+func (this *MemcacheStore) Tags(names []string) TaggedStoreInterface {
+	return &TaggedCache{
+		Store: this,
+		Tags: TagSet{
+			Store: this,
+			Names: names,
+		},
+	}
+}
+
 func (this *MemcacheStore) getItemValue(itemValue []byte) string {
 	value, err := SimpleDecode(string(itemValue))
 
