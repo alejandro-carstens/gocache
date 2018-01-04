@@ -12,13 +12,11 @@ func TestMemcacheConnector(t *testing.T) {
 
 	memcacheConnector := new(MemcacheConnector)
 
-	mc := memcacheConnector.Connect(params)
+	memcacheStore := memcacheConnector.Connect(params)
 
-	mc.Put("foo", "bar", 1)
+	_, ok := memcacheStore.(StoreInterface)
 
-	got := mc.Get("foo")
-
-	if got != "bar" {
-		t.Error("Expected bar got", got)
+	if !ok {
+		t.Error("Expected StoreInterface got", memcacheStore)
 	}
 }

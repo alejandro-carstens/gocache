@@ -175,13 +175,11 @@ func TestMemcachePutGetStruct(t *testing.T) {
 	cache.Forget("key")
 }
 
-func getMemcacheCache() *MemcacheStore {
+func getMemcacheCache() StoreInterface {
 	params := make(map[string]interface{})
 
 	params["server 1"] = "127.0.0.1:11211"
 	params["prefix"] = "golavel:"
 
-	memcacheConnector := new(MemcacheConnector)
-
-	return memcacheConnector.Connect(params)
+	return Cache("memcache", params)
 }

@@ -7,7 +7,7 @@ import (
 type MemcacheConnector struct{}
 
 // To return StoreInterface
-func (this *MemcacheConnector) Connect(params map[string]interface{}) *MemcacheStore {
+func (this *MemcacheConnector) Connect(params map[string]interface{}) StoreInterface {
 	params = this.validate(params)
 
 	prefix := params["prefix"].(string)
