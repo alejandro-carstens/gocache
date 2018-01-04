@@ -1,7 +1,7 @@
 package cache
 
 type CacheInterface interface {
-    Get(key string) interface{}
+    	Get(key string) interface{}
 
 	Put(key string, value interface{}, minutes int)
 
