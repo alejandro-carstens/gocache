@@ -69,6 +69,14 @@ func (this *TaggedCache) GetPrefix() string {
 	return this.Store.GetPrefix()
 }
 
+func (this *TaggedCache) GetInt(key string) (int64, error) {
+	return this.Store.GetInt(key)
+}
+
+func (this *TaggedCache) GetFloat(key string) (float64, error) {
+	return this.Store.GetFloat(key)
+}
+
 func (this *TaggedCache) taggedItemKey(key string) string {
 	h := sha1.New()
 
