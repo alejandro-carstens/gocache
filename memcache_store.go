@@ -26,6 +26,10 @@ func (this *MemcacheStore) get(key string) string {
 	item, err := this.Client.Get(this.GetPrefix() + key)
 
 	if err != nil {
+		if err.Error() == "memcache: cache miss" {
+			return ""
+		}
+
 		panic(err)
 	}
 
