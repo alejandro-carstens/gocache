@@ -18,15 +18,15 @@ func (this *TaggedCache) Put(key string, value interface{}, minutes int) {
 	this.Store.Put(this.taggedItemKey(key), value, minutes)
 }
 
-func (this *TaggedCache) Increment(key string, value int64) int64 {
+func (this *TaggedCache) Increment(key string, value int64) (int64, error) {
 	return this.Store.Increment(this.taggedItemKey(key), value)
 }
 
-func (this *TaggedCache) Decrement(key string, value int64) int64 {
+func (this *TaggedCache) Decrement(key string, value int64) (int64, error) {
 	return this.Store.Decrement(this.taggedItemKey(key), value)
 }
 
-func (this *TaggedCache) Forget(key string) bool {
+func (this *TaggedCache) Forget(key string) (bool, error) {
 	return this.Store.Forget(this.taggedItemKey(key))
 }
 
@@ -34,7 +34,7 @@ func (this *TaggedCache) Forever(key string, value interface{}) {
 	this.Store.Forever(this.taggedItemKey(key), value)
 }
 
-func (this *TaggedCache) Flush() bool {
+func (this *TaggedCache) Flush() (bool, error) {
 	return this.Store.Flush()
 }
 

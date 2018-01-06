@@ -64,24 +64,12 @@ func (this *RedisStore) GetInt(key string) (int64, error) {
 	return this.get(key).Int64()
 }
 
-func (this *RedisStore) Increment(key string, value int64) int64 {
-	value, err := this.Client.IncrBy(this.Prefix+key, value).Result()
-
-	if err != nil {
-		panic(err)
-	}
-
-	return value
+func (this *RedisStore) Increment(key string, value int64) (int64, error) {
+	return this.Client.IncrBy(this.Prefix+key, value).Result()
 }
 
-func (this *RedisStore) Decrement(key string, value int64) int64 {
-	value, err := this.Client.DecrBy(this.Prefix+key, value).Result()
-
-	if err != nil {
-		panic(err)
-	}
-
-	return value
+func (this *RedisStore) Decrement(key string, value int64) (int64, error) {
+	return this.Client.DecrBy(this.Prefix+key, value).Result()
 }
 
 func (this *RedisStore) Put(key string, value interface{}, minutes int) {
@@ -150,24 +138,24 @@ func (this *RedisStore) Forever(key string, value interface{}) {
 	}
 }
 
-func (this *RedisStore) Flush() bool {
+func (this *RedisStore) Flush() (bool, error) {
 	err := this.Client.FlushDB().Err()
 
 	if err != nil {
-		panic(err)
+		return false, err
 	}
 
-	return true
+	return true, nil
 }
 
-func (this *RedisStore) Forget(key string) bool {
+func (this *RedisStore) Forget(key string) (bool, error) {
 	err := this.Client.Del(this.Prefix + key).Err()
 
 	if err != nil {
-		panic(err)
+		return false, err
 	}
 
-	return true
+	return true, nil
 }
 
 func (this *RedisStore) GetPrefix() string {

@@ -71,40 +71,44 @@ func TestMemcacheGetFloat(t *testing.T) {
 func TestMemcacheIncrementDecrement(t *testing.T) {
 	cache := getMemcacheCache()
 
-	got := cache.Increment("key", 2)
+	got, err := cache.Increment("key", 2)
 
 	if got != int64(2) {
 		t.Error("Expected bar 2", got)
 	}
 
-	got = cache.Increment("key", 8)
+	got, err = cache.Increment("key", 8)
 
 	if got != int64(10) {
 		t.Error("Expected bar 10", got)
 	}
 
-	got = cache.Decrement("key", 10)
+	got, err = cache.Decrement("key", 10)
 
 	if got != int64(0) {
 		t.Error("Expected bar 0", got)
 	}
 
-	got = cache.Decrement("key1", 0)
+	got, err = cache.Decrement("key1", 0)
 
 	if got != int64(0) {
 		t.Error("Expected bar 0", got)
 	}
 
-	got = cache.Increment("key1", 10)
+	got, err = cache.Increment("key1", 10)
 
 	if got != int64(10) {
 		t.Error("Expected bar 10", got)
 	}
 
-	got = cache.Decrement("key1", 10)
+	got, err = cache.Decrement("key1", 10)
 
 	if got != int64(0) {
 		t.Error("Expected bar 0", got)
+	}
+
+	if err != nil {
+		panic(err)
 	}
 
 	cache.Flush()

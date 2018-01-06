@@ -76,36 +76,36 @@ func (this *MemcacheStore) item(key string, value interface{}, minutes int) *mem
 	}
 }
 
-func (this *MemcacheStore) Increment(key string, value int64) int64 {
+func (this *MemcacheStore) Increment(key string, value int64) (int64, error) {
 	newValue, err := this.Client.Increment(this.GetPrefix()+key, uint64(value))
 
 	if err != nil {
 		if err.Error() != "memcache: cache miss" {
-			panic(err)
+			return value, err
 		}
 
 		this.Put(key, value, 0)
 
-		return value
+		return value, nil
 	}
 
-	return int64(newValue)
+	return int64(newValue), nil
 }
 
-func (this *MemcacheStore) Decrement(key string, value int64) int64 {
+func (this *MemcacheStore) Decrement(key string, value int64) (int64, error) {
 	newValue, err := this.Client.Decrement(this.GetPrefix()+key, uint64(value))
 
 	if err != nil {
 		if err.Error() != "memcache: cache miss" {
-			panic(err)
+			return value, err
 		}
 
 		this.Put(key, 0, 0)
 
-		return int64(0)
+		return int64(0), nil
 	}
 
-	return int64(newValue)
+	return int64(newValue), nil
 }
 
 func (this *MemcacheStore) GetPrefix() string {
@@ -128,24 +128,24 @@ func (this *MemcacheStore) Many(keys []string) map[string]interface{} {
 	return items
 }
 
-func (this *MemcacheStore) Forget(key string) bool {
+func (this *MemcacheStore) Forget(key string) (bool, error) {
 	err := this.Client.Delete(this.GetPrefix() + key)
 
 	if err != nil {
-		return false
+		return false, err
 	}
 
-	return true
+	return true, nil
 }
 
-func (this *MemcacheStore) Flush() bool {
+func (this *MemcacheStore) Flush() (bool, error) {
 	err := this.Client.DeleteAll()
 
 	if err != nil {
-		return false
+		return false, err
 	}
 
-	return true
+	return true, nil
 }
 
 func (this *MemcacheStore) GetStruct(key string, entity interface{}) (interface{}, error) {
