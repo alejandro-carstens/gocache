@@ -12,7 +12,11 @@ func TestMemcacheConnector(t *testing.T) {
 
 	memcacheConnector := new(MemcacheConnector)
 
-	memcacheStore := memcacheConnector.Connect(params)
+	memcacheStore, err := memcacheConnector.Connect(params)
+
+	if err != nil {
+		panic(err)
+	}
 
 	_, ok := memcacheStore.(StoreInterface)
 

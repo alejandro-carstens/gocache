@@ -14,7 +14,11 @@ func TestRedisConnection(t *testing.T) {
 
 	redisConnector := new(RedisConnector)
 
-	redisStore := redisConnector.Connect(params)
+	redisStore, err := redisConnector.Connect(params)
+
+	if err != nil {
+		panic(err)
+	}
 
 	_, ok := redisStore.(StoreInterface)
 

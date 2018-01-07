@@ -5,6 +5,8 @@ import (
 	"github.com/bradfitz/gomemcache/memcache"
 )
 
+const MEMCACHE_NIL_ERROR_RESPONSE = "memcache: cache miss"
+
 type MemcacheStore struct {
 	Client memcache.Client
 	Prefix string
@@ -28,7 +30,7 @@ func (this *MemcacheStore) get(key string) (string, error) {
 	item, err := this.Client.Get(this.GetPrefix() + key)
 
 	if err != nil {
-		if err.Error() == "memcache: cache miss" {
+		if err.Error() == MEMCACHE_NIL_ERROR_RESPONSE {
 			return "", nil
 		}
 

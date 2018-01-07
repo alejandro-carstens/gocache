@@ -189,5 +189,11 @@ func getMemcacheCache() StoreInterface {
 	params["server 1"] = "127.0.0.1:11211"
 	params["prefix"] = "golavel:"
 
-	return Cache("memcache", params)
+	cache, err := Cache("memcache", params)
+
+	if err != nil {
+		panic(err)
+	}
+
+	return cache
 }

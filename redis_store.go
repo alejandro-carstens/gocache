@@ -7,6 +7,8 @@ import (
 	"time"
 )
 
+const REDIS_NIL_ERROR_RESPONSE = "redis: nil"
+
 type RedisStore struct {
 	Client redis.Client
 	Prefix string
@@ -26,7 +28,7 @@ func (this *RedisStore) Get(key string) (interface{}, error) {
 			value, err := this.get(key).Result()
 
 			if err != nil {
-				if err.Error() == "redis: nil" {
+				if err.Error() == REDIS_NIL_ERROR_RESPONSE {
 					return "0", nil
 				}
 

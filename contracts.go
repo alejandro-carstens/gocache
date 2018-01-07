@@ -1,5 +1,11 @@
 package cache
 
+type CacheConnectorInterface interface {
+	Connect(params map[string]interface{}) (StoreInterface, error)
+
+	validate(params map[string]interface{}) (map[string]interface{}, error)
+}
+
 type CacheInterface interface {
 	Get(key string) (interface{}, error)
 
@@ -26,4 +32,20 @@ type CacheInterface interface {
 	PutMany(values map[string]interface{}, minutes int) error
 
 	GetStruct(key string, entity interface{}) (interface{}, error)
+}
+
+type TagsInterface interface {
+	Tags(names []string) TaggedStoreInterface
+}
+
+type StoreInterface interface {
+	CacheInterface
+
+	TagsInterface
+}
+
+type TaggedStoreInterface interface {
+	CacheInterface
+
+	TagFlush() error
 }

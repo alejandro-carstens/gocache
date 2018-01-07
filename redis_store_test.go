@@ -181,5 +181,11 @@ func getCache() StoreInterface {
 	params["database"] = 0
 	params["prefix"] = "golavel:"
 
-	return Cache("redis", params)
+	cache, err := Cache("redis", params)
+
+	if err != nil {
+		panic(err)
+	}
+
+	return cache
 }
