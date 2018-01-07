@@ -11,7 +11,13 @@ type TagSet struct {
 }
 
 func (this *TagSet) GetNamespace() string {
-	return strings.Join(this.tagIds(), "|")
+	tagsIds, err := this.tagIds()
+
+	if err != nil {
+		panic(err)
+	}
+
+	return strings.Join(tagsIds, "|")
 }
 
 func (this *TagSet) resetTag(name string) string {
@@ -28,26 +34,36 @@ func (this *TagSet) Reset() {
 	}
 }
 
-func (this *TagSet) tagId(name string) string {
-	value := this.Store.Get(this.tagKey(name))
+func (this *TagSet) tagId(name string) (string, error) {
+	value, err := this.Store.Get(this.tagKey(name))
 
-	if value == "" {
-		return this.resetTag(name)
+	if err != nil {
+		return value.(string), err
 	}
 
-	return value.(string)
+	if value == "" {
+		return this.resetTag(name), nil
+	}
+
+	return value.(string), nil
 }
 
 func (this *TagSet) tagKey(name string) string {
 	return "tag:" + name + ":key"
 }
 
-func (this *TagSet) tagIds() []string {
+func (this *TagSet) tagIds() ([]string, error) {
 	tagIds := make([]string, len(this.Names))
 
 	for i, name := range this.Names {
-		tagIds[i] = this.tagId(name)
+		val, err := this.tagId(name)
+
+		if err != nil {
+			return tagIds, err
+		}
+
+		tagIds[i] = val
 	}
 
-	return tagIds
+	return tagIds, nil
 }

@@ -1,9 +1,9 @@
 package cache
 
 type CacheInterface interface {
-	Get(key string) interface{}
+	Get(key string) (interface{}, error)
 
-	Put(key string, value interface{}, minutes int)
+	Put(key string, value interface{}, minutes int) error
 
 	Increment(key string, value int64) (int64, error)
 
@@ -11,7 +11,7 @@ type CacheInterface interface {
 
 	Forget(key string) (bool, error)
 
-	Forever(key string, value interface{})
+	Forever(key string, value interface{}) error
 
 	Flush() (bool, error)
 
@@ -21,7 +21,7 @@ type CacheInterface interface {
 
 	GetPrefix() string
 
-	Many(keys []string) map[string]interface{}
+	Many(keys []string) (map[string]interface{}, error)
 
 	PutMany(values map[string]interface{}, minutes int)
 

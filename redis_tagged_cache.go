@@ -11,7 +11,7 @@ type RedisTaggedCache struct {
 	TaggedCache
 }
 
-func (this *RedisTaggedCache) Forever(key string, value interface{}) {
+func (this *RedisTaggedCache) Forever(key string, value interface{}) error {
 	namespace := this.Tags.GetNamespace()
 
 	this.pushForever(namespace, key)
@@ -20,7 +20,7 @@ func (this *RedisTaggedCache) Forever(key string, value interface{}) {
 
 	h.Write(([]byte(namespace)))
 
-	this.Store.Forever(this.GetPrefix()+hex.EncodeToString(h.Sum(nil))+":"+key, value)
+	return this.Store.Forever(this.GetPrefix()+hex.EncodeToString(h.Sum(nil))+":"+key, value)
 }
 
 func (this *RedisTaggedCache) pushForever(namespace string, key string) {

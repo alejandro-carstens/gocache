@@ -10,40 +10,44 @@ type MemcacheStore struct {
 	Prefix string
 }
 
-func (this *MemcacheStore) Put(key string, value interface{}, minutes int) {
-	err := this.Client.Set(this.item(key, value, minutes))
-
-	if err != nil {
-		panic(err)
-	}
+func (this *MemcacheStore) Put(key string, value interface{}, minutes int) error {
+	return this.Client.Set(this.item(key, value, minutes))
 }
 
-func (this *MemcacheStore) Forever(key string, value interface{}) {
-	this.Put(key, value, 0)
+func (this *MemcacheStore) Forever(key string, value interface{}) error {
+	return this.Put(key, value, 0)
 }
 
-func (this *MemcacheStore) get(key string) string {
+func (this *MemcacheStore) get(key string) (string, error) {
 	item, err := this.Client.Get(this.GetPrefix() + key)
 
 	if err != nil {
 		if err.Error() == "memcache: cache miss" {
-			return ""
+			return "", nil
 		}
 
-		panic(err)
+		return "", err
 	}
 
-	return this.getItemValue(item.Value)
+	return this.getItemValue(item.Value), nil
 }
 
-func (this *MemcacheStore) Get(key string) interface{} {
-	value := this.get(key)
+func (this *MemcacheStore) Get(key string) (interface{}, error) {
+	value, err := this.get(key)
 
-	return this.processValue(value)
+	if err != nil {
+		return value, err
+	}
+
+	return this.processValue(value), nil
 }
 
 func (this *MemcacheStore) GetFloat(key string) (float64, error) {
-	value := this.get(key)
+	value, err := this.get(key)
+
+	if err != nil {
+		return 0.0, err
+	}
 
 	if !IsStringNumeric(value) {
 		return 0.0, errors.New("Invalid numeric value")
@@ -53,7 +57,11 @@ func (this *MemcacheStore) GetFloat(key string) (float64, error) {
 }
 
 func (this *MemcacheStore) GetInt(key string) (int64, error) {
-	value := this.get(key)
+	value, err := this.get(key)
+
+	if err != nil {
+		return 0, err
+	}
 
 	if !IsStringNumeric(value) {
 		return 0, errors.New("Invalid numeric value")
@@ -118,14 +126,20 @@ func (this *MemcacheStore) PutMany(values map[string]interface{}, minutes int) {
 	}
 }
 
-func (this *MemcacheStore) Many(keys []string) map[string]interface{} {
+func (this *MemcacheStore) Many(keys []string) (map[string]interface{}, error) {
 	items := make(map[string]interface{})
 
 	for _, key := range keys {
-		items[key] = this.Get(key)
+		val, err := this.Get(key)
+
+		if err != nil {
+			return items, err
+		}
+
+		items[key] = val
 	}
 
-	return items
+	return items, nil
 }
 
 func (this *MemcacheStore) Forget(key string) (bool, error) {
@@ -149,7 +163,11 @@ func (this *MemcacheStore) Flush() (bool, error) {
 }
 
 func (this *MemcacheStore) GetStruct(key string, entity interface{}) (interface{}, error) {
-	value := this.get(key)
+	value, err := this.get(key)
+
+	if err != nil {
+		return value, err
+	}
 
 	return Decode(value, entity)
 }

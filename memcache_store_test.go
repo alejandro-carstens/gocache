@@ -9,25 +9,25 @@ func TestMemcachePutGet(t *testing.T) {
 
 	cache.Put("foo", "bar", 1)
 
-	got := cache.Get("foo")
+	got, err := cache.Get("foo")
 
-	if got != "bar" {
+	if got != "bar" || err != nil {
 		t.Error("Expected bar got", got)
 	}
 
 	cache.Put("foo", 100, 1)
 
-	gotInt := cache.Get("foo")
+	gotInt, err := cache.Get("foo")
 
-	if gotInt != int64(100) {
+	if gotInt != int64(100) || err != nil {
 		t.Error("Expected bar 100", gotInt)
 	}
 
 	cache.Put("foo", 10.1, 1)
 
-	gotFloat := cache.Get("foo")
+	gotFloat, err := cache.Get("foo")
 
-	if gotFloat != float64(10.1) {
+	if gotFloat != float64(10.1) || err != nil {
 		t.Error("Expected bar 10.1", gotFloat)
 	}
 
@@ -131,7 +131,11 @@ func TestMemcachePutManyGetMany(t *testing.T) {
 	result_keys[1] = "foo_2"
 	result_keys[2] = "foo_3"
 
-	results := cache.Many(result_keys)
+	results, err := cache.Many(result_keys)
+
+	if err != nil {
+		panic(err)
+	}
 
 	for i, result := range results {
 		if result != keys[i] {
@@ -149,9 +153,9 @@ func TestMemcacheForever(t *testing.T) {
 
 	cache.Forever("key", expected)
 
-	got := cache.Get("key")
+	got, err := cache.Get("key")
 
-	if got != expected {
+	if got != expected || err != nil {
 		t.Error("Expected "+expected+", got ", got)
 	}
 

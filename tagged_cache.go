@@ -10,12 +10,12 @@ type TaggedCache struct {
 	Tags  TagSet
 }
 
-func (this *TaggedCache) Get(key string) interface{} {
+func (this *TaggedCache) Get(key string) (interface{}, error) {
 	return this.Store.Get(this.taggedItemKey(key))
 }
 
-func (this *TaggedCache) Put(key string, value interface{}, minutes int) {
-	this.Store.Put(this.taggedItemKey(key), value, minutes)
+func (this *TaggedCache) Put(key string, value interface{}, minutes int) error {
+	return this.Store.Put(this.taggedItemKey(key), value, minutes)
 }
 
 func (this *TaggedCache) Increment(key string, value int64) (int64, error) {
@@ -30,15 +30,15 @@ func (this *TaggedCache) Forget(key string) (bool, error) {
 	return this.Store.Forget(this.taggedItemKey(key))
 }
 
-func (this *TaggedCache) Forever(key string, value interface{}) {
-	this.Store.Forever(this.taggedItemKey(key), value)
+func (this *TaggedCache) Forever(key string, value interface{}) error {
+	return this.Store.Forever(this.taggedItemKey(key), value)
 }
 
 func (this *TaggedCache) Flush() (bool, error) {
 	return this.Store.Flush()
 }
 
-func (this *TaggedCache) Many(keys []string) map[string]interface{} {
+func (this *TaggedCache) Many(keys []string) (map[string]interface{}, error) {
 	taggedKeys := make([]string, len(keys))
 	values := make(map[string]interface{})
 
@@ -46,13 +46,17 @@ func (this *TaggedCache) Many(keys []string) map[string]interface{} {
 		taggedKeys[i] = this.taggedItemKey(key)
 	}
 
-	results := this.Store.Many(taggedKeys)
+	results, err := this.Store.Many(taggedKeys)
+
+	if err != nil {
+		return results, err
+	}
 
 	for i, result := range results {
 		values[GetTaggedManyKey(this.GetPrefix(), i)] = result
 	}
 
-	return values
+	return values, nil
 }
 
 func (this *TaggedCache) PutMany(values map[string]interface{}, minutes int) {

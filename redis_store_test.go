@@ -14,25 +14,25 @@ func TestPutGet(t *testing.T) {
 
 	cache.Put("key", "value", 1)
 
-	got := cache.Get("key")
+	got, err := cache.Get("key")
 
-	if got != "value" {
+	if got != "value" || err != nil {
 		t.Error("Expected value, got ", got)
 	}
 
 	cache.Put("key", 1, 1)
 
-	got = cache.Get("key")
+	got, err = cache.Get("key")
 
-	if got != int64(1) {
+	if got != int64(1) || err != nil {
 		t.Error("Expected 1, got ", got)
 	}
 
 	cache.Put("key", 2.99, 1)
 
-	got = cache.Get("key")
+	got, err = cache.Get("key")
 
-	if got != float64(2.99) {
+	if got != float64(2.99) || err != nil {
 		t.Error("Expected 2.99, got", got)
 	}
 
@@ -111,9 +111,9 @@ func TestForever(t *testing.T) {
 
 	cache.Forever("key", expected)
 
-	got := cache.Get("key")
+	got, err := cache.Get("key")
 
-	if got != expected {
+	if got != expected || err != nil {
 		t.Error("Expected "+expected+", got ", got)
 	}
 
@@ -158,7 +158,11 @@ func TestPutGetMany(t *testing.T) {
 	result_keys[1] = "key_2"
 	result_keys[2] = "key_3"
 
-	results := cache.Many(result_keys)
+	results, err := cache.Many(result_keys)
+
+	if err != nil {
+		panic(err)
+	}
 
 	for i, result := range results {
 		if result != keys[i] {

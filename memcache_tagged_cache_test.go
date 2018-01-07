@@ -13,9 +13,9 @@ func TestPutGetMemcacheWithTags(t *testing.T) {
 
 	cache.Tags(tags).Put("key", "value", 10)
 
-	got := cache.Tags(tags).Get("key")
+	got, err := cache.Tags(tags).Get("key")
 
-	if got != expected {
+	if got != expected || err != nil {
 		t.Error("Expected value, got ", got)
 	}
 
@@ -29,9 +29,9 @@ func TestPutGetIntMemcacheWithTags(t *testing.T) {
 
 	cache.Tags(tags).Put("key", 100, 1)
 
-	got := cache.Tags(tags).Get("key")
+	got, err := cache.Tags(tags).Get("key")
 
-	if got != int64(100) {
+	if got != int64(100) || err != nil {
 		t.Error("Expected 100, got ", got)
 	}
 
@@ -49,9 +49,9 @@ func TestPutGetFloatMemcacheWithTags(t *testing.T) {
 
 	cache.Tags(tags).Put("key", expected, 1)
 
-	got := cache.Tags(tags).Get("key")
+	got, err := cache.Tags(tags).Get("key")
 
-	if got != expected {
+	if got != expected || err != nil {
 		t.Error("Expected 9.99, got ", got)
 	}
 
@@ -65,11 +65,11 @@ func TestIncrementMemcacheWithTags(t *testing.T) {
 
 	cache.Tags(tags).Increment("increment_key", 1)
 	cache.Tags(tags).Increment("increment_key", 1)
-	got := cache.Tags(tags).Get("increment_key")
+	got, err := cache.Tags(tags).Get("increment_key")
 
 	var expected int64 = 2
 
-	if got != expected {
+	if got != expected || err != nil {
 		t.Error("Expected 2, got ", got)
 	}
 
@@ -86,9 +86,9 @@ func TestDecrementMemcacheWithTags(t *testing.T) {
 
 	var expected int64 = 1
 
-	got := cache.Tags(tags).Get("decrement_key")
+	got, err := cache.Tags(tags).Get("decrement_key")
 
-	if got != expected {
+	if got != expected || err != nil {
 		t.Error("Expected "+string(expected)+", got ", got)
 	}
 
@@ -104,9 +104,9 @@ func TestForeverMemcacheWithTags(t *testing.T) {
 
 	cache.Tags(tags).Forever("key", expected)
 
-	got := cache.Tags(tags).Get("key")
+	got, err := cache.Tags(tags).Get("key")
 
-	if got != expected {
+	if got != expected || err != nil {
 		t.Error("Expected "+expected+", got ", got)
 	}
 
@@ -132,7 +132,11 @@ func TestPutGetManyMemcacheWithTags(t *testing.T) {
 	result_keys[1] = "key_2"
 	result_keys[2] = "key_3"
 
-	results := cache.Tags(tags).Many(result_keys)
+	results, err := cache.Tags(tags).Many(result_keys)
+
+	if err != nil {
+		panic(err)
+	}
 
 	for i, _ := range results {
 		if results[i] != keys[i] {

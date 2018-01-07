@@ -1,6 +1,7 @@
 package cache
 
 import (
+	"errors"
 	"github.com/go-redis/redis"
 	"strconv"
 	"time"
@@ -15,11 +16,10 @@ func (this *RedisStore) get(key string) *redis.StringCmd {
 	return this.Client.Get(this.Prefix + key)
 }
 
-func (this *RedisStore) Get(key string) interface{} {
+func (this *RedisStore) Get(key string) (interface{}, error) {
 	intVal, err := this.get(key).Int64()
 
 	if err != nil {
-
 		floatVal, err := this.get(key).Float64()
 
 		if err != nil {
@@ -27,33 +27,27 @@ func (this *RedisStore) Get(key string) interface{} {
 
 			if err != nil {
 				if err.Error() == "redis: nil" {
-					return "0"
+					return "0", nil
 				}
 
-				panic(err)
+				return value, err
 			}
 
-			val, err := SimpleDecode(value)
-
-			if err != nil {
-				panic(err)
-			}
-
-			return val
+			return SimpleDecode(value)
 		}
 
 		if &floatVal == nil {
-			panic("Float value is nil.")
+			return floatVal, errors.New("Float value is nil.")
 		}
 
-		return floatVal
+		return floatVal, nil
 	}
 
 	if &intVal == nil {
-		panic("Int value is nil.")
+		return intVal, errors.New("Int value is nil.")
 	}
 
-	return intVal
+	return intVal, nil
 }
 
 func (this *RedisStore) GetFloat(key string) (float64, error) {
@@ -72,70 +66,50 @@ func (this *RedisStore) Decrement(key string, value int64) (int64, error) {
 	return this.Client.DecrBy(this.Prefix+key, value).Result()
 }
 
-func (this *RedisStore) Put(key string, value interface{}, minutes int) {
+func (this *RedisStore) Put(key string, value interface{}, minutes int) error {
 	time, err := time.ParseDuration(strconv.Itoa(minutes) + "m")
 
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	if IsNumeric(value) {
-		err = this.Client.Set(this.Prefix+key, value, time).Err()
-
-		if err != nil {
-			panic(err)
-		}
-
-		return
+		return this.Client.Set(this.Prefix+key, value, time).Err()
 	}
 
 	val, err := Encode(value)
 
 	if err != nil {
-		panic(err)
+		return err
 	}
 
-	err = this.Client.Set(this.Prefix+key, val, time).Err()
-
-	if err != nil {
-		panic(err)
-	}
+	return this.Client.Set(this.GetPrefix()+key, val, time).Err()
 }
 
-func (this *RedisStore) Forever(key string, value interface{}) {
+func (this *RedisStore) Forever(key string, value interface{}) error {
 	if IsNumeric(value) {
 		err := this.Client.Set(this.Prefix+key, value, 0).Err()
 
 		if err != nil {
-			panic(err)
+			return err
 		}
 
-		err = this.Client.Persist(this.Prefix + key).Err()
-
-		if err != nil {
-			panic(err)
-		}
-
-		return
+		return this.Client.Persist(this.Prefix + key).Err()
 	}
 
 	val, err := Encode(value)
 
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	err = this.Client.Set(this.Prefix+key, val, 0).Err()
 
 	if err != nil {
-		panic(err)
+		return err
 	}
 
-	err = this.Client.Persist(this.Prefix + key).Err()
-
-	if err != nil {
-		panic(err)
-	}
+	return this.Client.Persist(this.Prefix + key).Err()
 }
 
 func (this *RedisStore) Flush() (bool, error) {
@@ -176,22 +150,24 @@ func (this *RedisStore) PutMany(values map[string]interface{}, minutes int) {
 	}
 }
 
-func (this *RedisStore) Many(keys []string) map[string]interface{} {
+func (this *RedisStore) Many(keys []string) (map[string]interface{}, error) {
 	values := make(map[string]interface{})
 
 	pipe := this.Client.TxPipeline()
 
 	for _, key := range keys {
-		values[key] = this.Get(key)
+		val, err := this.Get(key)
+
+		if err != nil {
+			return values, err
+		}
+
+		values[key] = val
 	}
 
 	_, err := pipe.Exec()
 
-	if err != nil {
-		panic(err)
-	}
-
-	return values
+	return values, err
 }
 
 func (this *RedisStore) Connection() interface{} {
