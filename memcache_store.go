@@ -11,7 +11,13 @@ type MemcacheStore struct {
 }
 
 func (this *MemcacheStore) Put(key string, value interface{}, minutes int) error {
-	return this.Client.Set(this.item(key, value, minutes))
+	item, err := this.item(key, value, minutes)
+
+	if err != nil {
+		return err
+	}
+
+	return this.Client.Set(item)
 }
 
 func (this *MemcacheStore) Forever(key string, value interface{}) error {
@@ -72,18 +78,14 @@ func (this *MemcacheStore) GetInt(key string) (int64, error) {
 	return int64(val), err
 }
 
-func (this *MemcacheStore) item(key string, value interface{}, minutes int) *memcache.Item {
+func (this *MemcacheStore) item(key string, value interface{}, minutes int) (*memcache.Item, error) {
 	val, err := Encode(value)
-
-	if err != nil {
-		panic(err)
-	}
 
 	return &memcache.Item{
 		Key:        this.GetPrefix() + key,
 		Value:      []byte(val),
 		Expiration: int32(minutes),
-	}
+	}, err
 }
 
 func (this *MemcacheStore) Increment(key string, value int64) (int64, error) {
