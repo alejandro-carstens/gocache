@@ -200,7 +200,7 @@ func (this *RedisStore) GetStruct(key string, entity interface{}) (interface{}, 
 	value, err := this.get(key).Result()
 
 	if err != nil {
-		panic(err)
+		return value, err
 	}
 
 	return Decode(value, entity)

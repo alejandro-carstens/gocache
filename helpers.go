@@ -10,10 +10,6 @@ import (
 func Encode(item interface{}) (string, error) {
 	value, err := json.Marshal(item)
 
-	if err != nil {
-		panic(err)
-	}
-
 	return string(value), err
 }
 
@@ -25,10 +21,6 @@ func SimpleDecode(value string) (string, error) {
 
 func Decode(value string, entity interface{}) (interface{}, error) {
 	err := json.Unmarshal([]byte(value), &entity)
-
-	if err != nil {
-		panic(err)
-	}
 
 	return entity, err
 }

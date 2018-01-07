@@ -20,18 +20,26 @@ func (this *TagSet) GetNamespace() (string, error) {
 	return strings.Join(tagsIds, "|"), err
 }
 
-func (this *TagSet) resetTag(name string) string {
+func (this *TagSet) resetTag(name string) (string, error) {
 	id := ksuid.New().String()
 
-	this.Store.Forever(this.tagKey(name), id)
+	err := this.Store.Forever(this.tagKey(name), id)
 
-	return id
+	return id, err
 }
 
-func (this *TagSet) Reset() {
+func (this *TagSet) Reset() error {
 	for i, name := range this.Names {
-		this.Names[i] = this.resetTag(name)
+		id, err := this.resetTag(name)
+
+		if err != nil {
+			return err
+		}
+
+		this.Names[i] = id
 	}
+
+	return nil
 }
 
 func (this *TagSet) tagId(name string) (string, error) {
@@ -42,7 +50,7 @@ func (this *TagSet) tagId(name string) (string, error) {
 	}
 
 	if value == "" {
-		return this.resetTag(name), nil
+		return this.resetTag(name)
 	}
 
 	return value.(string), nil
