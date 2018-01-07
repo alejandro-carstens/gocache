@@ -47,15 +47,15 @@ func (this *RedisTaggedCache) pushForever(namespace string, key string) {
 	}
 }
 
-func (this *RedisTaggedCache) TagFlush() {
-	this.deleteForeverKeys()
+func (this *RedisTaggedCache) TagFlush() error {
+	return this.deleteForeverKeys()
 }
 
-func (this *RedisTaggedCache) deleteForeverKeys() {
+func (this *RedisTaggedCache) deleteForeverKeys() error {
 	namespace, err := this.Tags.GetNamespace()
 
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	segments := strings.Split(namespace, "|")
@@ -63,13 +63,23 @@ func (this *RedisTaggedCache) deleteForeverKeys() {
 	for _, segment := range segments {
 		key := this.foreverKey(segment)
 
-		this.deleteForeverValues(key)
+		err = this.deleteForeverValues(key)
 
-		this.Store.Forget(segment)
+		if err != nil {
+			return err
+		}
+
+		_, err = this.Store.Forget(segment)
+
+		if err != nil {
+			return err
+		}
 	}
+
+	return nil
 }
 
-func (this *RedisTaggedCache) deleteForeverValues(key string) {
+func (this *RedisTaggedCache) deleteForeverValues(key string) error {
 	inputs := []reflect.Value{
 		reflect.ValueOf(key),
 		reflect.ValueOf(int64(0)),
@@ -82,11 +92,17 @@ func (this *RedisTaggedCache) deleteForeverValues(key string) {
 		for _, key := range keys {
 			if key.Len() > 0 {
 				for i := 0; i < key.Len(); i++ {
-					this.Store.Forget(key.Index(i).String())
+					_, err := this.Store.Forget(key.Index(i).String())
+
+					if err != nil {
+						return err
+					}
 				}
 			}
 		}
 	}
+
+	return nil
 }
 
 func (this *RedisTaggedCache) foreverKey(segment string) string {

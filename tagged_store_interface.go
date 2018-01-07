@@ -3,5 +3,5 @@ package cache
 type TaggedStoreInterface interface {
 	CacheInterface
 
-	TagFlush()
+	TagFlush() error
 }

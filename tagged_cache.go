@@ -153,6 +153,6 @@ func (this *TaggedCache) GetStruct(key string, entity interface{}) (interface{},
 	return this.Store.GetStruct(tagKey, entity)
 }
 
-func (this *TaggedCache) TagFlush() {
-	this.Tags.Reset()
+func (this *TaggedCache) TagFlush() error {
+	return this.Tags.Reset()
 }
