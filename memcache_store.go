@@ -120,10 +120,16 @@ func (this *MemcacheStore) GetPrefix() string {
 	return this.Prefix
 }
 
-func (this *MemcacheStore) PutMany(values map[string]interface{}, minutes int) {
+func (this *MemcacheStore) PutMany(values map[string]interface{}, minutes int) error {
 	for key, value := range values {
-		this.Put(key, value, minutes)
+		err := this.Put(key, value, minutes)
+
+		if err != nil {
+			return err
+		}
 	}
+
+	return nil
 }
 
 func (this *MemcacheStore) Many(keys []string) (map[string]interface{}, error) {

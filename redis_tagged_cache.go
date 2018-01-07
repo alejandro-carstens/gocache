@@ -12,7 +12,11 @@ type RedisTaggedCache struct {
 }
 
 func (this *RedisTaggedCache) Forever(key string, value interface{}) error {
-	namespace := this.Tags.GetNamespace()
+	namespace, err := this.Tags.GetNamespace()
+
+	if err != nil {
+		return err
+	}
 
 	this.pushForever(namespace, key)
 
@@ -48,7 +52,13 @@ func (this *RedisTaggedCache) TagFlush() {
 }
 
 func (this *RedisTaggedCache) deleteForeverKeys() {
-	segments := strings.Split(this.Tags.GetNamespace(), "|")
+	namespace, err := this.Tags.GetNamespace()
+
+	if err != nil {
+		panic(err)
+	}
+
+	segments := strings.Split(namespace, "|")
 
 	for _, segment := range segments {
 		key := this.foreverKey(segment)

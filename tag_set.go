@@ -10,14 +10,14 @@ type TagSet struct {
 	Names []string
 }
 
-func (this *TagSet) GetNamespace() string {
+func (this *TagSet) GetNamespace() (string, error) {
 	tagsIds, err := this.tagIds()
 
 	if err != nil {
-		panic(err)
+		return "", err
 	}
 
-	return strings.Join(tagsIds, "|")
+	return strings.Join(tagsIds, "|"), err
 }
 
 func (this *TagSet) resetTag(name string) string {

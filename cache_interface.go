@@ -23,7 +23,7 @@ type CacheInterface interface {
 
 	Many(keys []string) (map[string]interface{}, error)
 
-	PutMany(values map[string]interface{}, minutes int)
+	PutMany(values map[string]interface{}, minutes int) error
 
 	GetStruct(key string, entity interface{}) (interface{}, error)
 }

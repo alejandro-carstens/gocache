@@ -11,27 +11,63 @@ type TaggedCache struct {
 }
 
 func (this *TaggedCache) Get(key string) (interface{}, error) {
-	return this.Store.Get(this.taggedItemKey(key))
+	tagKey, err := this.taggedItemKey(key)
+
+	if err != nil {
+		return tagKey, err
+	}
+
+	return this.Store.Get(tagKey)
 }
 
 func (this *TaggedCache) Put(key string, value interface{}, minutes int) error {
-	return this.Store.Put(this.taggedItemKey(key), value, minutes)
+	tagKey, err := this.taggedItemKey(key)
+
+	if err != nil {
+		return err
+	}
+
+	return this.Store.Put(tagKey, value, minutes)
 }
 
 func (this *TaggedCache) Increment(key string, value int64) (int64, error) {
-	return this.Store.Increment(this.taggedItemKey(key), value)
+	tagKey, err := this.taggedItemKey(key)
+
+	if err != nil {
+		return 0, err
+	}
+
+	return this.Store.Increment(tagKey, value)
 }
 
 func (this *TaggedCache) Decrement(key string, value int64) (int64, error) {
-	return this.Store.Decrement(this.taggedItemKey(key), value)
+	tagKey, err := this.taggedItemKey(key)
+
+	if err != nil {
+		return 0, err
+	}
+
+	return this.Store.Decrement(tagKey, value)
 }
 
 func (this *TaggedCache) Forget(key string) (bool, error) {
-	return this.Store.Forget(this.taggedItemKey(key))
+	tagKey, err := this.taggedItemKey(key)
+
+	if err != nil {
+		return false, err
+	}
+
+	return this.Store.Forget(tagKey)
 }
 
 func (this *TaggedCache) Forever(key string, value interface{}) error {
-	return this.Store.Forever(this.taggedItemKey(key), value)
+	tagKey, err := this.taggedItemKey(key)
+
+	if err != nil {
+		return err
+	}
+
+	return this.Store.Forever(tagKey, value)
 }
 
 func (this *TaggedCache) Flush() (bool, error) {
@@ -43,7 +79,13 @@ func (this *TaggedCache) Many(keys []string) (map[string]interface{}, error) {
 	values := make(map[string]interface{})
 
 	for i, key := range keys {
-		taggedKeys[i] = this.taggedItemKey(key)
+		tagKey, err := this.taggedItemKey(key)
+
+		if err != nil {
+			return values, err
+		}
+
+		taggedKeys[i] = tagKey
 	}
 
 	results, err := this.Store.Many(taggedKeys)
@@ -59,14 +101,20 @@ func (this *TaggedCache) Many(keys []string) (map[string]interface{}, error) {
 	return values, nil
 }
 
-func (this *TaggedCache) PutMany(values map[string]interface{}, minutes int) {
+func (this *TaggedCache) PutMany(values map[string]interface{}, minutes int) error {
 	taggedMap := make(map[string]interface{})
 
 	for key, value := range values {
-		taggedMap[this.taggedItemKey(key)] = value
+		tagKey, err := this.taggedItemKey(key)
+
+		if err != nil {
+			return err
+		}
+
+		taggedMap[tagKey] = value
 	}
 
-	this.Store.PutMany(taggedMap, minutes)
+	return this.Store.PutMany(taggedMap, minutes)
 }
 
 func (this *TaggedCache) GetPrefix() string {
@@ -81,16 +129,28 @@ func (this *TaggedCache) GetFloat(key string) (float64, error) {
 	return this.Store.GetFloat(key)
 }
 
-func (this *TaggedCache) taggedItemKey(key string) string {
+func (this *TaggedCache) taggedItemKey(key string) (string, error) {
 	h := sha1.New()
 
-	h.Write(([]byte(this.Tags.GetNamespace())))
+	namespace, err := this.Tags.GetNamespace()
 
-	return this.GetPrefix() + hex.EncodeToString(h.Sum(nil)) + ":" + key
+	if err != nil {
+		return namespace, err
+	}
+
+	h.Write(([]byte(namespace)))
+
+	return this.GetPrefix() + hex.EncodeToString(h.Sum(nil)) + ":" + key, nil
 }
 
 func (this *TaggedCache) GetStruct(key string, entity interface{}) (interface{}, error) {
-	return this.Store.GetStruct(this.taggedItemKey(key), entity)
+	tagKey, err := this.taggedItemKey(key)
+
+	if err != nil {
+		return tagKey, err
+	}
+
+	return this.Store.GetStruct(tagKey, entity)
 }
 
 func (this *TaggedCache) TagFlush() {

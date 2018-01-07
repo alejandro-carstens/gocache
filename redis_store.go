@@ -136,18 +136,20 @@ func (this *RedisStore) GetPrefix() string {
 	return this.Prefix
 }
 
-func (this *RedisStore) PutMany(values map[string]interface{}, minutes int) {
+func (this *RedisStore) PutMany(values map[string]interface{}, minutes int) error {
 	pipe := this.Client.TxPipeline()
 
 	for key, value := range values {
-		this.Put(key, value, minutes)
+		err := this.Put(key, value, minutes)
+
+		if err != nil {
+			return err
+		}
 	}
 
 	_, err := pipe.Exec()
 
-	if err != nil {
-		panic(err)
-	}
+	return err
 }
 
 func (this *RedisStore) Many(keys []string) (map[string]interface{}, error) {
