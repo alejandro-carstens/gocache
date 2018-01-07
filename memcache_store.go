@@ -39,7 +39,7 @@ func (this *MemcacheStore) Get(key string) (interface{}, error) {
 		return value, err
 	}
 
-	return this.processValue(value), nil
+	return this.processValue(value)
 }
 
 func (this *MemcacheStore) GetFloat(key string) (float64, error) {
@@ -53,7 +53,7 @@ func (this *MemcacheStore) GetFloat(key string) (float64, error) {
 		return 0.0, errors.New("Invalid numeric value")
 	}
 
-	return StringToFloat64(value), nil
+	return StringToFloat64(value)
 }
 
 func (this *MemcacheStore) GetInt(key string) (int64, error) {
@@ -67,7 +67,9 @@ func (this *MemcacheStore) GetInt(key string) (int64, error) {
 		return 0, errors.New("Invalid numeric value")
 	}
 
-	return int64(StringToFloat64(value)), nil
+	val, err := StringToFloat64(value)
+
+	return int64(val), err
 }
 
 func (this *MemcacheStore) item(key string, value interface{}, minutes int) *memcache.Item {
@@ -198,16 +200,20 @@ func (this *MemcacheStore) getItemValue(itemValue []byte) string {
 	return value
 }
 
-func (this *MemcacheStore) processValue(value string) interface{} {
+func (this *MemcacheStore) processValue(value string) (interface{}, error) {
 	if IsStringNumeric(value) {
-		floatValue := StringToFloat64(value)
+		floatValue, err := StringToFloat64(value)
 
-		if IsFloat(floatValue) {
-			return floatValue
+		if err != nil {
+			return floatValue, err
 		}
 
-		return int64(floatValue)
+		if IsFloat(floatValue) {
+			return floatValue, err
+		}
+
+		return int64(floatValue), err
 	}
 
-	return value
+	return value, nil
 }

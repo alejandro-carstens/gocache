@@ -67,14 +67,8 @@ func IsStringNumeric(value string) bool {
 	return err == nil
 }
 
-func StringToFloat64(value string) float64 {
-	val, err := strconv.ParseFloat(value, 64)
-
-	if err != nil {
-		panic(err)
-	}
-
-	return val
+func StringToFloat64(value string) (float64, error) {
+	return strconv.ParseFloat(value, 64)
 }
 
 func IsFloat(value float64) bool {
