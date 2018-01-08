@@ -169,3 +169,18 @@ func TestPutGetStructMemcacheWithTags(t *testing.T) {
 
 	cache.Forget("key")
 }
+
+func getMemcacheCache() StoreInterface {
+	params := make(map[string]interface{})
+
+	params["server 1"] = "127.0.0.1:11211"
+	params["prefix"] = "golavel:"
+
+	cache, err := Cache("memcache", params)
+
+	if err != nil {
+		panic(err)
+	}
+
+	return cache
+}

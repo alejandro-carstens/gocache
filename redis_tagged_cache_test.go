@@ -177,3 +177,20 @@ func tags() []string {
 
 	return tags
 }
+
+func getCache() StoreInterface {
+	params := make(map[string]interface{})
+
+	params["address"] = "localhost:6379"
+	params["password"] = ""
+	params["database"] = 0
+	params["prefix"] = "golavel:"
+
+	cache, err := Cache("redis", params)
+
+	if err != nil {
+		panic(err)
+	}
+
+	return cache
+}
