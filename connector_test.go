@@ -20,7 +20,7 @@ func TestMemcacheConnector(t *testing.T) {
 	}
 }
 
-func TestRedisConnection(t *testing.T) {
+func TestRedisConnector(t *testing.T) {
 	redisConnector := new(RedisConnector)
 
 	redisStore, err := redisConnector.Connect(redisStore())
