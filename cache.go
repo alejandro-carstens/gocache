@@ -7,7 +7,7 @@ import (
 const REDIS_DRIVER = "redis"
 const MEMCACHE_DRIVER = "memcache"
 
-func Cache(driver string, params map[string]interface{}) (StoreInterface, error) {
+func New(driver string, params map[string]interface{}) (StoreInterface, error) {
 	switch strings.ToLower(driver) {
 	case REDIS_DRIVER:
 		return connect(new(RedisConnector), params)

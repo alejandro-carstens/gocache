@@ -243,7 +243,7 @@ func TesIncrementDecrement(t *testing.T) {
 func store(store string) StoreInterface {
 	switch strings.ToLower(store) {
 	case "redis":
-		cache, err := Cache(store, redisStore())
+		cache, err := New(store, redisStore())
 
 		if err != nil {
 			panic(err)
@@ -251,7 +251,7 @@ func store(store string) StoreInterface {
 
 		return cache
 	case "memcache":
-		cache, err := Cache(store, memcacheStore())
+		cache, err := New(store, memcacheStore())
 
 		if err != nil {
 			panic(err)
