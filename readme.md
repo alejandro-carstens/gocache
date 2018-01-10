@@ -10,12 +10,12 @@ via a common interface.
 
 ## Future Stores 
 
-- Gocache 
+- Go-Cache 
 - BlockDB
 
 ## TODO List:
 
-- Travis CI.
-- Release V1 with Redis and Memcache
+- Travis CI
+- Release v1 with Redis and Memcache
 - Documentation
 
