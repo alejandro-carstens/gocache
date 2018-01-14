@@ -6,6 +6,7 @@ import (
 
 const REDIS_DRIVER = "redis"
 const MEMCACHE_DRIVER = "memcache"
+const ARRAY_DRIVER = "array"
 
 func New(driver string, params map[string]interface{}) (StoreInterface, error) {
 	switch strings.ToLower(driver) {
