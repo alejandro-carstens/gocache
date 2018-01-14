@@ -3,7 +3,6 @@ package cache
 import (
 	"errors"
 	"strconv"
-	"time"
 )
 
 type ArrayStore struct {
@@ -14,8 +13,8 @@ type ArrayStore struct {
 func (this *ArrayStore) Get(key string) (interface{}, error) {
 	value := this.Client[this.GetPrefix()+key]
 
-	if IsStringNumeric(value) {
-		floatValue, err := StringToFloat64(value)
+	if IsStringNumeric(value.(string)) {
+		floatValue, err := StringToFloat64(value.(string))
 
 		if err != nil {
 			return floatValue, err
@@ -34,21 +33,21 @@ func (this *ArrayStore) Get(key string) (interface{}, error) {
 func (this *ArrayStore) GetFloat(key string) (float64, error) {
 	value := this.Client[this.GetPrefix()+key]
 
-	if value == nil || !IsStringNumeric(value) {
+	if value == nil || !IsStringNumeric(value.(string)) {
 		return 0, errors.New("Invalid numeric value")
 	}
 
-	return StringToFloat64(value)
+	return StringToFloat64(value.(string))
 }
 
 func (this *ArrayStore) GetInt(key string) (int64, error) {
 	value := this.Client[this.GetPrefix()+key]
 
-	if value == nil || !IsStringNumeric(value) {
+	if value == nil || !IsStringNumeric(value.(string)) {
 		return 0, errors.New("Invalid numeric value")
 	}
 
-	val, err := StringToFloat64(value)
+	val, err := StringToFloat64(value.(string))
 
 	return int64(val), err
 }
@@ -56,15 +55,15 @@ func (this *ArrayStore) GetInt(key string) (int64, error) {
 func (this *ArrayStore) Increment(key string, value int64) (int64, error) {
 	val := this.Client[this.GetPrefix()+key]
 
-	if value != nil {
-		this.Client[this.GetPrefix()+key] = value + val
+	if val != nil {
+		this.Client[this.GetPrefix()+key] = value + val.(int64)
 
-		return this.Client[this.GetPrefix()+key], nil
+		return this.Client[this.GetPrefix()+key].(int64), nil
 	}
 
 	this.Client[this.GetPrefix()+key] = value
 
-	return this.Client[this.GetPrefix()+key], nil
+	return this.Client[this.GetPrefix()+key].(int64), nil
 }
 
 func (this *ArrayStore) Decrement(key string, value int64) (int64, error) {
@@ -140,10 +139,10 @@ func (this *ArrayStore) GetStruct(key string, entity interface{}) (interface{}, 
 		return value, err
 	}
 
-	return Decode(value, entity)
+	return Decode(value.(string), entity)
 }
 
-func (this *MemcacheStore) Tags(names []string) TaggedStoreInterface {
+func (this *ArrayStore) Tags(names []string) TaggedStoreInterface {
 	return &TaggedCache{
 		Store: this,
 		Tags: TagSet{
