@@ -270,31 +270,3 @@ func store(store string) StoreInterface {
 
 	panic("No valid driver provided.")
 }
-
-func redisStore() map[string]interface{} {
-	params := make(map[string]interface{})
-
-	params["address"] = "localhost:6379"
-	params["password"] = ""
-	params["database"] = 0
-	params["prefix"] = "golavel:"
-
-	return params
-}
-
-func memcacheStore() map[string]interface{} {
-	params := make(map[string]interface{})
-
-	params["server 1"] = "127.0.0.1:11211"
-	params["prefix"] = "golavel:"
-
-	return params
-}
-
-func arrayStore() map[string]interface{} {
-	params := make(map[string]interface{})
-
-	params["prefix"] = "golavel:"
-
-	return params
-}

@@ -35,3 +35,47 @@ func TestRedisConnector(t *testing.T) {
 		t.Error("Expected StoreInterface got", redisStore)
 	}
 }
+
+func TestArrayConnector(t *testing.T) {
+	arrayConnector := new(ArrayConnector)
+
+	arrayStore, err := arrayConnector.Connect(arrayStore())
+
+	if err != nil {
+		panic(err)
+	}
+
+	_, ok := arrayStore.(StoreInterface)
+
+	if !ok {
+		t.Error("Expected StoreInterface got", arrayStore)
+	}
+}
+
+func redisStore() map[string]interface{} {
+	params := make(map[string]interface{})
+
+	params["address"] = "localhost:6379"
+	params["password"] = ""
+	params["database"] = 0
+	params["prefix"] = "golavel:"
+
+	return params
+}
+
+func memcacheStore() map[string]interface{} {
+	params := make(map[string]interface{})
+
+	params["server 1"] = "127.0.0.1:11211"
+	params["prefix"] = "golavel:"
+
+	return params
+}
+
+func arrayStore() map[string]interface{} {
+	params := make(map[string]interface{})
+
+	params["prefix"] = "golavel:"
+
+	return params
+}
