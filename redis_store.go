@@ -29,7 +29,7 @@ func (this *RedisStore) Get(key string) (interface{}, error) {
 
 			if err != nil {
 				if err.Error() == REDIS_NIL_ERROR_RESPONSE {
-					return "0", nil
+					return "", nil
 				}
 
 				return value, err
