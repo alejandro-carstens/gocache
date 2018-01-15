@@ -14,9 +14,11 @@ func New(driver string, params map[string]interface{}) (StoreInterface, error) {
 		return connect(new(RedisConnector), params)
 	case MEMCACHE_DRIVER:
 		return connect(new(MemcacheConnector), params)
-	default:
-		panic("The provided driver was not found.")
+	case ARRAY_DRIVER:
+		return connect(new(ArrayConnector), params)
 	}
+
+	return connect(new(ArrayConnector), params)
 }
 
 func connect(connector CacheConnectorInterface, params map[string]interface{}) (StoreInterface, error) {

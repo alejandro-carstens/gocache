@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-var drivers = []string{"redis", "memcache"}
+var drivers = []string{"array", "memcache", "redis"}
 
 type Example struct {
 	Name        string
@@ -155,6 +155,24 @@ func TestPutGetStruct(t *testing.T) {
 	}
 }
 
+func TestIncrement(t *testing.T) {
+	for _, driver := range drivers {
+		cache := store(driver)
+
+		cache.Increment("increment_key", 1)
+		cache.Increment("increment_key", 1)
+		got, err := cache.GetInt("increment_key")
+
+		cache.Forget("increment_key")
+
+		var expected int64 = 2
+
+		if got != expected || err != nil {
+			t.Error("Expected 2, got ", got)
+		}
+	}
+}
+
 func TestDecrement(t *testing.T) {
 	for _, driver := range drivers {
 		cache := store(driver)
@@ -171,24 +189,6 @@ func TestDecrement(t *testing.T) {
 		}
 
 		cache.Forget("decrement_key")
-	}
-}
-
-func TestIncrement(t *testing.T) {
-	for _, driver := range drivers {
-		cache := store(driver)
-
-		cache.Increment("increment_key", 1)
-		cache.Increment("increment_key", 1)
-		got, err := cache.GetInt("increment_key")
-
-		cache.Forget("increment_key")
-
-		var expected int64 = 2
-
-		if got != expected || err != nil {
-			t.Error("Expected 2, got ", got)
-		}
 	}
 }
 
@@ -258,9 +258,17 @@ func store(store string) StoreInterface {
 		}
 
 		return cache
-	default:
-		panic("No valid store specified.")
+	case "array":
+		cache, err := New(store, arrayStore())
+
+		if err != nil {
+			panic(err)
+		}
+
+		return cache
 	}
+
+	panic("No valid driver provided.")
 }
 
 func redisStore() map[string]interface{} {
@@ -278,6 +286,14 @@ func memcacheStore() map[string]interface{} {
 	params := make(map[string]interface{})
 
 	params["server 1"] = "127.0.0.1:11211"
+	params["prefix"] = "golavel:"
+
+	return params
+}
+
+func arrayStore() map[string]interface{} {
+	params := make(map[string]interface{})
+
 	params["prefix"] = "golavel:"
 
 	return params

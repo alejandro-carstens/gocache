@@ -13,6 +13,10 @@ type ArrayStore struct {
 func (this *ArrayStore) Get(key string) (interface{}, error) {
 	value := this.Client[this.GetPrefix()+key]
 
+	if value == nil {
+		return "", nil
+	}
+
 	if IsStringNumeric(value.(string)) {
 		floatValue, err := StringToFloat64(value.(string))
 
@@ -27,7 +31,7 @@ func (this *ArrayStore) Get(key string) (interface{}, error) {
 		return int64(floatValue), err
 	}
 
-	return value, nil
+	return SimpleDecode(value.(string))
 }
 
 func (this *ArrayStore) GetFloat(key string) (float64, error) {
@@ -56,14 +60,25 @@ func (this *ArrayStore) Increment(key string, value int64) (int64, error) {
 	val := this.Client[this.GetPrefix()+key]
 
 	if val != nil {
-		this.Client[this.GetPrefix()+key] = value + val.(int64)
+		if IsStringNumeric(val.(string)) {
+			floatValue, err := StringToFloat64(val.(string))
 
-		return this.Client[this.GetPrefix()+key].(int64), nil
+			if err != nil {
+				return 0, err
+			}
+
+			result := value + int64(floatValue)
+
+			err = this.Put(key, result, 0)
+
+			return result, err
+		}
+
 	}
 
-	this.Client[this.GetPrefix()+key] = value
+	err := this.Put(key, value, 0)
 
-	return this.Client[this.GetPrefix()+key].(int64), nil
+	return value, err
 }
 
 func (this *ArrayStore) Decrement(key string, value int64) (int64, error) {
@@ -133,11 +148,7 @@ func (this *ArrayStore) Many(keys []string) (map[string]interface{}, error) {
 }
 
 func (this *ArrayStore) GetStruct(key string, entity interface{}) (interface{}, error) {
-	value, err := this.Get(key)
-
-	if err != nil {
-		return value, err
-	}
+	value := this.Client[this.GetPrefix()+key]
 
 	return Decode(value.(string), entity)
 }
