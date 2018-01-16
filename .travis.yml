@@ -13,4 +13,5 @@ go:
 install:
   - go get github.com/bradfitz/gomemcache/memcache
   - go get github.com/go-redis/redis
+  - go get math
   - go get github.com/segmentio/ksuid
