@@ -11,6 +11,7 @@ type TagSet struct {
 	Names []string
 }
 
+// GetNamespace gets the current TagSet namespace
 func (ts *TagSet) GetNamespace() (string, error) {
 	tagsIds, err := ts.tagIds()
 
@@ -21,14 +22,7 @@ func (ts *TagSet) GetNamespace() (string, error) {
 	return strings.Join(tagsIds, "|"), err
 }
 
-func (ts *TagSet) resetTag(name string) (string, error) {
-	id := ksuid.New().String()
-
-	err := ts.Store.Forever(ts.tagKey(name), id)
-
-	return id, err
-}
-
+// Reset resets the tag set
 func (ts *TagSet) Reset() error {
 	for i, name := range ts.Names {
 		id, err := ts.resetTag(name)
@@ -75,4 +69,12 @@ func (ts *TagSet) tagIds() ([]string, error) {
 	}
 
 	return tagIds, nil
+}
+
+func (ts *TagSet) resetTag(name string) (string, error) {
+	id := ksuid.New().String()
+
+	err := ts.Store.Forever(ts.tagKey(name), id)
+
+	return id, err
 }

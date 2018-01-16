@@ -12,6 +12,7 @@ type RedisTaggedCache struct {
 	TaggedCache
 }
 
+// Forget forgets/evicts a given key-value pair from the store
 func (rtc *RedisTaggedCache) Forever(key string, value interface{}) error {
 	namespace, err := rtc.Tags.GetNamespace()
 
@@ -26,6 +27,11 @@ func (rtc *RedisTaggedCache) Forever(key string, value interface{}) error {
 	h.Write(([]byte(namespace)))
 
 	return rtc.Store.Forever(rtc.GetPrefix()+hex.EncodeToString(h.Sum(nil))+":"+key, value)
+}
+
+// TagFlush flushes the tags of the TaggedCache
+func (rtc *RedisTaggedCache) TagFlush() error {
+	return rtc.deleteForeverKeys()
 }
 
 func (rtc *RedisTaggedCache) pushForever(namespace string, key string) {
@@ -46,10 +52,6 @@ func (rtc *RedisTaggedCache) pushForever(namespace string, key string) {
 
 		reflect.ValueOf(rtc.Store).MethodByName("Lpush").Call(inputs)
 	}
-}
-
-func (rtc *RedisTaggedCache) TagFlush() error {
-	return rtc.deleteForeverKeys()
 }
 
 func (rtc *RedisTaggedCache) deleteForeverKeys() error {
