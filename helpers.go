@@ -78,7 +78,7 @@ func StringToFloat64(value string) (float64, error) {
 	return strconv.ParseFloat(value, 64)
 }
 
-// Checks if the provided value can be truncated to an int
+// IsFloat checks if the provided value can be truncated to an int
 func IsFloat(value float64) bool {
 	return value != math.Trunc(value)
 }

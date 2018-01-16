@@ -137,19 +137,19 @@ func TestPutGetManyWithTags(t *testing.T) {
 
 		cache.Tags(tags).PutMany(keys, 10)
 
-		result_keys := make([]string, 3)
+		resultKeys := make([]string, 3)
 
-		result_keys[0] = "key_1"
-		result_keys[1] = "key_2"
-		result_keys[2] = "key_3"
+		resultKeys[0] = "key_1"
+		resultKeys[1] = "key_2"
+		resultKeys[2] = "key_3"
 
-		results, err := cache.Tags(tags).Many(result_keys)
+		results, err := cache.Tags(tags).Many(resultKeys)
 
 		if err != nil {
 			panic(err)
 		}
 
-		for i, _ := range results {
+		for i := range results {
 			if results[i] != keys[i] {
 				t.Error(i, results[i])
 			}
