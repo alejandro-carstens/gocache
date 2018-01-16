@@ -8,6 +8,7 @@ import (
 // MemcacheConnector is the representation of the memcache store connector
 type MemcacheConnector struct{}
 
+// Connect is responsible for connecting with the caching store
 func (mc *MemcacheConnector) Connect(params map[string]interface{}) (StoreInterface, error) {
 	params, err := mc.validate(params)
 

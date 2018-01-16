@@ -4,9 +4,10 @@ import (
 	"errors"
 )
 
-// Representation of the array store connector
+// ArrayConnector is a representation of the array store connector
 type ArrayConnector struct{}
 
+// Connect is responsible for connecting with the caching store
 func (ac *ArrayConnector) Connect(params map[string]interface{}) (StoreInterface, error) {
 	params, err := ac.validate(params)
 

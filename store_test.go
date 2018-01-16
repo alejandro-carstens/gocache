@@ -114,13 +114,13 @@ func TestPutGetMany(t *testing.T) {
 
 		cache.PutMany(keys, 10)
 
-		result_keys := make([]string, 3)
+		resultKeys := make([]string, 3)
 
-		result_keys[0] = "key_1"
-		result_keys[1] = "key_2"
-		result_keys[2] = "key_3"
+		resultKeys[0] = "key_1"
+		resultKeys[1] = "key_2"
+		resultKeys[2] = "key_3"
 
-		results, err := cache.Many(result_keys)
+		results, err := cache.Many(resultKeys)
 
 		if err != nil {
 			panic(err)

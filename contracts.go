@@ -36,7 +36,7 @@ type CacheInterface interface {
 	GetStruct(key string, entity interface{}) (interface{}, error)
 }
 
-// CacheInterface represents the tagging methods to be implemented
+// TagsInterface represents the tagging methods to be implemented
 type TagsInterface interface {
 	Tags(names []string) TaggedStoreInterface
 }

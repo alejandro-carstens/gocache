@@ -8,6 +8,7 @@ import (
 // RedisConnector is the representation of the redis store connector
 type RedisConnector struct{}
 
+// Connect is responsible for connecting with the caching store
 func (rc *RedisConnector) Connect(params map[string]interface{}) (StoreInterface, error) {
 	params, err := rc.validate(params)
 
