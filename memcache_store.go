@@ -5,7 +5,7 @@ import (
 	"github.com/bradfitz/gomemcache/memcache"
 )
 
-// gomemcache nil response error
+// MEMCACHE_NIL_ERROR_RESPONSE is the gomemcache nil response error
 const MEMCACHE_NIL_ERROR_RESPONSE = "memcache: cache miss"
 
 // MemcacheStore is the representation of the memcache caching store
@@ -14,7 +14,7 @@ type MemcacheStore struct {
 	Prefix string
 }
 
-// Put a value in the given store for a predetermined amount of time in mins.
+// Put puts a value in the given store for a predetermined amount of time in mins.
 func (ms *MemcacheStore) Put(key string, value interface{}, minutes int) error {
 	item, err := ms.item(key, value, minutes)
 
@@ -25,12 +25,12 @@ func (ms *MemcacheStore) Put(key string, value interface{}, minutes int) error {
 	return ms.Client.Set(item)
 }
 
-// Put a value in the given store until it is forgotten/evicted
+// Forever puts a value in the given store until it is forgotten/evicted
 func (ms *MemcacheStore) Forever(key string, value interface{}) error {
 	return ms.Put(key, value, 0)
 }
 
-// Get a value from the store
+// Get gets a value from the store
 func (ms *MemcacheStore) Get(key string) (interface{}, error) {
 	value, err := ms.get(key)
 
@@ -41,7 +41,7 @@ func (ms *MemcacheStore) Get(key string) (interface{}, error) {
 	return ms.processValue(value)
 }
 
-// Get a float value from the store
+// GetFloat gets a float value from the store
 func (ms *MemcacheStore) GetFloat(key string) (float64, error) {
 	value, err := ms.get(key)
 
@@ -56,7 +56,7 @@ func (ms *MemcacheStore) GetFloat(key string) (float64, error) {
 	return StringToFloat64(value)
 }
 
-// Get an int value from the store
+// GetInt gets an int value from the store
 func (ms *MemcacheStore) GetInt(key string) (int64, error) {
 	value, err := ms.get(key)
 
@@ -73,7 +73,7 @@ func (ms *MemcacheStore) GetInt(key string) (int64, error) {
 	return int64(val), err
 }
 
-// Increment an integer counter by a given value
+// Increment increments an integer counter by a given value
 func (ms *MemcacheStore) Increment(key string, value int64) (int64, error) {
 	newValue, err := ms.Client.Increment(ms.GetPrefix()+key, uint64(value))
 
@@ -90,7 +90,7 @@ func (ms *MemcacheStore) Increment(key string, value int64) (int64, error) {
 	return int64(newValue), nil
 }
 
-// Decrement an integer counter by a given value
+// Decrement decrements an integer counter by a given value
 func (ms *MemcacheStore) Decrement(key string, value int64) (int64, error) {
 	newValue, err := ms.Client.Decrement(ms.GetPrefix()+key, uint64(value))
 
@@ -107,11 +107,12 @@ func (ms *MemcacheStore) Decrement(key string, value int64) (int64, error) {
 	return int64(newValue), nil
 }
 
+// GetPrefix gets the cache key prefix
 func (ms *MemcacheStore) GetPrefix() string {
 	return ms.Prefix
 }
 
-// Put many values in the given store until they are forgotten/evicted
+// PutMany puts many values in the given store until they are forgotten/evicted
 func (ms *MemcacheStore) PutMany(values map[string]interface{}, minutes int) error {
 	for key, value := range values {
 		err := ms.Put(key, value, minutes)
@@ -124,7 +125,7 @@ func (ms *MemcacheStore) PutMany(values map[string]interface{}, minutes int) err
 	return nil
 }
 
-// Get many values from the store
+// Many gets many values from the store
 func (ms *MemcacheStore) Many(keys []string) (map[string]interface{}, error) {
 	items := make(map[string]interface{})
 
@@ -141,7 +142,7 @@ func (ms *MemcacheStore) Many(keys []string) (map[string]interface{}, error) {
 	return items, nil
 }
 
-// Forget a given key-value pair from the store
+// Forget forgets/evicts a given key-value pair from the store
 func (ms *MemcacheStore) Forget(key string) (bool, error) {
 	err := ms.Client.Delete(ms.GetPrefix() + key)
 
@@ -152,7 +153,7 @@ func (ms *MemcacheStore) Forget(key string) (bool, error) {
 	return true, nil
 }
 
-// Flush the store
+// Flush flushes the store
 func (ms *MemcacheStore) Flush() (bool, error) {
 	err := ms.Client.DeleteAll()
 
@@ -163,7 +164,7 @@ func (ms *MemcacheStore) Flush() (bool, error) {
 	return true, nil
 }
 
-// Get the struct representation of a value from the store
+// GetStruct gets the struct representation of a value from the store
 func (ms *MemcacheStore) GetStruct(key string, entity interface{}) (interface{}, error) {
 	value, err := ms.get(key)
 
@@ -174,7 +175,7 @@ func (ms *MemcacheStore) GetStruct(key string, entity interface{}) (interface{},
 	return Decode(value, entity)
 }
 
-// Return the TaggedCache for the given store
+// Tags returns the TaggedCache for the given store
 func (ms *MemcacheStore) Tags(names []string) TaggedStoreInterface {
 	return &TaggedCache{
 		Store: ms,
