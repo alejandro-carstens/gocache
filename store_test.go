@@ -5,7 +5,11 @@ import (
 	"testing"
 )
 
-var drivers = []string{"array", "memcache", "redis"}
+var drivers = []string{
+	"array",
+	"memcache",
+	"redis",
+}
 
 type Example struct {
 	Name        string

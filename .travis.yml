@@ -1,0 +1,17 @@
+sudo: false
+language: go
+
+services:
+  - redis-server
+  - memcached
+
+go:
+  - 1.7.x
+  - 1.8.x
+  - 1.9.x
+  - tip
+
+install:
+  - go get github.com/bradfitz/gomemcache/memcache
+  - go get github.com/go-redis/redis
+  - go get github.com/segmentio/ksuid
