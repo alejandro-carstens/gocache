@@ -3,8 +3,8 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/alejandro-carstens/golavel-cache)](https://goreportcard.com/report/github.com/alejandro-carstens/golavel-cache)
 [![Build Status](https://travis-ci.org/alejandro-carstens/golavel-cache.svg?branch=master)](https://travis-ci.org/alejandro-carstens/golavel-cache)
 
-Inspired by the Laravel Cache System, Golavel Cache allows you to implement a data-store agnostic caching system 
-via a common interface providing an abtraction layer between the different data-store clients and the application so that the latter can be use interchangeably without having to modify code, but just the programmatic configuration of the wanted store. 
+Inspired by the Laravel Cache System, Golavel Cache allows you to implement a store agnostic caching system 
+via a common interface by providing an abtraction layer between the different store clients and the application so that the latter can be use interchangeably without having to modify code, but just the programmatic configuration of the wanted store. 
 
 ## Supported Stores
 
