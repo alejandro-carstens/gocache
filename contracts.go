@@ -1,13 +1,13 @@
 package cache
 
-// Interface to which all the cache connectors should comply with
+// CacheConnectorInterface represents the connector methods to be implemented
 type CacheConnectorInterface interface {
 	Connect(params map[string]interface{}) (StoreInterface, error)
 
 	validate(params map[string]interface{}) (map[string]interface{}, error)
 }
 
-// Interface to which all the caching stores should comply with
+// CacheInterface represents the caching methods to be implemented
 type CacheInterface interface {
 	Get(key string) (interface{}, error)
 
@@ -36,19 +36,19 @@ type CacheInterface interface {
 	GetStruct(key string, entity interface{}) (interface{}, error)
 }
 
-// Interface to which all the tagged stores should comply with
+// CacheInterface represents the tagging methods to be implemented
 type TagsInterface interface {
 	Tags(names []string) TaggedStoreInterface
 }
 
-// Interface to which all the stores implementint caching and tagging should comply with
+// StoreInterface represents the methods a caching store needs to implement
 type StoreInterface interface {
 	CacheInterface
 
 	TagsInterface
 }
 
-// Interface to which all the stores that implement tagged caching should comply with
+// TaggedStoreInterface represents the methods a tagged-caching store needs to implement
 type TaggedStoreInterface interface {
 	CacheInterface
 

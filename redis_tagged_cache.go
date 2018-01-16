@@ -12,7 +12,7 @@ type RedisTaggedCache struct {
 	TaggedCache
 }
 
-// Forget forgets/evicts a given key-value pair from the store
+// Forever puts a value in the given store until it is forgotten/evicted
 func (rtc *RedisTaggedCache) Forever(key string, value interface{}) error {
 	namespace, err := rtc.Tags.GetNamespace()
 
