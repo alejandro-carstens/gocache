@@ -5,13 +5,14 @@ import (
 	"strconv"
 )
 
+// ArrayStore is the representation of an array caching store
 type ArrayStore struct {
 	Client map[string]interface{}
 	Prefix string
 }
 
-func (this *ArrayStore) Get(key string) (interface{}, error) {
-	value := this.Client[this.GetPrefix()+key]
+func (as *ArrayStore) Get(key string) (interface{}, error) {
+	value := as.Client[as.GetPrefix()+key]
 
 	if value == nil {
 		return "", nil
@@ -34,8 +35,8 @@ func (this *ArrayStore) Get(key string) (interface{}, error) {
 	return SimpleDecode(value.(string))
 }
 
-func (this *ArrayStore) GetFloat(key string) (float64, error) {
-	value := this.Client[this.GetPrefix()+key]
+func (as *ArrayStore) GetFloat(key string) (float64, error) {
+	value := as.Client[as.GetPrefix()+key]
 
 	if value == nil || !IsStringNumeric(value.(string)) {
 		return 0, errors.New("Invalid numeric value")
@@ -44,8 +45,8 @@ func (this *ArrayStore) GetFloat(key string) (float64, error) {
 	return StringToFloat64(value.(string))
 }
 
-func (this *ArrayStore) GetInt(key string) (int64, error) {
-	value := this.Client[this.GetPrefix()+key]
+func (as *ArrayStore) GetInt(key string) (int64, error) {
+	value := as.Client[as.GetPrefix()+key]
 
 	if value == nil || !IsStringNumeric(value.(string)) {
 		return 0, errors.New("Invalid numeric value")
@@ -56,8 +57,8 @@ func (this *ArrayStore) GetInt(key string) (int64, error) {
 	return int64(val), err
 }
 
-func (this *ArrayStore) Increment(key string, value int64) (int64, error) {
-	val := this.Client[this.GetPrefix()+key]
+func (as *ArrayStore) Increment(key string, value int64) (int64, error) {
+	val := as.Client[as.GetPrefix()+key]
 
 	if val != nil {
 		if IsStringNumeric(val.(string)) {
@@ -69,49 +70,49 @@ func (this *ArrayStore) Increment(key string, value int64) (int64, error) {
 
 			result := value + int64(floatValue)
 
-			err = this.Put(key, result, 0)
+			err = as.Put(key, result, 0)
 
 			return result, err
 		}
 
 	}
 
-	err := this.Put(key, value, 0)
+	err := as.Put(key, value, 0)
 
 	return value, err
 }
 
-func (this *ArrayStore) Decrement(key string, value int64) (int64, error) {
-	return this.Increment(key, -value)
+func (as *ArrayStore) Decrement(key string, value int64) (int64, error) {
+	return as.Increment(key, -value)
 }
 
-func (this *ArrayStore) Put(key string, value interface{}, minutes int) error {
+func (as *ArrayStore) Put(key string, value interface{}, minutes int) error {
 	val, err := Encode(value)
 
 	mins := strconv.Itoa(minutes)
 
 	mins = ""
 
-	this.Client[this.GetPrefix()+key+mins] = val
+	as.Client[as.GetPrefix()+key+mins] = val
 
 	return err
 }
 
-func (this *ArrayStore) Forever(key string, value interface{}) error {
-	return this.Put(key, value, 0)
+func (as *ArrayStore) Forever(key string, value interface{}) error {
+	return as.Put(key, value, 0)
 }
 
-func (this *ArrayStore) Flush() (bool, error) {
-	this.Client = make(map[string]interface{})
+func (as *ArrayStore) Flush() (bool, error) {
+	as.Client = make(map[string]interface{})
 
 	return true, nil
 }
 
-func (this *ArrayStore) Forget(key string) (bool, error) {
-	_, ok := this.Client[this.GetPrefix()+key]
+func (as *ArrayStore) Forget(key string) (bool, error) {
+	_, ok := as.Client[as.GetPrefix()+key]
 
 	if ok {
-		delete(this.Client, this.GetPrefix()+key)
+		delete(as.Client, as.GetPrefix()+key)
 
 		return true, nil
 	}
@@ -119,23 +120,23 @@ func (this *ArrayStore) Forget(key string) (bool, error) {
 	return false, nil
 }
 
-func (this *ArrayStore) GetPrefix() string {
-	return this.Prefix
+func (as *ArrayStore) GetPrefix() string {
+	return as.Prefix
 }
 
-func (this *ArrayStore) PutMany(values map[string]interface{}, minutes int) error {
+func (as *ArrayStore) PutMany(values map[string]interface{}, minutes int) error {
 	for key, value := range values {
-		this.Put(key, value, minutes)
+		as.Put(key, value, minutes)
 	}
 
 	return nil
 }
 
-func (this *ArrayStore) Many(keys []string) (map[string]interface{}, error) {
+func (as *ArrayStore) Many(keys []string) (map[string]interface{}, error) {
 	items := make(map[string]interface{})
 
 	for _, key := range keys {
-		val, err := this.Get(key)
+		val, err := as.Get(key)
 
 		if err != nil {
 			return items, err
@@ -147,17 +148,17 @@ func (this *ArrayStore) Many(keys []string) (map[string]interface{}, error) {
 	return items, nil
 }
 
-func (this *ArrayStore) GetStruct(key string, entity interface{}) (interface{}, error) {
-	value := this.Client[this.GetPrefix()+key]
+func (as *ArrayStore) GetStruct(key string, entity interface{}) (interface{}, error) {
+	value := as.Client[as.GetPrefix()+key]
 
 	return Decode(value.(string), entity)
 }
 
-func (this *ArrayStore) Tags(names []string) TaggedStoreInterface {
+func (as *ArrayStore) Tags(names []string) TaggedStoreInterface {
 	return &TaggedCache{
-		Store: this,
+		Store: as,
 		Tags: TagSet{
-			Store: this,
+			Store: as,
 			Names: names,
 		},
 	}

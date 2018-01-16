@@ -9,6 +9,7 @@ import (
 
 const REDIS_NIL_ERROR_RESPONSE = "redis: nil"
 
+// RedisStore is the representation of the redis caching store
 type RedisStore struct {
 	Client redis.Client
 	Prefix string

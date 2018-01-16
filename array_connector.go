@@ -4,10 +4,11 @@ import (
 	"errors"
 )
 
+// Representation of the array store connector
 type ArrayConnector struct{}
 
-func (this *ArrayConnector) Connect(params map[string]interface{}) (StoreInterface, error) {
-	params, err := this.validate(params)
+func (ac *ArrayConnector) Connect(params map[string]interface{}) (StoreInterface, error) {
+	params, err := ac.validate(params)
 
 	if err != nil {
 		return &ArrayStore{}, err
@@ -23,7 +24,7 @@ func (this *ArrayConnector) Connect(params map[string]interface{}) (StoreInterfa
 	}, nil
 }
 
-func (this *ArrayConnector) validate(params map[string]interface{}) (map[string]interface{}, error) {
+func (ac *ArrayConnector) validate(params map[string]interface{}) (map[string]interface{}, error) {
 	if _, ok := params["prefix"]; !ok {
 		return params, errors.New("You need to specify a caching prefix.")
 	}

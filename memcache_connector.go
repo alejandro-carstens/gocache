@@ -5,10 +5,11 @@ import (
 	"github.com/bradfitz/gomemcache/memcache"
 )
 
+// MemcacheConnector is the representation of the memcache store connector
 type MemcacheConnector struct{}
 
-func (this *MemcacheConnector) Connect(params map[string]interface{}) (StoreInterface, error) {
-	params, err := this.validate(params)
+func (mc *MemcacheConnector) Connect(params map[string]interface{}) (StoreInterface, error) {
+	params, err := mc.validate(params)
 
 	if err != nil {
 		return &MemcacheStore{}, err
@@ -19,12 +20,12 @@ func (this *MemcacheConnector) Connect(params map[string]interface{}) (StoreInte
 	delete(params, "prefix")
 
 	return &MemcacheStore{
-		Client: this.client(params),
+		Client: mc.client(params),
 		Prefix: prefix,
 	}, nil
 }
 
-func (this *MemcacheConnector) client(params map[string]interface{}) memcache.Client {
+func (mc *MemcacheConnector) client(params map[string]interface{}) memcache.Client {
 	servers := make([]string, len(params)-1)
 
 	for _, param := range params {
@@ -34,7 +35,7 @@ func (this *MemcacheConnector) client(params map[string]interface{}) memcache.Cl
 	return *memcache.New(servers...)
 }
 
-func (this *MemcacheConnector) validate(params map[string]interface{}) (map[string]interface{}, error) {
+func (mc *MemcacheConnector) validate(params map[string]interface{}) (map[string]interface{}, error) {
 	if _, ok := params["prefix"]; !ok {
 		return params, errors.New("You need to specify a caching prefix.")
 	}

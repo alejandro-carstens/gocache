@@ -5,13 +5,14 @@ import (
 	"strings"
 )
 
+// TagSet is the representation of a tag set for the cahing stores
 type TagSet struct {
 	Store StoreInterface
 	Names []string
 }
 
-func (this *TagSet) GetNamespace() (string, error) {
-	tagsIds, err := this.tagIds()
+func (ts *TagSet) GetNamespace() (string, error) {
+	tagsIds, err := ts.tagIds()
 
 	if err != nil {
 		return "", err
@@ -20,51 +21,51 @@ func (this *TagSet) GetNamespace() (string, error) {
 	return strings.Join(tagsIds, "|"), err
 }
 
-func (this *TagSet) resetTag(name string) (string, error) {
+func (ts *TagSet) resetTag(name string) (string, error) {
 	id := ksuid.New().String()
 
-	err := this.Store.Forever(this.tagKey(name), id)
+	err := ts.Store.Forever(ts.tagKey(name), id)
 
 	return id, err
 }
 
-func (this *TagSet) Reset() error {
-	for i, name := range this.Names {
-		id, err := this.resetTag(name)
+func (ts *TagSet) Reset() error {
+	for i, name := range ts.Names {
+		id, err := ts.resetTag(name)
 
 		if err != nil {
 			return err
 		}
 
-		this.Names[i] = id
+		ts.Names[i] = id
 	}
 
 	return nil
 }
 
-func (this *TagSet) tagId(name string) (string, error) {
-	value, err := this.Store.Get(this.tagKey(name))
+func (ts *TagSet) tagId(name string) (string, error) {
+	value, err := ts.Store.Get(ts.tagKey(name))
 
 	if err != nil {
 		return value.(string), err
 	}
 
 	if value == "" {
-		return this.resetTag(name)
+		return ts.resetTag(name)
 	}
 
 	return value.(string), nil
 }
 
-func (this *TagSet) tagKey(name string) string {
+func (ts *TagSet) tagKey(name string) string {
 	return "tag:" + name + ":key"
 }
 
-func (this *TagSet) tagIds() ([]string, error) {
-	tagIds := make([]string, len(this.Names))
+func (ts *TagSet) tagIds() ([]string, error) {
+	tagIds := make([]string, len(ts.Names))
 
-	for i, name := range this.Names {
-		val, err := this.tagId(name)
+	for i, name := range ts.Names {
+		val, err := ts.tagId(name)
 
 		if err != nil {
 			return tagIds, err
