@@ -1,6 +1,6 @@
 package cache
 
-// Interface to which all the cache conenctors should comply with
+// Interface to which all the cache connectors should comply with
 type CacheConnectorInterface interface {
 	Connect(params map[string]interface{}) (StoreInterface, error)
 
