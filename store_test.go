@@ -6,7 +6,7 @@ import (
 )
 
 var drivers = []string{
-	"array",
+	"map",
 	"memcache",
 	"redis",
 }
@@ -246,7 +246,7 @@ func TesIncrementDecrement(t *testing.T) {
 
 func store(store string) StoreInterface {
 	switch strings.ToLower(store) {
-	case "redis":
+	case REDIS_DRIVER:
 		cache, err := New(store, redisStore())
 
 		if err != nil {
@@ -254,7 +254,7 @@ func store(store string) StoreInterface {
 		}
 
 		return cache
-	case "memcache":
+	case MEMCACHE_DRIVER:
 		cache, err := New(store, memcacheStore())
 
 		if err != nil {
@@ -262,8 +262,8 @@ func store(store string) StoreInterface {
 		}
 
 		return cache
-	case "array":
-		cache, err := New(store, arrayStore())
+	case MAP_DRIVER:
+		cache, err := New(store, mapStore())
 
 		if err != nil {
 			panic(err)

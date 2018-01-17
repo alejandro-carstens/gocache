@@ -10,8 +10,8 @@ const REDIS_DRIVER = "redis"
 // MEMCACHE_DRIVER specifies the memcache driver name
 const MEMCACHE_DRIVER = "memcache"
 
-// ARRAY_DRIVER specifies the array driver name
-const ARRAY_DRIVER = "array"
+// MAP_DRIVER specifies the map driver name
+const MAP_DRIVER = "map"
 
 // New new-ups an instance of StoreInterface
 func New(driver string, params map[string]interface{}) (StoreInterface, error) {
@@ -20,11 +20,11 @@ func New(driver string, params map[string]interface{}) (StoreInterface, error) {
 		return connect(new(RedisConnector), params)
 	case MEMCACHE_DRIVER:
 		return connect(new(MemcacheConnector), params)
-	case ARRAY_DRIVER:
-		return connect(new(ArrayConnector), params)
+	case MAP_DRIVER:
+		return connect(new(MapConnector), params)
 	}
 
-	return connect(new(ArrayConnector), params)
+	return connect(new(MapConnector), params)
 }
 
 func connect(connector CacheConnectorInterface, params map[string]interface{}) (StoreInterface, error) {

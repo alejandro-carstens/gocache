@@ -37,18 +37,18 @@ func TestRedisConnector(t *testing.T) {
 }
 
 func TestArrayConnector(t *testing.T) {
-	arrayConnector := new(ArrayConnector)
+	mapConnector := new(MapConnector)
 
-	arrayStore, err := arrayConnector.Connect(arrayStore())
+	mapStore, err := mapConnector.Connect(mapStore())
 
 	if err != nil {
 		panic(err)
 	}
 
-	_, ok := arrayStore.(StoreInterface)
+	_, ok := mapStore.(StoreInterface)
 
 	if !ok {
-		t.Error("Expected StoreInterface got", arrayStore)
+		t.Error("Expected StoreInterface got", mapStore)
 	}
 }
 
@@ -72,7 +72,7 @@ func memcacheStore() map[string]interface{} {
 	return params
 }
 
-func arrayStore() map[string]interface{} {
+func mapStore() map[string]interface{} {
 	params := make(map[string]interface{})
 
 	params["prefix"] = "golavel:"
