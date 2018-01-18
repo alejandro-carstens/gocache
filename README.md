@@ -4,13 +4,13 @@
 [![Build Status](https://travis-ci.org/alejandro-carstens/golavel-cache.svg?branch=master)](https://travis-ci.org/alejandro-carstens/golavel-cache)
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/hyn/multi-tenant/2.x/license.md)
 
-This package allows you to implement a store agnostic caching system via a common interface by providing an abtraction layer between the different store clients and your application. The latter allows for each store to be used interchangeably without any code changes other than the programmatic configuration of the desired store(s). For a more detailed documentation please refer to the [godoc](https://godoc.org/github.com/alejandro-carstens/golavel-cache).
+This package allows you to implement a store agnostic caching system via a common interface by providing an abstraction layer between the different store clients and your application. The latter allows for each store to be used interchangeably without any code changes other than the programmatic configuration of the desired store(s). For a more detailed documentation please refer to the [godoc](https://godoc.org/github.com/alejandro-carstens/golavel-cache).
 
 To start using this package in your application simply run:`go get github.com/alejandro-carstens/golavel-cache`
 
 ## Usage
 
-Set the params for the store you want
+Set the params for the store you want:
 
 ```go
 
@@ -31,7 +31,7 @@ params["prefix"] = "golavel"
 
 ```
 
-New up the cache by passing the store name and the appropiate params
+New up the cache by passing the store name and the appropiate params:
 
 ```go
 
@@ -41,7 +41,7 @@ store := "redis"
 c, err := cache.New(store, params)
 ```
 
-Example:
+Start using it:
 
 ```go
 package main
@@ -85,7 +85,7 @@ func main() {
 }
 ```
 
-Example with structs:
+Use it with structs:
 
 ```go
 package main
@@ -127,7 +127,8 @@ func main() {
 }
 ```
 
-Example with tags:
+Use it with tags:
+
 ```go
 package main
 
@@ -204,8 +205,4 @@ For more examples please refer to the tests.
 ## Contributing
 
 Find an area you can help with and do it. Open source is about collaboration and open participation. Try to make your code look like what already exists or hopefully better and submit a pull request. Also, if you have any ideas on how to make the code better or on improving its scope and functionality please raise an issue and I will do my best to address it in a timely manner.
-
-## TODO List:
-
-- Documentation
 
