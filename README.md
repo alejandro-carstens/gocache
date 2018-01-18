@@ -22,11 +22,11 @@ params["database"] = 0
 params["address"] = "localhost:6379"
 params["prefix"] = "golavel"
   
-//Memcache (you can spacify multiple servers)
+// Memcache (you can spacify multiple servers)
 params["server"] = "127.0.0.1:11211"
 params["prefix"] = "golavel:"
   
-//Map
+// Map
 params["prefix"] = "golavel"
 
 ```
@@ -64,30 +64,28 @@ func main() {
 	// Put a value in the cache for 10 mins.
 	c.Put("foo", "bar", 10)
 
-	// Retrieve a value from the cache,
-	// may return a string, an int64, or a float64
-	// depending on the value type)
-	val, err := c.Get("foo")
+	// Retrieve a value from the cache, 
+	// may return a string, an int64, 
+	// or a float64 depending on 
+	// the value type
+	val, err := c.Get("foo") 
 
 	if err != nil {
-		fmt.Print(val)
+		fmt.Print(val) // bar
 	}
 
-	// Delete the k-v pair
+	// Delete a k-v pair
 	c.Forget("foo")
 
-	// Remember the value forever
+	// Remember a value forever
 	c.Forever("baz", "buz")
 
 	// Flush the cache
 	c.Flush()
 }
-
-
-
 ```
 
-Example with Structs
+Example with structs:
 
 ```go
 package main
@@ -128,6 +126,68 @@ func main() {
 	}
 }
 ```
+
+Example with tags:
+```go
+package main
+
+import (
+	"fmt"
+	"github.com/alejandro-carstens/golavel-cache"
+)
+
+type Foo struct {
+	Name        string
+	Description string
+}
+
+func main() {
+	params := make(map[string]interface{})
+
+	params["prefix"] = "golavel"
+
+	c, err := cache.New("map", params)
+
+	var foo Foo
+
+	foo.Name = "Alejandro"
+	foo.Description = "Whatever"
+	
+	tags := make([]string, 1)
+	tags[0] = "tag"
+	
+	c.Tags(tags).Forever("foo", foo, 10)
+
+	var bar Foo
+
+	// Retrieve a struct from the cache
+	val, err := c.Tags(tags).GetStruct("foo", &bar)
+
+	if err != nil {
+		fmt.Print(bar.Name)        // Alejandro
+		fmt.Print(bar.Description) // Whatever
+	}
+	
+	otherTags := make([]string, 1)
+	otherTags[0] = "other"
+	
+	// Put a value in the cache for 10 mins.
+	c.Tags(otherTags).Put("foo", "bar", 10)
+
+	val, err := c.Tags(otherTags).Get("foo") 
+
+	if err != nil {
+		fmt.Print(val) // bar
+	}
+
+	// Delete a k-v pair
+	c.Tags(otherTags).Forget("foo")
+	
+	c.Tags(tags).Flush()
+}
+```
+
+For more examples please refer to the tests.
 
 ## Supported Stores
 
