@@ -8,6 +8,127 @@ This package allows you to implement a store agnostic caching system via a commo
 
 To start using this package in your application simply run:`go get github.com/alejandro-carstens/golavel-cache`
 
+## Usage
+
+Set the params for the store you want
+
+```go
+
+params := make(map[string]interface{})
+  
+// Redis
+params["password"] = ""
+params["database"] = 0
+params["address"] = "localhost:6379"
+params["prefix"] = "golavel"
+  
+//Memcache (you can spacify multiple servers)
+params["server"] = "127.0.0.1:11211"
+params["prefix"] = "golavel:"
+  
+//Map
+params["prefix"] = "golavel"
+
+```
+
+New up the cache by passing the store name and the appropiate params
+
+```go
+
+// Can be any of the following: "redis", "memcache" or "map"
+store := "redis"
+
+c, err := cache.New(store, params)
+```
+
+Example:
+
+```go
+package main
+
+import (
+	"fmt"
+	"github.com/alejandro-carstens/golavel-cache"
+)
+
+func main() {
+	params := make(map[string]interface{})
+
+	params["password"] = ""
+	params["database"] = 0
+	params["address"] = "localhost:6379"
+	params["prefix"] = "golavel"
+
+	c, err := cache.New("redis", params)
+
+	// Put a value in the cache for 10 mins.
+	c.Put("foo", "bar", 10)
+
+	// Retrieve a value from the cache,
+	// may return a string, an int64, or a float64
+	// depending on the value type)
+	val, err := c.Get("foo")
+
+	if err != nil {
+		fmt.Print(val)
+	}
+
+	// Delete the k-v pair
+	c.Forget("foo")
+
+	// Remember the value forever
+	c.Forever("baz", "buz")
+
+	// Flush the cache
+	c.Flush()
+}
+
+
+
+```
+
+Example with Structs
+
+```go
+package main
+
+import (
+	"fmt"
+	"github.com/alejandro-carstens/golavel-cache"
+)
+
+type Foo struct {
+	Name        string
+	Description string
+}
+
+func main() {
+	params := make(map[string]interface{})
+
+	params["server"] = "127.0.0.1:11211"
+	params["prefix"] = "golavel"
+
+	c, err := cache.New("memcache", params)
+
+	var foo Foo
+
+	foo.Name = "Alejandro"
+	foo.Description = "Whatever"
+
+	c.Put("foo", foo, 10)
+
+	var bar Foo
+
+	// Retrieve a struct from the cache
+	val, err := c.GetStruct("foo", &bar)
+
+	if err != nil {
+		fmt.Print(bar.Name)        // Alejandro
+		fmt.Print(bar.Description) // Whatever
+	}
+}
+```
+
 ## Supported Stores
 
 - Redis
