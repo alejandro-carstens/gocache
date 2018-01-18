@@ -1,12 +1,11 @@
-## Golavel Cache
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/alejandro-carstens/golavel-cache)](https://goreportcard.com/report/github.com/alejandro-carstens/golavel-cache)
 [![Build Status](https://travis-ci.org/alejandro-carstens/golavel-cache.svg?branch=master)](https://travis-ci.org/alejandro-carstens/golavel-cache)
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/hyn/multi-tenant/2.x/license.md)
 
-Golavel Cache allows you to implement a store agnostic caching system via a common interface by providing an abtraction layer between the different store clients and your application. The latter allows for each store to be used interchangeably without any code changes other than the programmatic configuration of the desired store(s). For a more detailed documentation please refer to the [godoc](https://godoc.org/github.com/alejandro-carstens/golavel-cache).
+This package allows you to implement a store agnostic caching system via a common interface by providing an abtraction layer between the different store clients and your application. The latter allows for each store to be used interchangeably without any code changes other than the programmatic configuration of the desired store(s). For a more detailed documentation please refer to the [godoc](https://godoc.org/github.com/alejandro-carstens/golavel-cache).
 
-To start using Golavel Cache in your application simply run:`go get github.com/alejandro-carstens/golavel-cache`
+To start using this package in your application simply run:`go get github.com/alejandro-carstens/cache`
 
 ## Supported Stores
 
