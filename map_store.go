@@ -5,7 +5,7 @@ import (
 	"strconv"
 )
 
-// MapStore is the representation of an array caching store
+// MapStore is the representation of a map caching store
 type MapStore struct {
 	Client map[string]interface{}
 	Prefix string
