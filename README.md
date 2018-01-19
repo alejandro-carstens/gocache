@@ -207,3 +207,12 @@ For more examples please refer to the tests.
 
 Find an area you can help with and do it. Open source is about collaboration and open participation. Try to make your code look like what already exists or hopefully better and submit a pull request. Also, if you have any ideas on how to make the code better or on improving its scope and functionality please raise an issue and I will do my best to address it in a timely manner.
 
+## Testing
+
+To run the tests run ```go test -v```
+
+It is important to note that one must install the required stores or comment out the ones you do not want to test. Since this is an abstraction layer, <b>WHEN CONTRIBUTING YOU SHOULD NOT ADD OR MODIFY TESTS</b> just make your implementation conform to what is already there. However if you can make the tests better please do modify them.
+
+## Liscense
+
+MIT.
