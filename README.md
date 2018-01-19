@@ -154,37 +154,37 @@ func main() {
 	foo.Name = "Alejandro"
 	foo.Description = "Whatever"
 	
-	tags := make([]string, 1)
-	tags[0] = "tag"
-	
-	c.Tags(tags).Forever("foo", foo, 10)
+	c.Tags("tag").Forever("foo", foo, 10)
 
 	var bar Foo
 
 	// Retrieve a struct from the cache
-	val, err := c.Tags(tags).GetStruct("foo", &bar)
+	val, err := c.Tags("tag").GetStruct("foo", &bar)
 
 	if err != nil {
 		fmt.Print(bar.Name)        // Alejandro
 		fmt.Print(bar.Description) // Whatever
 	}
 	
-	otherTags := make([]string, 1)
-	otherTags[0] = "other"
+	tags := make([]string, 3)
+	
+	tags[0] = "tag1"
+	tags[1] = "tag2"
+	tags[2] = "tag3"
 	
 	// Put a value in the cache for 10 mins.
-	c.Tags(otherTags).Put("foo", "bar", 10)
+	c.Tags(tags...).Put("foo", "bar", 10)
 
-	val, err := c.Tags(otherTags).Get("foo") 
+	val, err := c.Tags(tags...).Get("foo") 
 
 	if err != nil {
 		fmt.Print(val) // bar
 	}
 
 	// Delete a k-v pair
-	c.Tags(otherTags).Forget("foo")
+	c.Tags(tags...).Forget("foo")
 	
-	c.Tags(tags).Flush()
+	c.Tags(tags...).Flush()
 }
 ```
 

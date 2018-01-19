@@ -8,7 +8,7 @@ func TestPutGetWithTags(t *testing.T) {
 
 		expected := "value"
 
-		tags := tags()
+		tags := tag()
 
 		cache.Tags(tags).Put("key", "value", 10)
 
@@ -26,7 +26,7 @@ func TestPutGetIntWithTags(t *testing.T) {
 	for _, driver := range drivers {
 		cache := store(driver)
 
-		tags := tags()
+		tags := tag()
 
 		cache.Tags(tags).Put("key", 100, 1)
 
@@ -48,7 +48,7 @@ func TestPutGetFloatWithTags(t *testing.T) {
 
 		expected = 9.99
 
-		tags := tags()
+		tags := tag()
 
 		cache.Tags(tags).Put("key", expected, 1)
 
@@ -66,7 +66,7 @@ func TestIncrementWithTags(t *testing.T) {
 	for _, driver := range drivers {
 		cache := store(driver)
 
-		tags := tags()
+		tags := tag()
 
 		cache.Tags(tags).Increment("increment_key", 1)
 		cache.Tags(tags).Increment("increment_key", 1)
@@ -86,7 +86,7 @@ func TestDecrementWithTags(t *testing.T) {
 	for _, driver := range drivers {
 		cache := store(driver)
 
-		tags := tags()
+		tags := tag()
 
 		cache.Tags(tags).Increment("decrement_key", 2)
 		cache.Tags(tags).Decrement("decrement_key", 1)
@@ -109,7 +109,7 @@ func TestForeverWithTags(t *testing.T) {
 
 		expected := "value"
 
-		tags := tags()
+		tags := tag()
 
 		cache.Tags(tags).Forever("key", expected)
 
@@ -127,7 +127,7 @@ func TestPutGetManyWithTags(t *testing.T) {
 	for _, driver := range drivers {
 		cache := store(driver)
 
-		tags := tags()
+		tags := tag()
 
 		keys := make(map[string]interface{})
 
@@ -163,18 +163,22 @@ func TestPutGetStructWithTags(t *testing.T) {
 	for _, driver := range drivers {
 		cache := store(driver)
 
-		tags := tags()
+		tags := make([]string, 3)
+
+		tags[0] = "tag1"
+		tags[1] = "tag2"
+		tags[2] = "tag3"
 
 		var example Example
 
 		example.Name = "Alejandro"
 		example.Description = "Whatever"
 
-		cache.Tags(tags).Put("key", example, 10)
+		cache.Tags(tags...).Put("key", example, 10)
 
 		var newExample Example
 
-		cache.Tags(tags).GetStruct("key", &newExample)
+		cache.Tags(tags...).GetStruct("key", &newExample)
 
 		if newExample != example {
 			t.Error("The structs are not the same", newExample)
@@ -184,10 +188,6 @@ func TestPutGetStructWithTags(t *testing.T) {
 	}
 }
 
-func tags() []string {
-	tags := make([]string, 1)
-
-	tags[0] = "tag"
-
-	return tags
+func tag() string {
+	return "tag"
 }

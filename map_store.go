@@ -168,7 +168,7 @@ func (as *MapStore) GetStruct(key string, entity interface{}) (interface{}, erro
 }
 
 // Tags returns the TaggedCache for the given store
-func (as *MapStore) Tags(names []string) TaggedStoreInterface {
+func (as *MapStore) Tags(names ...string) TaggedStoreInterface {
 	return &TaggedCache{
 		Store: as,
 		Tags: TagSet{

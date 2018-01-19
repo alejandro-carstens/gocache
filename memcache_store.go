@@ -176,7 +176,7 @@ func (ms *MemcacheStore) GetStruct(key string, entity interface{}) (interface{},
 }
 
 // Tags returns the TaggedCache for the given store
-func (ms *MemcacheStore) Tags(names []string) TaggedStoreInterface {
+func (ms *MemcacheStore) Tags(names ...string) TaggedStoreInterface {
 	return &TaggedCache{
 		Store: ms,
 		Tags: TagSet{

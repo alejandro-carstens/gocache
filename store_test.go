@@ -6,8 +6,8 @@ import (
 )
 
 var drivers = []string{
-	"map",
-	"memcache",
+	// "map",
+	// "memcache",
 	"redis",
 }
 

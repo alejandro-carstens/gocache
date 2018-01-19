@@ -38,7 +38,7 @@ type CacheInterface interface {
 
 // TagsInterface represents the tagging methods to be implemented
 type TagsInterface interface {
-	Tags(names []string) TaggedStoreInterface
+	Tags(names ...string) TaggedStoreInterface
 }
 
 // StoreInterface represents the methods a caching store needs to implement
