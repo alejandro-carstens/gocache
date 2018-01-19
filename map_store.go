@@ -12,7 +12,7 @@ type MapStore struct {
 }
 
 // Get gets a value from the store
-func (as *MapStore) Get(key string) (interface{}, error) {
+func (ms *MapStore) Get(key string) (interface{}, error) {
 	value := as.Client[as.GetPrefix()+key]
 
 	if value == nil {
@@ -37,7 +37,7 @@ func (as *MapStore) Get(key string) (interface{}, error) {
 }
 
 // GetFloat gets a float value from the store
-func (as *MapStore) GetFloat(key string) (float64, error) {
+func (ms *MapStore) GetFloat(key string) (float64, error) {
 	value := as.Client[as.GetPrefix()+key]
 
 	if value == nil || !IsStringNumeric(value.(string)) {
@@ -48,7 +48,7 @@ func (as *MapStore) GetFloat(key string) (float64, error) {
 }
 
 // GetInt gets an int value from the store
-func (as *MapStore) GetInt(key string) (int64, error) {
+func (ms *MapStore) GetInt(key string) (int64, error) {
 	value := as.Client[as.GetPrefix()+key]
 
 	if value == nil || !IsStringNumeric(value.(string)) {
@@ -61,7 +61,7 @@ func (as *MapStore) GetInt(key string) (int64, error) {
 }
 
 // Increment increments an integer counter by a given value
-func (as *MapStore) Increment(key string, value int64) (int64, error) {
+func (ms *MapStore) Increment(key string, value int64) (int64, error) {
 	val := as.Client[as.GetPrefix()+key]
 
 	if val != nil {
@@ -87,12 +87,12 @@ func (as *MapStore) Increment(key string, value int64) (int64, error) {
 }
 
 // Decrement decrements an integer counter by a given value
-func (as *MapStore) Decrement(key string, value int64) (int64, error) {
+func (ms *MapStore) Decrement(key string, value int64) (int64, error) {
 	return as.Increment(key, -value)
 }
 
 // Put puts a value in the given store for a predetermined amount of time in mins.
-func (as *MapStore) Put(key string, value interface{}, minutes int) error {
+func (ms *MapStore) Put(key string, value interface{}, minutes int) error {
 	val, err := Encode(value)
 
 	mins := strconv.Itoa(minutes)
@@ -105,19 +105,19 @@ func (as *MapStore) Put(key string, value interface{}, minutes int) error {
 }
 
 // Forever puts a value in the given store until it is forgotten/evicted
-func (as *MapStore) Forever(key string, value interface{}) error {
+func (ms *MapStore) Forever(key string, value interface{}) error {
 	return as.Put(key, value, 0)
 }
 
 // Flush flushes the store
-func (as *MapStore) Flush() (bool, error) {
+func (ms *MapStore) Flush() (bool, error) {
 	as.Client = make(map[string]interface{})
 
 	return true, nil
 }
 
 // Forget forgets/evicts a given key-value pair from the store
-func (as *MapStore) Forget(key string) (bool, error) {
+func (ms *MapStore) Forget(key string) (bool, error) {
 	_, ok := as.Client[as.GetPrefix()+key]
 
 	if ok {
@@ -130,12 +130,12 @@ func (as *MapStore) Forget(key string) (bool, error) {
 }
 
 // GetPrefix gets the cache key prefix
-func (as *MapStore) GetPrefix() string {
+func (ms *MapStore) GetPrefix() string {
 	return as.Prefix
 }
 
 // PutMany puts many values in the given store until they are forgotten/evicted
-func (as *MapStore) PutMany(values map[string]interface{}, minutes int) error {
+func (ms *MapStore) PutMany(values map[string]interface{}, minutes int) error {
 	for key, value := range values {
 		as.Put(key, value, minutes)
 	}
@@ -144,7 +144,7 @@ func (as *MapStore) PutMany(values map[string]interface{}, minutes int) error {
 }
 
 // Many gets many values from the store
-func (as *MapStore) Many(keys []string) (map[string]interface{}, error) {
+func (ms *MapStore) Many(keys []string) (map[string]interface{}, error) {
 	items := make(map[string]interface{})
 
 	for _, key := range keys {
@@ -161,14 +161,14 @@ func (as *MapStore) Many(keys []string) (map[string]interface{}, error) {
 }
 
 // GetStruct gets the struct representation of a value from the store
-func (as *MapStore) GetStruct(key string, entity interface{}) (interface{}, error) {
+func (ms *MapStore) GetStruct(key string, entity interface{}) (interface{}, error) {
 	value := as.Client[as.GetPrefix()+key]
 
 	return Decode(value.(string), entity)
 }
 
 // Tags returns the TaggedCache for the given store
-func (as *MapStore) Tags(names ...string) TaggedStoreInterface {
+func (ms *MapStore) Tags(names ...string) TaggedStoreInterface {
 	return &TaggedCache{
 		Store: as,
 		Tags: TagSet{
