@@ -7,9 +7,14 @@
 
 This package allows you to implement a store agnostic caching system via a common interface by providing an abstraction layer between the different store clients and your application. The latter allows for each store to be used interchangeably without any code changes other than the programmatic configuration of the desired store(s). For a more detailed documentation please refer to the [godoc](https://godoc.org/github.com/alejandro-carstens/golavel-cache).
 
-To start using this package in your application simply run:`go get github.com/alejandro-carstens/golavel-cache`
+
+## Contributing
+
+<b>By simply using this package you are already contributing, if you would like to go a bit further give us a star and spread the word (it would be greatly appreciated)</b>. Otherwise, find an area you can help with and do it. Open source is about collaboration and open participation. Try to make your code look like what already exists or hopefully better and submit a pull request. Also, if you have any ideas on how to make the code better or on improving its scope and functionality please raise an issue and I will do my best to address it in a timely manner.
 
 ## Usage
+
+To start using this package in your application simply run:`go get github.com/alejandro-carstens/golavel-cache`
 
 Set the params for the store you want:
 
@@ -201,11 +206,7 @@ For more examples please refer to the tests.
 
 - Go-Cache 
 - Propose a store you would like to see implemented (Ex: BlockDB, LMDB, Mongo, MySQL, etc.)
-- Build the implementation for the store you want and submit a PR (preferred)
-
-## Contributing
-
-<b>By simply using this package you are already contributing, if you would like to go a bit further give us a star and spread the word that would be greatly appreciated</b>. Otherwise, find an area you can help with and do it. Open source is about collaboration and open participation. Try to make your code look like what already exists or hopefully better and submit a pull request. Also, if you have any ideas on how to make the code better or on improving its scope and functionality please raise an issue and I will do my best to address it in a timely manner. 
+- Build the implementation for the store you want and submit a PR (preferred) 
 
 ## Testing
 
