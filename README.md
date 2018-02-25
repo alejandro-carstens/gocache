@@ -14,7 +14,7 @@ This package allows you to implement a store agnostic caching system via a commo
 
 ## Usage
 
-To start using this package in your application simply run:`go get github.com/alejandro-carstens/golavel-cache`
+To start using this package in your application simply run:`go get github.com/alejandro-carstens/gocache`
 
 Set the params for the store you want:
 
@@ -54,7 +54,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/alejandro-carstens/golavel-cache"
+	"github.com/alejandro-carstens/gocache"
 )
 
 func main() {
@@ -98,7 +98,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/alejandro-carstens/golavel-cache"
+	"github.com/alejandro-carstens/gocache"
 )
 
 type Foo struct {
@@ -140,7 +140,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/alejandro-carstens/golavel-cache"
+	"github.com/alejandro-carstens/gocache"
 )
 
 type Foo struct {
