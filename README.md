@@ -5,7 +5,7 @@
 [![GoDoc](https://godoc.org/github.com/alejandro-carstens/golavel-cache?status.svg)](https://godoc.org/github.com/alejandro-carstens/golavel-cache)
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/alejandro-carstens/golavel-cache/blob/master/LICENSE)
 
-This package allows you to implement a store agnostic caching system via a common interface by providing an abstraction layer between the different store clients and your application. The latter allows for each store to be used interchangeably without any code changes other than the programmatic configuration of the desired store(s). For a more detailed documentation please refer to the [godoc](https://godoc.org/github.com/alejandro-carstens/gocache).
+This package allows you to implement a store agnostic caching system via a common interface by providing an abstraction layer between different store clients and your application. The latter allows for each store to be used interchangeably without any code changes other than the programmatic configuration of the desired store(s). For a more detailed documentation please refer to the [godoc](https://godoc.org/github.com/alejandro-carstens/gocache).
 
 
 ## Contributing
