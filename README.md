@@ -1,7 +1,7 @@
 ## gocache
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/alejandro-carstens/gocache)](https://goreportcard.com/report/github.com/alejandro-carstens/gocache)
-[![Build Status](https://travis-ci.org/alejandro-carstens/golavel-cache.svg?branch=master)](https://travis-ci.org/alejandro-carstens/golavel-cache)
+[![Build Status](https://travis-ci.org/alejandro-carstens/gocache.svg?branch=master)](https://travis-ci.org/alejandro-carstens/gocache)
 [![GoDoc](https://godoc.org/github.com/alejandro-carstens/golavel-cache?status.svg)](https://godoc.org/github.com/alejandro-carstens/golavel-cache)
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/alejandro-carstens/golavel-cache/blob/master/LICENSE)
 
