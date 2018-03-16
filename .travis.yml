@@ -5,6 +5,9 @@ services:
   - memcached
 
 go:
+  - 1.5.x
+  - 1.6.x
+  - 1.7.x
   - 1.8.x
   - 1.9.x
   - tip
@@ -12,4 +15,4 @@ go:
 install:
   - go get github.com/bradfitz/gomemcache/memcache
   - go get github.com/go-redis/redis
-  - go get github.com/segmentio/ksuid
+  - go get github.com/rs/xid
