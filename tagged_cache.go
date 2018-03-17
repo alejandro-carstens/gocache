@@ -171,3 +171,8 @@ func (tc *TaggedCache) taggedItemKey(key string) (string, error) {
 
 	return tc.GetPrefix() + hex.EncodeToString(h.Sum(nil)) + ":" + key, nil
 }
+
+// GetTags returns the TaggedCache Tags
+func (tc *TaggedCache) GetTags() TagSet {
+	return tc.Tags
+}
