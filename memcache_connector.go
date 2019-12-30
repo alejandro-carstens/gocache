@@ -1,7 +1,8 @@
-package cache
+package gocache
 
 import (
 	"errors"
+
 	"github.com/bradfitz/gomemcache/memcache"
 )
 

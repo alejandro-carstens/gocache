@@ -1,4 +1,4 @@
-package cache
+package gocache
 
 // CacheConnectorInterface represents the connector methods to be implemented
 type CacheConnectorInterface interface {

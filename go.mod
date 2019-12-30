@@ -1,4 +1,4 @@
-module gocache
+module github.com/alejandro-carstens/gocache
 
 go 1.12
 
