@@ -134,12 +134,24 @@ func (tc *TaggedCache) GetPrefix() string {
 
 // GetInt gets an int value from the store
 func (tc *TaggedCache) GetInt(key string) (int64, error) {
-	return tc.Store.GetInt(key)
+	tagKey, err := tc.taggedItemKey(key)
+
+	if err != nil {
+		return 0, err
+	}
+
+	return tc.Store.GetInt(tagKey)
 }
 
 // GetFloat gets a float value from the store
 func (tc *TaggedCache) GetFloat(key string) (float64, error) {
-	return tc.Store.GetFloat(key)
+	tagKey, err := tc.taggedItemKey(key)
+
+	if err != nil {
+		return 0, err
+	}
+
+	return tc.Store.GetFloat(tagKey)
 }
 
 // GetStruct gets the struct representation of a value from the store
@@ -154,7 +166,13 @@ func (tc *TaggedCache) GetStruct(key string, entity interface{}) error {
 }
 
 func (tc *TaggedCache) GetString(key string) (string, error) {
-	return tc.Store.GetString(key)
+	tagKey, err := tc.taggedItemKey(key)
+
+	if err != nil {
+		return "", err
+	}
+
+	return tc.Store.GetString(tagKey)
 }
 
 // TagFlush flushes the tags of the TaggedCache
