@@ -6,7 +6,7 @@ import (
 	"strconv"
 )
 
-// MAP_NIL_ERROR_RESPONSE nil response error
+// MAP_NIL_ERROR_RESPONSE map nil response error
 const MAP_NIL_ERROR_RESPONSE = "map: cache miss"
 
 // MapStore is the representation of a map caching store

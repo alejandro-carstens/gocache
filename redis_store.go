@@ -8,6 +8,8 @@ import (
 	"github.com/go-redis/redis"
 )
 
+const REDIS_NIL_ERROR_RESPONSE string = "redis: nil"
+
 // RedisStore is the representation of the redis caching store
 type RedisStore struct {
 	Client redis.Client
@@ -85,7 +87,7 @@ func (rs *RedisStore) Put(key string, value interface{}, minutes int) error {
 	}
 
 	if isNumeric(value) {
-		return rs.Client.Set(rs.Prefix+key, value, time).Err()
+		return rs.Client.Set(rs.GetPrefix()+key, value, time).Err()
 	}
 
 	val, err := encode(value)
@@ -100,13 +102,13 @@ func (rs *RedisStore) Put(key string, value interface{}, minutes int) error {
 // Forever puts a value in the given store until it is forgotten/evicted
 func (rs *RedisStore) Forever(key string, value interface{}) error {
 	if isNumeric(value) {
-		err := rs.Client.Set(rs.Prefix+key, value, 0).Err()
+		err := rs.Client.Set(rs.GetPrefix()+key, value, 0).Err()
 
 		if err != nil {
 			return err
 		}
 
-		return rs.Client.Persist(rs.Prefix + key).Err()
+		return rs.Client.Persist(rs.GetPrefix() + key).Err()
 	}
 
 	val, err := encode(value)
@@ -115,13 +117,13 @@ func (rs *RedisStore) Forever(key string, value interface{}) error {
 		return err
 	}
 
-	err = rs.Client.Set(rs.Prefix+key, val, 0).Err()
+	err = rs.Client.Set(rs.GetPrefix()+key, val, 0).Err()
 
 	if err != nil {
 		return err
 	}
 
-	return rs.Client.Persist(rs.Prefix + key).Err()
+	return rs.Client.Persist(rs.GetPrefix() + key).Err()
 }
 
 // Flush flushes the store
@@ -231,5 +233,5 @@ func (rs *RedisStore) GetStruct(key string, entity interface{}) error {
 }
 
 func (rs *RedisStore) get(key string) *redis.StringCmd {
-	return rs.Client.Get(rs.Prefix + key)
+	return rs.Client.Get(rs.GetPrefix() + key)
 }

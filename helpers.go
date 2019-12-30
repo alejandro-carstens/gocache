@@ -74,3 +74,19 @@ func stringToFloat64(value string) (float64, error) {
 func isFloat(value float64) bool {
 	return value != math.Trunc(value)
 }
+
+func isCacheMissedError(err error) bool {
+	haystack := []string{MAP_NIL_ERROR_RESPONSE, MEMCACHE_NIL_ERROR_RESPONSE, REDIS_NIL_ERROR_RESPONSE}
+
+	return inStringSlice(err.Error(), haystack)
+}
+
+func inStringSlice(needle string, haystack []string) bool {
+	for _, value := range haystack {
+		if needle == value {
+			return true
+		}
+	}
+
+	return false
+}

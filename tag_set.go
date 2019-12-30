@@ -42,11 +42,11 @@ func (ts *TagSet) Reset() error {
 func (ts *TagSet) tagId(name string) (string, error) {
 	value, err := ts.Store.Get(ts.tagKey(name))
 
-	if err != nil {
+	if err != nil && !isCacheMissedError(err) {
 		return "", err
 	}
 
-	if value == "" {
+	if value == nil {
 		return ts.resetTag(name)
 	}
 

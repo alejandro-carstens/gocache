@@ -36,7 +36,7 @@ func (ms *MemcacheStore) Get(key string) (interface{}, error) {
 	value, err := ms.get(key)
 
 	if err != nil {
-		return value, err
+		return nil, err
 	}
 
 	return ms.processValue(value)
