@@ -73,7 +73,7 @@ func TestPutGetString(t *testing.T) {
 		got, err := cache.GetString("key")
 
 		if got != "value" || err != nil {
-			t.Error("Expected 100, got ", got)
+			t.Error("Expected value, got ", got)
 		}
 
 		cache.Forget("key")

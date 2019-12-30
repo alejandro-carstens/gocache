@@ -1,8 +1,10 @@
 package cache
 
 import (
-	"github.com/rs/xid"
+	"fmt"
 	"strings"
+
+	"github.com/rs/xid"
 )
 
 // TagSet is the representation of a tag set for the cahing stores
@@ -41,14 +43,14 @@ func (ts *TagSet) tagId(name string) (string, error) {
 	value, err := ts.Store.Get(ts.tagKey(name))
 
 	if err != nil {
-		return value.(string), err
+		return "", err
 	}
 
 	if value == "" {
 		return ts.resetTag(name)
 	}
 
-	return value.(string), nil
+	return fmt.Sprint(value), nil
 }
 
 func (ts *TagSet) tagKey(name string) string {
