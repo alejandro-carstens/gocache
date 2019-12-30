@@ -57,7 +57,13 @@ func (rs *RedisStore) GetInt(key string) (int64, error) {
 
 // GetString gets a string value from the store
 func (rs *RedisStore) GetString(key string) (string, error) {
-	return rs.get(key).String(), nil
+	value, err := rs.get(key).Result()
+
+	if err != nil {
+		return "", err
+	}
+
+	return simpleDecode(value)
 }
 
 // Increment increments an integer counter by a given value
