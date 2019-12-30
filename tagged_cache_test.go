@@ -14,7 +14,11 @@ func TestPutGetWithTags(t *testing.T) {
 
 		got, err := cache.Tags(tags).Get("key")
 
-		if got != expected || err != nil {
+		if err != nil {
+			t.Error(err.Error())
+		}
+
+		if got != expected {
 			t.Error("Expected value, got ", got)
 		}
 
@@ -32,7 +36,11 @@ func TestPutGetIntWithTags(t *testing.T) {
 
 		got, err := cache.Tags(tags).Get("key")
 
-		if got != int64(100) || err != nil {
+		if err != nil {
+			t.Error(err.Error())
+		}
+
+		if got != int64(100) {
 			t.Error("Expected 100, got ", got)
 		}
 
@@ -54,7 +62,11 @@ func TestPutGetFloatWithTags(t *testing.T) {
 
 		got, err := cache.Tags(tags).Get("key")
 
-		if got != expected || err != nil {
+		if err != nil {
+			t.Error(err.Error())
+		}
+
+		if got != expected {
 			t.Error("Expected 9.99, got ", got)
 		}
 
@@ -72,9 +84,13 @@ func TestIncrementWithTags(t *testing.T) {
 		cache.Tags(tags).Increment("increment_key", 1)
 		got, err := cache.Tags(tags).Get("increment_key")
 
+		if err != nil {
+			t.Error(err.Error())
+		}
+
 		var expected int64 = 2
 
-		if got != expected || err != nil {
+		if got != expected {
 			t.Error("Expected 2, got ", got)
 		}
 
@@ -95,7 +111,11 @@ func TestDecrementWithTags(t *testing.T) {
 
 		got, err := cache.Tags(tags).Get("decrement_key")
 
-		if got != expected || err != nil {
+		if err != nil {
+			t.Error(err.Error())
+		}
+
+		if got != expected {
 			t.Error("Expected "+string(expected)+", got ", got)
 		}
 
@@ -115,7 +135,11 @@ func TestForeverWithTags(t *testing.T) {
 
 		got, err := cache.Tags(tags).Get("key")
 
-		if got != expected || err != nil {
+		if err != nil {
+			t.Error(err.Error())
+		}
+
+		if got != expected {
 			t.Error("Expected "+expected+", got ", got)
 		}
 
@@ -146,7 +170,7 @@ func TestPutGetManyWithTags(t *testing.T) {
 		results, err := cache.Tags(tags).Many(resultKeys)
 
 		if err != nil {
-			panic(err)
+			t.Error(err.Error())
 		}
 
 		for i := range results {
@@ -178,7 +202,9 @@ func TestPutGetStructWithTags(t *testing.T) {
 
 		var newExample example
 
-		cache.Tags(tags...).GetStruct("key", &newExample)
+		if err := cache.Tags(tags...).GetStruct("key", &newExample); err != nil {
+			t.Error(err.Error())
+		}
 
 		if newExample != firstExample {
 			t.Error("The structs are not the same", newExample)
@@ -197,7 +223,7 @@ func TestTagSet(t *testing.T) {
 		namespace, err := tagSet.GetNamespace()
 
 		if err != nil {
-			panic(err)
+			t.Error(err.Error())
 		}
 
 		if len([]rune(namespace)) != 20 {
