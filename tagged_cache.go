@@ -104,7 +104,7 @@ func (tc *TaggedCache) Many(keys []string) (map[string]interface{}, error) {
 	}
 
 	for i, result := range results {
-		values[GetTaggedManyKey(tc.GetPrefix(), i)] = result
+		values[getTaggedManyKey(tc.GetPrefix(), i)] = result
 	}
 
 	return values, nil
@@ -143,14 +143,18 @@ func (tc *TaggedCache) GetFloat(key string) (float64, error) {
 }
 
 // GetStruct gets the struct representation of a value from the store
-func (tc *TaggedCache) GetStruct(key string, entity interface{}) (interface{}, error) {
+func (tc *TaggedCache) GetStruct(key string, entity interface{}) error {
 	tagKey, err := tc.taggedItemKey(key)
 
 	if err != nil {
-		return tagKey, err
+		return err
 	}
 
 	return tc.Store.GetStruct(tagKey, entity)
+}
+
+func (tc *TaggedCache) GetString(key string) (string, error) {
+	return tc.Store.GetString(key)
 }
 
 // TagFlush flushes the tags of the TaggedCache

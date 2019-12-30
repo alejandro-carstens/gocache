@@ -2,6 +2,7 @@ package cache
 
 import (
 	"errors"
+
 	"github.com/bradfitz/gomemcache/memcache"
 )
 
@@ -49,11 +50,11 @@ func (ms *MemcacheStore) GetFloat(key string) (float64, error) {
 		return 0.0, err
 	}
 
-	if !IsStringNumeric(value) {
+	if !isStringNumeric(value) {
 		return 0.0, errors.New("Invalid numeric value")
 	}
 
-	return StringToFloat64(value)
+	return stringToFloat64(value)
 }
 
 // GetInt gets an int value from the store
@@ -64,13 +65,24 @@ func (ms *MemcacheStore) GetInt(key string) (int64, error) {
 		return 0, err
 	}
 
-	if !IsStringNumeric(value) {
+	if !isStringNumeric(value) {
 		return 0, errors.New("Invalid numeric value")
 	}
 
-	val, err := StringToFloat64(value)
+	val, err := stringToFloat64(value)
 
 	return int64(val), err
+}
+
+// GetString gets a string value from the store
+func (ms *MemcacheStore) GetString(key string) (string, error) {
+	value, err := ms.get(key)
+
+	if err != nil {
+		return "", err
+	}
+
+	return value, nil
 }
 
 // Increment increments an integer counter by a given value
@@ -78,7 +90,7 @@ func (ms *MemcacheStore) Increment(key string, value int64) (int64, error) {
 	newValue, err := ms.Client.Increment(ms.GetPrefix()+key, uint64(value))
 
 	if err != nil {
-		if err.Error() != "memcache: cache miss" {
+		if err.Error() != MEMCACHE_NIL_ERROR_RESPONSE {
 			return value, err
 		}
 
@@ -95,7 +107,7 @@ func (ms *MemcacheStore) Decrement(key string, value int64) (int64, error) {
 	newValue, err := ms.Client.Decrement(ms.GetPrefix()+key, uint64(value))
 
 	if err != nil {
-		if err.Error() != "memcache: cache miss" {
+		if err.Error() != MEMCACHE_NIL_ERROR_RESPONSE {
 			return value, err
 		}
 
@@ -165,14 +177,16 @@ func (ms *MemcacheStore) Flush() (bool, error) {
 }
 
 // GetStruct gets the struct representation of a value from the store
-func (ms *MemcacheStore) GetStruct(key string, entity interface{}) (interface{}, error) {
+func (ms *MemcacheStore) GetStruct(key string, entity interface{}) error {
 	value, err := ms.get(key)
 
 	if err != nil {
-		return value, err
+		return err
 	}
 
-	return Decode(value, entity)
+	_, err = decode(value, entity)
+
+	return err
 }
 
 // Tags returns the TaggedCache for the given store
@@ -190,10 +204,6 @@ func (ms *MemcacheStore) get(key string) (string, error) {
 	item, err := ms.Client.Get(ms.GetPrefix() + key)
 
 	if err != nil {
-		if err.Error() == MEMCACHE_NIL_ERROR_RESPONSE {
-			return "", nil
-		}
-
 		return "", err
 	}
 
@@ -201,7 +211,7 @@ func (ms *MemcacheStore) get(key string) (string, error) {
 }
 
 func (ms *MemcacheStore) getItemValue(itemValue []byte) string {
-	value, err := SimpleDecode(string(itemValue))
+	value, err := simpleDecode(string(itemValue))
 
 	if err != nil {
 		return string(itemValue)
@@ -211,14 +221,14 @@ func (ms *MemcacheStore) getItemValue(itemValue []byte) string {
 }
 
 func (ms *MemcacheStore) processValue(value string) (interface{}, error) {
-	if IsStringNumeric(value) {
-		floatValue, err := StringToFloat64(value)
+	if isStringNumeric(value) {
+		floatValue, err := stringToFloat64(value)
 
 		if err != nil {
 			return floatValue, err
 		}
 
-		if IsFloat(floatValue) {
+		if isFloat(floatValue) {
 			return floatValue, err
 		}
 
@@ -229,7 +239,7 @@ func (ms *MemcacheStore) processValue(value string) (interface{}, error) {
 }
 
 func (ms *MemcacheStore) item(key string, value interface{}, minutes int) (*memcache.Item, error) {
-	val, err := Encode(value)
+	val, err := encode(value)
 
 	return &memcache.Item{
 		Key:        ms.GetPrefix() + key,

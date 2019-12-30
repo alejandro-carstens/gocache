@@ -8,9 +8,13 @@ go:
   - 1.7.x
   - 1.8.x
   - 1.9.x
+  - 1.10.x
+  - 1.11.x
   - tip
 
+env:
+  matrix:
+  - GO111MODULE=on
+
 install:
-  - go get github.com/bradfitz/gomemcache/memcache
-  - go get github.com/go-redis/redis
-  - go get github.com/rs/xid
+  - go get

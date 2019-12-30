@@ -11,6 +11,8 @@ type CacheConnectorInterface interface {
 type CacheInterface interface {
 	Get(key string) (interface{}, error)
 
+	GetString(key string) (string, error)
+
 	Put(key string, value interface{}, minutes int) error
 
 	Increment(key string, value int64) (int64, error)
@@ -33,7 +35,7 @@ type CacheInterface interface {
 
 	PutMany(values map[string]interface{}, minutes int) error
 
-	GetStruct(key string, entity interface{}) (interface{}, error)
+	GetStruct(key string, entity interface{}) error
 }
 
 // TagsInterface represents the tagging methods to be implemented

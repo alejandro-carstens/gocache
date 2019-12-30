@@ -169,18 +169,18 @@ func TestPutGetStructWithTags(t *testing.T) {
 		tags[1] = "tag2"
 		tags[2] = "tag3"
 
-		var example Example
+		var firstExample example
 
-		example.Name = "Alejandro"
-		example.Description = "Whatever"
+		firstExample.Name = "Alejandro"
+		firstExample.Description = "Whatever"
 
-		cache.Tags(tags...).Put("key", example, 10)
+		cache.Tags(tags...).Put("key", firstExample, 10)
 
-		var newExample Example
+		var newExample example
 
 		cache.Tags(tags...).GetStruct("key", &newExample)
 
-		if newExample != example {
+		if newExample != firstExample {
 			t.Error("The structs are not the same", newExample)
 		}
 

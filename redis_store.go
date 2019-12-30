@@ -2,13 +2,11 @@ package cache
 
 import (
 	"errors"
-	"github.com/go-redis/redis"
 	"strconv"
 	"time"
-)
 
-// REDIS_NIL_ERROR_RESPONSE go-redis nil response error
-const REDIS_NIL_ERROR_RESPONSE = "redis: nil"
+	"github.com/go-redis/redis"
+)
 
 // RedisStore is the representation of the redis caching store
 type RedisStore struct {
@@ -27,14 +25,10 @@ func (rs *RedisStore) Get(key string) (interface{}, error) {
 			value, err := rs.get(key).Result()
 
 			if err != nil {
-				if err.Error() == REDIS_NIL_ERROR_RESPONSE {
-					return "", nil
-				}
-
-				return value, err
+				return nil, err
 			}
 
-			return SimpleDecode(value)
+			return simpleDecode(value)
 		}
 
 		if &floatVal == nil {
@@ -61,6 +55,11 @@ func (rs *RedisStore) GetInt(key string) (int64, error) {
 	return rs.get(key).Int64()
 }
 
+// GetString gets a string value from the store
+func (rs *RedisStore) GetString(key string) (string, error) {
+	return rs.get(key).String(), nil
+}
+
 // Increment increments an integer counter by a given value
 func (rs *RedisStore) Increment(key string, value int64) (int64, error) {
 	return rs.Client.IncrBy(rs.Prefix+key, value).Result()
@@ -79,11 +78,11 @@ func (rs *RedisStore) Put(key string, value interface{}, minutes int) error {
 		return err
 	}
 
-	if IsNumeric(value) {
+	if isNumeric(value) {
 		return rs.Client.Set(rs.Prefix+key, value, time).Err()
 	}
 
-	val, err := Encode(value)
+	val, err := encode(value)
 
 	if err != nil {
 		return err
@@ -94,7 +93,7 @@ func (rs *RedisStore) Put(key string, value interface{}, minutes int) error {
 
 // Forever puts a value in the given store until it is forgotten/evicted
 func (rs *RedisStore) Forever(key string, value interface{}) error {
-	if IsNumeric(value) {
+	if isNumeric(value) {
 		err := rs.Client.Set(rs.Prefix+key, value, 0).Err()
 
 		if err != nil {
@@ -104,7 +103,7 @@ func (rs *RedisStore) Forever(key string, value interface{}) error {
 		return rs.Client.Persist(rs.Prefix + key).Err()
 	}
 
-	val, err := Encode(value)
+	val, err := encode(value)
 
 	if err != nil {
 		return err
@@ -213,14 +212,16 @@ func (rs *RedisStore) Tags(names ...string) TaggedStoreInterface {
 }
 
 // GetStruct gets the struct representation of a value from the store
-func (rs *RedisStore) GetStruct(key string, entity interface{}) (interface{}, error) {
+func (rs *RedisStore) GetStruct(key string, entity interface{}) error {
 	value, err := rs.get(key).Result()
 
 	if err != nil {
-		return value, err
+		return err
 	}
 
-	return Decode(value, entity)
+	_, err = decode(value, entity)
+
+	return err
 }
 
 func (rs *RedisStore) get(key string) *redis.StringCmd {

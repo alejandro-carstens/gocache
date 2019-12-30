@@ -11,7 +11,7 @@ var drivers = []string{
 	"redis",
 }
 
-type Example struct {
+type example struct {
 	Name        string
 	Description string
 }
@@ -57,6 +57,22 @@ func TestPutGetInt(t *testing.T) {
 		got, err := cache.GetInt("key")
 
 		if got != int64(100) || err != nil {
+			t.Error("Expected 100, got ", got)
+		}
+
+		cache.Forget("key")
+	}
+}
+
+func TestPutGetString(t *testing.T) {
+	for _, driver := range drivers {
+		cache := store(driver)
+
+		cache.Put("key", "value", 1)
+
+		got, err := cache.GetString("key")
+
+		if got != "value" || err != nil {
 			t.Error("Expected 100, got ", got)
 		}
 
@@ -140,18 +156,18 @@ func TestPutGetStruct(t *testing.T) {
 	for _, driver := range drivers {
 		cache := store(driver)
 
-		var example Example
+		var firstExample example
 
-		example.Name = "Alejandro"
-		example.Description = "Whatever"
+		firstExample.Name = "Alejandro"
+		firstExample.Description = "Whatever"
 
-		cache.Put("key", example, 10)
+		cache.Put("key", firstExample, 10)
 
-		var newExample Example
+		var newExample example
 
 		cache.GetStruct("key", &newExample)
 
-		if newExample != example {
+		if newExample != firstExample {
 			t.Error("The structs are not the same", newExample)
 		}
 
