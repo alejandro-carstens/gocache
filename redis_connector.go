@@ -10,7 +10,7 @@ import (
 type RedisConnector struct{}
 
 // Connect is responsible for connecting with the caching store
-func (rc *RedisConnector) Connect(params map[string]interface{}) (Store, error) {
+func (rc *RedisConnector) Connect(params map[string]interface{}) (Cache, error) {
 	params, err := rc.validate(params)
 	if err != nil {
 		return &RedisStore{}, err

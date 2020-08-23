@@ -14,7 +14,7 @@ const MemcacheDriver = "memcache"
 const MapDriver = "map"
 
 // New new-ups an instance of Store
-func New(driver string, params map[string]interface{}) (Store, error) {
+func New(driver string, params map[string]interface{}) (Cache, error) {
 	switch strings.ToLower(driver) {
 	case RedisDriver:
 		return connect(new(RedisConnector), params)
@@ -27,6 +27,6 @@ func New(driver string, params map[string]interface{}) (Store, error) {
 	return connect(new(MapConnector), params)
 }
 
-func connect(connector CacheConnector, params map[string]interface{}) (Store, error) {
+func connect(connector CacheConnector, params map[string]interface{}) (Cache, error) {
 	return connector.Connect(params)
 }

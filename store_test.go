@@ -41,7 +41,7 @@ func TestPutGet(t *testing.T) {
 		}
 
 		got, err = cache.Get("key")
-		if got != float64(2.99) || err != nil {
+		if got != 2.99 || err != nil {
 			t.Error("Expected 2.99, got", got)
 		}
 		if _, err := cache.Forget("key"); err != nil {
@@ -133,7 +133,7 @@ func TestPutGetMany(t *testing.T) {
 
 		keys["key_1"] = "value"
 		keys["key_2"] = int64(100)
-		keys["key_3"] = float64(9.99)
+		keys["key_3"] = 9.99
 
 		if err := cache.PutMany(keys, 10); err != nil {
 			t.Fatal(err)
@@ -278,7 +278,7 @@ func TestIncrementDecrement(t *testing.T) {
 	}
 }
 
-func store(store string) Store {
+func store(store string) Cache {
 	switch strings.ToLower(store) {
 	case RedisDriver:
 		cache, err := New(store, redisStore())

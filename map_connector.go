@@ -8,7 +8,7 @@ import (
 type MapConnector struct{}
 
 // Connect is responsible for connecting with the caching store
-func (ac *MapConnector) Connect(params map[string]interface{}) (Store, error) {
+func (ac *MapConnector) Connect(params map[string]interface{}) (Cache, error) {
 	params, err := ac.validate(params)
 	if err != nil {
 		return &MapStore{}, err

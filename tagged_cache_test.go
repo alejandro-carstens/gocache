@@ -162,7 +162,7 @@ func TestPutGetManyWithTags(t *testing.T) {
 
 		keys["key_1"] = "value"
 		keys["key_2"] = int64(100)
-		keys["key_3"] = float64(9.99)
+		keys["key_3"] = 9.99
 
 		if err := cache.Tags(tags).PutMany(keys, 10); err != nil {
 			t.Fatal(err)

@@ -10,7 +10,7 @@ import (
 type MemcacheConnector struct{}
 
 // Connect is responsible for connecting with the caching store
-func (mc *MemcacheConnector) Connect(params map[string]interface{}) (Store, error) {
+func (mc *MemcacheConnector) Connect(params map[string]interface{}) (Cache, error) {
 	params, err := mc.validate(params)
 	if err != nil {
 		return &MemcacheStore{}, err

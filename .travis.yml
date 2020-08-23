@@ -1,13 +1,14 @@
 language: go
 
 services:
-  - redis-server
+  - redis
   - memcached
 
 go:
   - 1.11.x
   - 1.12.x
-  - tip
+  - 1.13.x
+  - 1.14.x
 
 env:
   matrix:
