@@ -42,7 +42,7 @@ func TestPutGetIntWithTags(t *testing.T) {
 		if got != int64(100) {
 			t.Error("Expected 100, got ", got)
 		}
-		if _, err :=cache.Tags(tags).Forget("key"); err != nil {
+		if _, err := cache.Tags(tags).Forget("key"); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -57,7 +57,7 @@ func TestPutGetFloatWithTags(t *testing.T) {
 		expected = 9.99
 
 		tags := tag()
-		if err :=cache.Tags(tags).Put("key", expected, 1); err != nil {
+		if err := cache.Tags(tags).Put("key", expected, 1); err != nil {
 			t.Fatal(err)
 		}
 
