@@ -217,7 +217,7 @@ func TestPutGetStructWithTags(t *testing.T) {
 		if newExample != firstExample {
 			t.Error("The structs are not the same", newExample)
 		}
-		if _, err := cache.Forget("key"); err != nil {
+		if _, err := cache.Forget("key"); err != nil && err.Error() != MemcacheNilErrorResponse {
 			t.Fatal(err)
 		}
 	}
