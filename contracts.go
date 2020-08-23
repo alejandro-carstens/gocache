@@ -39,6 +39,8 @@ type Store interface {
 	PutMany(values map[string]interface{}, minutes int) error
 	// GetStruct gets the struct representation of a value from the store
 	GetStruct(key string, entity interface{}) error
+	// Close closes the client releasing all open resources
+	Close() error
 }
 
 // Tags represents the tagging methods to be implemented

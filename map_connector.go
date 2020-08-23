@@ -11,7 +11,7 @@ type MapConnector struct{}
 func (ac *MapConnector) Connect(params map[string]interface{}) (Cache, error) {
 	params, err := ac.validate(params)
 	if err != nil {
-		return &MapStore{}, err
+		return nil, err
 	}
 
 	prefix := params["prefix"].(string)

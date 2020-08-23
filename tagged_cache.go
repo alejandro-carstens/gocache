@@ -153,6 +153,10 @@ func (tc *TaggedCache) GetStruct(key string, entity interface{}) error {
 	return tc.Store.GetStruct(tagKey, entity)
 }
 
+func (tc *TaggedCache) Close() error {
+	return tc.Store.Close()
+}
+
 func (tc *TaggedCache) GetString(key string) (string, error) {
 	tagKey, err := tc.taggedItemKey(key)
 	if err != nil {

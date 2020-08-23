@@ -170,10 +170,14 @@ func (ms *MemcacheStore) GetStruct(key string, entity interface{}) error {
 	if err != nil {
 		return err
 	}
-
 	_, err = decode(value, entity)
 
 	return err
+}
+
+// Close closes the client releasing all open resources
+func (ms *MemcacheStore) Close() error {
+	return nil
 }
 
 // Tags returns the TaggedCache for the given store

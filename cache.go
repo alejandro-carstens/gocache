@@ -17,14 +17,14 @@ const MapDriver = "map"
 func New(driver string, params map[string]interface{}) (Cache, error) {
 	switch strings.ToLower(driver) {
 	case RedisDriver:
-		return connect(new(RedisConnector), params)
+		return connect(&RedisConnector{}, params)
 	case MemcacheDriver:
-		return connect(new(MemcacheConnector), params)
+		return connect(&MemcacheConnector{}, params)
 	case MapDriver:
-		return connect(new(MapConnector), params)
+		return connect(&MapConnector{}, params)
 	}
 
-	return connect(new(MapConnector), params)
+	return connect(&MapConnector{}, params)
 }
 
 func connect(connector CacheConnector, params map[string]interface{}) (Cache, error) {

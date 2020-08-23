@@ -13,7 +13,7 @@ type MemcacheConnector struct{}
 func (mc *MemcacheConnector) Connect(params map[string]interface{}) (Cache, error) {
 	params, err := mc.validate(params)
 	if err != nil {
-		return &MemcacheStore{}, err
+		return nil, err
 	}
 
 	prefix := params["prefix"].(string)
@@ -42,7 +42,7 @@ func (mc *MemcacheConnector) validate(params map[string]interface{}) (map[string
 
 	for key, param := range params {
 		if _, ok := param.(string); !ok {
-			return params, errors.New("The" + key + "parameter is not of type string.")
+			return params, errors.New("the" + key + "parameter is not of type string")
 		}
 	}
 

@@ -182,6 +182,11 @@ func (ms *MapStore) GetStruct(key string, entity interface{}) error {
 	return err
 }
 
+// Close closes the client releasing all open resources
+func (ms *MapStore) Close() error {
+	return nil
+}
+
 // Tags returns the TaggedCache for the given store
 func (ms *MapStore) Tags(names ...string) TaggedStore {
 	return &TaggedCache{

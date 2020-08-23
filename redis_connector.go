@@ -13,7 +13,7 @@ type RedisConnector struct{}
 func (rc *RedisConnector) Connect(params map[string]interface{}) (Cache, error) {
 	params, err := rc.validate(params)
 	if err != nil {
-		return &RedisStore{}, err
+		return nil, err
 	}
 
 	return &RedisStore{

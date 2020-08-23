@@ -197,14 +197,17 @@ func (rs *RedisStore) Tags(names ...string) TaggedStore {
 	}
 }
 
+// Close closes the client releasing all open resources
+func (rs *RedisStore) Close() error {
+	return rs.Client.Close()
+}
+
 // GetStruct gets the struct representation of a value from the store
 func (rs *RedisStore) GetStruct(key string, entity interface{}) error {
 	value, err := rs.get(key).Result()
-
 	if err != nil {
 		return err
 	}
-
 	_, err = decode(value, entity)
 
 	return err
