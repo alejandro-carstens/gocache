@@ -8,7 +8,7 @@ import (
 	"github.com/go-redis/redis"
 )
 
-const REDIS_NIL_ERROR_RESPONSE string = "redis: nil"
+const RedisNilErrorResponse string = "redis: nil"
 
 // RedisStore is the representation of the redis caching store
 type RedisStore struct {
@@ -19,29 +19,24 @@ type RedisStore struct {
 // Get gets a value from the store
 func (rs *RedisStore) Get(key string) (interface{}, error) {
 	intVal, err := rs.get(key).Int64()
-
 	if err != nil {
 		floatVal, err := rs.get(key).Float64()
-
 		if err != nil {
 			value, err := rs.get(key).Result()
-
 			if err != nil {
 				return nil, err
 			}
 
 			return simpleDecode(value)
 		}
-
 		if &floatVal == nil {
-			return floatVal, errors.New("Float value is nil.")
+			return floatVal, errors.New("float value is nil")
 		}
 
 		return floatVal, nil
 	}
-
 	if &intVal == nil {
-		return intVal, errors.New("Int value is nil.")
+		return intVal, errors.New("int value is nil")
 	}
 
 	return intVal, nil
@@ -60,7 +55,6 @@ func (rs *RedisStore) GetInt(key string) (int64, error) {
 // GetString gets a string value from the store
 func (rs *RedisStore) GetString(key string) (string, error) {
 	value, err := rs.get(key).Result()
-
 	if err != nil {
 		return "", err
 	}
@@ -80,31 +74,26 @@ func (rs *RedisStore) Decrement(key string, value int64) (int64, error) {
 
 // Put puts a value in the given store for a predetermined amount of time in mins.
 func (rs *RedisStore) Put(key string, value interface{}, minutes int) error {
-	time, err := time.ParseDuration(strconv.Itoa(minutes) + "m")
-
+	t, err := time.ParseDuration(strconv.Itoa(minutes) + "m")
 	if err != nil {
 		return err
 	}
-
 	if isNumeric(value) {
-		return rs.Client.Set(rs.GetPrefix()+key, value, time).Err()
+		return rs.Client.Set(rs.GetPrefix()+key, value, t).Err()
 	}
 
 	val, err := encode(value)
-
 	if err != nil {
 		return err
 	}
 
-	return rs.Client.Set(rs.GetPrefix()+key, val, time).Err()
+	return rs.Client.Set(rs.GetPrefix()+key, val, t).Err()
 }
 
 // Forever puts a value in the given store until it is forgotten/evicted
 func (rs *RedisStore) Forever(key string, value interface{}) error {
 	if isNumeric(value) {
-		err := rs.Client.Set(rs.GetPrefix()+key, value, 0).Err()
-
-		if err != nil {
+		if err := rs.Client.Set(rs.GetPrefix()+key, value, 0).Err(); err != nil {
 			return err
 		}
 
@@ -112,14 +101,10 @@ func (rs *RedisStore) Forever(key string, value interface{}) error {
 	}
 
 	val, err := encode(value)
-
 	if err != nil {
 		return err
 	}
-
-	err = rs.Client.Set(rs.GetPrefix()+key, val, 0).Err()
-
-	if err != nil {
+	if err = rs.Client.Set(rs.GetPrefix()+key, val, 0).Err(); err != nil {
 		return err
 	}
 
@@ -128,9 +113,7 @@ func (rs *RedisStore) Forever(key string, value interface{}) error {
 
 // Flush flushes the store
 func (rs *RedisStore) Flush() (bool, error) {
-	err := rs.Client.FlushDB().Err()
-
-	if err != nil {
+	if err := rs.Client.FlushDB().Err(); err != nil {
 		return false, err
 	}
 
@@ -139,9 +122,7 @@ func (rs *RedisStore) Flush() (bool, error) {
 
 // Forget forgets/evicts a given key-value pair from the store
 func (rs *RedisStore) Forget(key string) (bool, error) {
-	err := rs.Client.Del(rs.Prefix + key).Err()
-
-	if err != nil {
+	if err := rs.Client.Del(rs.Prefix + key).Err(); err != nil {
 		return false, err
 	}
 
@@ -158,9 +139,7 @@ func (rs *RedisStore) PutMany(values map[string]interface{}, minutes int) error 
 	pipe := rs.Client.TxPipeline()
 
 	for key, value := range values {
-		err := rs.Put(key, value, minutes)
-
-		if err != nil {
+		if err := rs.Put(key, value, minutes); err != nil {
 			return err
 		}
 	}
@@ -178,7 +157,6 @@ func (rs *RedisStore) Many(keys []string) (map[string]interface{}, error) {
 
 	for _, key := range keys {
 		val, err := rs.Get(key)
-
 		if err != nil {
 			return values, err
 		}
@@ -207,7 +185,7 @@ func (rs *RedisStore) Lrange(key string, start int64, stop int64) []string {
 }
 
 // Tags returns the TaggedCache for the given store
-func (rs *RedisStore) Tags(names ...string) TaggedStoreInterface {
+func (rs *RedisStore) Tags(names ...string) TaggedStore {
 	return &RedisTaggedCache{
 		TaggedCache{
 			Store: rs,

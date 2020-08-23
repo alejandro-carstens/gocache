@@ -6,8 +6,8 @@ import (
 	"github.com/bradfitz/gomemcache/memcache"
 )
 
-// MEMCACHE_NIL_ERROR_RESPONSE is the gomemcache nil response error
-const MEMCACHE_NIL_ERROR_RESPONSE = "memcache: cache miss"
+// MemcacheNilErrorResponse is the gomemcache nil response error
+const MemcacheNilErrorResponse = "memcache: cache miss"
 
 // MemcacheStore is the representation of the memcache caching store
 type MemcacheStore struct {
@@ -18,7 +18,6 @@ type MemcacheStore struct {
 // Put puts a value in the given store for a predetermined amount of time in mins.
 func (ms *MemcacheStore) Put(key string, value interface{}, minutes int) error {
 	item, err := ms.item(key, value, minutes)
-
 	if err != nil {
 		return err
 	}
@@ -34,7 +33,6 @@ func (ms *MemcacheStore) Forever(key string, value interface{}) error {
 // Get gets a value from the store
 func (ms *MemcacheStore) Get(key string) (interface{}, error) {
 	value, err := ms.get(key)
-
 	if err != nil {
 		return nil, err
 	}
@@ -45,13 +43,11 @@ func (ms *MemcacheStore) Get(key string) (interface{}, error) {
 // GetFloat gets a float value from the store
 func (ms *MemcacheStore) GetFloat(key string) (float64, error) {
 	value, err := ms.get(key)
-
 	if err != nil {
 		return 0.0, err
 	}
-
 	if !isStringNumeric(value) {
-		return 0.0, errors.New("Invalid numeric value")
+		return 0.0, errors.New("invalid numeric value")
 	}
 
 	return stringToFloat64(value)
@@ -64,9 +60,8 @@ func (ms *MemcacheStore) GetInt(key string) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
-
 	if !isStringNumeric(value) {
-		return 0, errors.New("Invalid numeric value")
+		return 0, errors.New("invalid numeric value")
 	}
 
 	val, err := stringToFloat64(value)
@@ -77,7 +72,6 @@ func (ms *MemcacheStore) GetInt(key string) (int64, error) {
 // GetString gets a string value from the store
 func (ms *MemcacheStore) GetString(key string) (string, error) {
 	value, err := ms.get(key)
-
 	if err != nil {
 		return "", err
 	}
@@ -88,13 +82,13 @@ func (ms *MemcacheStore) GetString(key string) (string, error) {
 // Increment increments an integer counter by a given value
 func (ms *MemcacheStore) Increment(key string, value int64) (int64, error) {
 	newValue, err := ms.Client.Increment(ms.GetPrefix()+key, uint64(value))
-
 	if err != nil {
-		if err.Error() != MEMCACHE_NIL_ERROR_RESPONSE {
+		if err.Error() != MemcacheNilErrorResponse {
 			return value, err
 		}
-
-		ms.Put(key, value, 0)
+		if err := ms.Put(key, value, 0); err != nil {
+			return 0, err
+		}
 
 		return value, nil
 	}
@@ -105,15 +99,15 @@ func (ms *MemcacheStore) Increment(key string, value int64) (int64, error) {
 // Decrement decrements an integer counter by a given value
 func (ms *MemcacheStore) Decrement(key string, value int64) (int64, error) {
 	newValue, err := ms.Client.Decrement(ms.GetPrefix()+key, uint64(value))
-
 	if err != nil {
-		if err.Error() != MEMCACHE_NIL_ERROR_RESPONSE {
+		if err.Error() != MemcacheNilErrorResponse {
 			return value, err
 		}
+		if err := ms.Put(key, 0, 0); err != nil {
+			return 0, err
+		}
 
-		ms.Put(key, 0, 0)
-
-		return int64(0), nil
+		return 0, nil
 	}
 
 	return int64(newValue), nil
@@ -128,7 +122,6 @@ func (ms *MemcacheStore) GetPrefix() string {
 func (ms *MemcacheStore) PutMany(values map[string]interface{}, minutes int) error {
 	for key, value := range values {
 		err := ms.Put(key, value, minutes)
-
 		if err != nil {
 			return err
 		}
@@ -143,7 +136,6 @@ func (ms *MemcacheStore) Many(keys []string) (map[string]interface{}, error) {
 
 	for _, key := range keys {
 		val, err := ms.Get(key)
-
 		if err != nil {
 			return items, err
 		}
@@ -156,9 +148,7 @@ func (ms *MemcacheStore) Many(keys []string) (map[string]interface{}, error) {
 
 // Forget forgets/evicts a given key-value pair from the store
 func (ms *MemcacheStore) Forget(key string) (bool, error) {
-	err := ms.Client.Delete(ms.GetPrefix() + key)
-
-	if err != nil {
+	if err := ms.Client.Delete(ms.GetPrefix() + key); err != nil {
 		return false, err
 	}
 
@@ -167,9 +157,7 @@ func (ms *MemcacheStore) Forget(key string) (bool, error) {
 
 // Flush flushes the store
 func (ms *MemcacheStore) Flush() (bool, error) {
-	err := ms.Client.DeleteAll()
-
-	if err != nil {
+	if err := ms.Client.DeleteAll(); err != nil {
 		return false, err
 	}
 
@@ -179,7 +167,6 @@ func (ms *MemcacheStore) Flush() (bool, error) {
 // GetStruct gets the struct representation of a value from the store
 func (ms *MemcacheStore) GetStruct(key string, entity interface{}) error {
 	value, err := ms.get(key)
-
 	if err != nil {
 		return err
 	}
@@ -190,7 +177,7 @@ func (ms *MemcacheStore) GetStruct(key string, entity interface{}) error {
 }
 
 // Tags returns the TaggedCache for the given store
-func (ms *MemcacheStore) Tags(names ...string) TaggedStoreInterface {
+func (ms *MemcacheStore) Tags(names ...string) TaggedStore {
 	return &TaggedCache{
 		Store: ms,
 		Tags: TagSet{
@@ -202,7 +189,6 @@ func (ms *MemcacheStore) Tags(names ...string) TaggedStoreInterface {
 
 func (ms *MemcacheStore) get(key string) (string, error) {
 	item, err := ms.Client.Get(ms.GetPrefix() + key)
-
 	if err != nil {
 		return "", err
 	}
@@ -212,7 +198,6 @@ func (ms *MemcacheStore) get(key string) (string, error) {
 
 func (ms *MemcacheStore) getItemValue(itemValue []byte) string {
 	value, err := simpleDecode(string(itemValue))
-
 	if err != nil {
 		return string(itemValue)
 	}
@@ -223,11 +208,9 @@ func (ms *MemcacheStore) getItemValue(itemValue []byte) string {
 func (ms *MemcacheStore) processValue(value string) (interface{}, error) {
 	if isStringNumeric(value) {
 		floatValue, err := stringToFloat64(value)
-
 		if err != nil {
 			return floatValue, err
 		}
-
 		if isFloat(floatValue) {
 			return floatValue, err
 		}
@@ -240,10 +223,13 @@ func (ms *MemcacheStore) processValue(value string) (interface{}, error) {
 
 func (ms *MemcacheStore) item(key string, value interface{}, minutes int) (*memcache.Item, error) {
 	val, err := encode(value)
+	if err != nil {
+		return nil, err
+	}
 
 	return &memcache.Item{
 		Key:        ms.GetPrefix() + key,
 		Value:      []byte(val),
 		Expiration: int32(minutes),
-	}, err
+	}, nil
 }

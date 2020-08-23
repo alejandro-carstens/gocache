@@ -15,7 +15,6 @@ type RedisTaggedCache struct {
 // Forever puts a value in the given store until it is forgotten/evicted
 func (rtc *RedisTaggedCache) Forever(key string, value interface{}) error {
 	namespace, err := rtc.Tags.GetNamespace()
-
 	if err != nil {
 		return err
 	}
@@ -23,8 +22,7 @@ func (rtc *RedisTaggedCache) Forever(key string, value interface{}) error {
 	rtc.pushForever(namespace, key)
 
 	h := sha1.New()
-
-	h.Write(([]byte(namespace)))
+	h.Write([]byte(namespace))
 
 	return rtc.Store.Forever(rtc.GetPrefix()+hex.EncodeToString(h.Sum(nil))+":"+key, value)
 }
@@ -36,15 +34,11 @@ func (rtc *RedisTaggedCache) TagFlush() error {
 
 func (rtc *RedisTaggedCache) pushForever(namespace string, key string) {
 	h := sha1.New()
-
-	h.Write(([]byte(namespace)))
+	h.Write([]byte(namespace))
 
 	fullKey := rtc.GetPrefix() + hex.EncodeToString(h.Sum(nil)) + ":" + key
 
-	segments := strings.Split(namespace, "|")
-
-	for _, segment := range segments {
-
+	for _, segment := range strings.Split(namespace, "|") {
 		inputs := []reflect.Value{
 			reflect.ValueOf(rtc.foreverKey(segment)),
 			reflect.ValueOf(fullKey),
@@ -56,25 +50,16 @@ func (rtc *RedisTaggedCache) pushForever(namespace string, key string) {
 
 func (rtc *RedisTaggedCache) deleteForeverKeys() error {
 	namespace, err := rtc.Tags.GetNamespace()
-
 	if err != nil {
 		return err
 	}
 
-	segments := strings.Split(namespace, "|")
-
-	for _, segment := range segments {
+	for _, segment := range strings.Split(namespace, "|") {
 		key := rtc.foreverKey(segment)
-
-		err = rtc.deleteForeverValues(key)
-
-		if err != nil {
+		if err := rtc.deleteForeverValues(key); err != nil {
 			return err
 		}
-
-		_, err = rtc.Store.Forget(segment)
-
-		if err != nil {
+		if _, err = rtc.Store.Forget(segment); err != nil {
 			return err
 		}
 	}
@@ -90,14 +75,11 @@ func (rtc *RedisTaggedCache) deleteForeverValues(key string) error {
 	}
 
 	keys := reflect.ValueOf(rtc.Store).MethodByName("Lrange").Call(inputs)
-
 	if len(keys) > 0 {
 		for _, key := range keys {
 			if key.Len() > 0 {
 				for i := 0; i < key.Len(); i++ {
-					_, err := rtc.Store.Forget(key.Index(i).String())
-
-					if err != nil {
+					if _, err := rtc.Store.Forget(key.Index(i).String()); err != nil {
 						return err
 					}
 				}

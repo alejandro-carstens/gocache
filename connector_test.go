@@ -5,49 +5,31 @@ import (
 )
 
 func TestMemcacheConnector(t *testing.T) {
-	memcacheConnector := new(MemcacheConnector)
-
-	memcacheStore, err := memcacheConnector.Connect(memcacheStore())
-
+	memcacheStore, err := new(MemcacheConnector).Connect(memcacheStore())
 	if err != nil {
-		panic(err)
+		t.Fatal(err)
 	}
-
-	_, ok := memcacheStore.(StoreInterface)
-
-	if !ok {
+	if _, ok := memcacheStore.(Store); !ok {
 		t.Error("Expected StoreInterface got", memcacheStore)
 	}
 }
 
 func TestRedisConnector(t *testing.T) {
-	redisConnector := new(RedisConnector)
-
-	redisStore, err := redisConnector.Connect(redisStore())
-
+	redisStore, err := new(RedisConnector).Connect(redisStore())
 	if err != nil {
-		panic(err)
+		t.Fatal(err)
 	}
-
-	_, ok := redisStore.(StoreInterface)
-
-	if !ok {
+	if _, ok := redisStore.(Store); !ok {
 		t.Error("Expected StoreInterface got", redisStore)
 	}
 }
 
 func TestArrayConnector(t *testing.T) {
-	mapConnector := new(MapConnector)
-
-	mapStore, err := mapConnector.Connect(mapStore())
-
+	mapStore, err := new(MapConnector).Connect(mapStore())
 	if err != nil {
-		panic(err)
+		t.Fatal(err)
 	}
-
-	_, ok := mapStore.(StoreInterface)
-
-	if !ok {
+	if _, ok := mapStore.(Store); !ok {
 		t.Error("Expected StoreInterface got", mapStore)
 	}
 }

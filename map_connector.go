@@ -8,9 +8,8 @@ import (
 type MapConnector struct{}
 
 // Connect is responsible for connecting with the caching store
-func (ac *MapConnector) Connect(params map[string]interface{}) (StoreInterface, error) {
+func (ac *MapConnector) Connect(params map[string]interface{}) (Store, error) {
 	params, err := ac.validate(params)
-
 	if err != nil {
 		return &MapStore{}, err
 	}
@@ -27,7 +26,7 @@ func (ac *MapConnector) Connect(params map[string]interface{}) (StoreInterface, 
 
 func (ac *MapConnector) validate(params map[string]interface{}) (map[string]interface{}, error) {
 	if _, ok := params["prefix"]; !ok {
-		return params, errors.New("You need to specify a caching prefix.")
+		return params, errors.New("you need to specify a caching prefix")
 	}
 
 	return params, nil

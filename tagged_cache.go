@@ -7,14 +7,13 @@ import (
 
 // TaggedCache is the representation of a tagged caching store
 type TaggedCache struct {
-	Store StoreInterface
+	Store Store
 	Tags  TagSet
 }
 
 // Get gets a value from the store
 func (tc *TaggedCache) Get(key string) (interface{}, error) {
 	tagKey, err := tc.taggedItemKey(key)
-
 	if err != nil {
 		return tagKey, err
 	}
@@ -25,7 +24,6 @@ func (tc *TaggedCache) Get(key string) (interface{}, error) {
 // Put puts a value in the given store for a predetermined amount of time in mins.
 func (tc *TaggedCache) Put(key string, value interface{}, minutes int) error {
 	tagKey, err := tc.taggedItemKey(key)
-
 	if err != nil {
 		return err
 	}
@@ -36,7 +34,6 @@ func (tc *TaggedCache) Put(key string, value interface{}, minutes int) error {
 // Increment increments an integer counter by a given value
 func (tc *TaggedCache) Increment(key string, value int64) (int64, error) {
 	tagKey, err := tc.taggedItemKey(key)
-
 	if err != nil {
 		return 0, err
 	}
@@ -47,7 +44,6 @@ func (tc *TaggedCache) Increment(key string, value int64) (int64, error) {
 // Decrement decrements an integer counter by a given value
 func (tc *TaggedCache) Decrement(key string, value int64) (int64, error) {
 	tagKey, err := tc.taggedItemKey(key)
-
 	if err != nil {
 		return 0, err
 	}
@@ -58,7 +54,6 @@ func (tc *TaggedCache) Decrement(key string, value int64) (int64, error) {
 // Forget forgets/evicts a given key-value pair from the store
 func (tc *TaggedCache) Forget(key string) (bool, error) {
 	tagKey, err := tc.taggedItemKey(key)
-
 	if err != nil {
 		return false, err
 	}
@@ -69,7 +64,6 @@ func (tc *TaggedCache) Forget(key string) (bool, error) {
 // Forever puts a value in the given store until it is forgotten/evicted
 func (tc *TaggedCache) Forever(key string, value interface{}) error {
 	tagKey, err := tc.taggedItemKey(key)
-
 	if err != nil {
 		return err
 	}
@@ -89,7 +83,6 @@ func (tc *TaggedCache) Many(keys []string) (map[string]interface{}, error) {
 
 	for i, key := range keys {
 		tagKey, err := tc.taggedItemKey(key)
-
 		if err != nil {
 			return values, err
 		}
@@ -98,7 +91,6 @@ func (tc *TaggedCache) Many(keys []string) (map[string]interface{}, error) {
 	}
 
 	results, err := tc.Store.Many(taggedKeys)
-
 	if err != nil {
 		return results, err
 	}
@@ -116,7 +108,6 @@ func (tc *TaggedCache) PutMany(values map[string]interface{}, minutes int) error
 
 	for key, value := range values {
 		tagKey, err := tc.taggedItemKey(key)
-
 		if err != nil {
 			return err
 		}
@@ -135,7 +126,6 @@ func (tc *TaggedCache) GetPrefix() string {
 // GetInt gets an int value from the store
 func (tc *TaggedCache) GetInt(key string) (int64, error) {
 	tagKey, err := tc.taggedItemKey(key)
-
 	if err != nil {
 		return 0, err
 	}
@@ -146,7 +136,6 @@ func (tc *TaggedCache) GetInt(key string) (int64, error) {
 // GetFloat gets a float value from the store
 func (tc *TaggedCache) GetFloat(key string) (float64, error) {
 	tagKey, err := tc.taggedItemKey(key)
-
 	if err != nil {
 		return 0, err
 	}
@@ -157,7 +146,6 @@ func (tc *TaggedCache) GetFloat(key string) (float64, error) {
 // GetStruct gets the struct representation of a value from the store
 func (tc *TaggedCache) GetStruct(key string, entity interface{}) error {
 	tagKey, err := tc.taggedItemKey(key)
-
 	if err != nil {
 		return err
 	}
@@ -167,7 +155,6 @@ func (tc *TaggedCache) GetStruct(key string, entity interface{}) error {
 
 func (tc *TaggedCache) GetString(key string) (string, error) {
 	tagKey, err := tc.taggedItemKey(key)
-
 	if err != nil {
 		return "", err
 	}
@@ -184,12 +171,11 @@ func (tc *TaggedCache) taggedItemKey(key string) (string, error) {
 	h := sha1.New()
 
 	namespace, err := tc.Tags.GetNamespace()
-
 	if err != nil {
 		return namespace, err
 	}
 
-	h.Write(([]byte(namespace)))
+	h.Write([]byte(namespace))
 
 	return tc.GetPrefix() + hex.EncodeToString(h.Sum(nil)) + ":" + key, nil
 }

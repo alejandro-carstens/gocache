@@ -9,14 +9,13 @@ import (
 
 // TagSet is the representation of a tag set for the cahing stores
 type TagSet struct {
-	Store StoreInterface
+	Store Store
 	Names []string
 }
 
 // GetNamespace gets the current TagSet namespace
 func (ts *TagSet) GetNamespace() (string, error) {
 	tagsIds, err := ts.tagIds()
-
 	if err != nil {
 		return "", err
 	}
@@ -28,7 +27,6 @@ func (ts *TagSet) GetNamespace() (string, error) {
 func (ts *TagSet) Reset() error {
 	for i, name := range ts.Names {
 		id, err := ts.resetTag(name)
-
 		if err != nil {
 			return err
 		}
@@ -41,11 +39,9 @@ func (ts *TagSet) Reset() error {
 
 func (ts *TagSet) tagId(name string) (string, error) {
 	value, err := ts.Store.Get(ts.tagKey(name))
-
 	if err != nil && !isCacheMissedError(err) {
 		return "", err
 	}
-
 	if value == nil {
 		return ts.resetTag(name)
 	}
@@ -62,7 +58,6 @@ func (ts *TagSet) tagIds() ([]string, error) {
 
 	for i, name := range ts.Names {
 		val, err := ts.tagId(name)
-
 		if err != nil {
 			return tagIds, err
 		}
@@ -76,7 +71,5 @@ func (ts *TagSet) tagIds() ([]string, error) {
 func (ts *TagSet) resetTag(name string) (string, error) {
 	id := xid.New().String()
 
-	err := ts.Store.Forever(ts.tagKey(name), id)
-
-	return id, err
+	return id, ts.Store.Forever(ts.tagKey(name), id)
 }

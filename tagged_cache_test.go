@@ -9,20 +9,20 @@ func TestPutGetWithTags(t *testing.T) {
 		expected := "value"
 
 		tags := tag()
-
-		cache.Tags(tags).Put("key", "value", 10)
+		if err := cache.Tags(tags).Put("key", "value", 10); err != nil {
+			t.Fatal(err)
+		}
 
 		got, err := cache.Tags(tags).Get("key")
-
 		if err != nil {
 			t.Error(err.Error())
 		}
-
 		if got != expected {
 			t.Error("Expected value, got ", got)
 		}
-
-		cache.Tags(tags).Forget("key")
+		if _, err := cache.Tags(tags).Forget("key"); err != nil {
+			t.Fatal(err)
+		}
 	}
 }
 
@@ -31,20 +31,20 @@ func TestPutGetIntWithTags(t *testing.T) {
 		cache := store(driver)
 
 		tags := tag()
-
-		cache.Tags(tags).Put("key", 100, 1)
+		if err := cache.Tags(tags).Put("key", 100, 1); err != nil {
+			t.Fatal(err)
+		}
 
 		got, err := cache.Tags(tags).Get("key")
-
 		if err != nil {
 			t.Error(err.Error())
 		}
-
 		if got != int64(100) {
 			t.Error("Expected 100, got ", got)
 		}
-
-		cache.Tags(tags).Forget("key")
+		if _, err :=cache.Tags(tags).Forget("key"); err != nil {
+			t.Fatal(err)
+		}
 	}
 }
 
@@ -57,20 +57,20 @@ func TestPutGetFloatWithTags(t *testing.T) {
 		expected = 9.99
 
 		tags := tag()
-
-		cache.Tags(tags).Put("key", expected, 1)
+		if err :=cache.Tags(tags).Put("key", expected, 1); err != nil {
+			t.Fatal(err)
+		}
 
 		got, err := cache.Tags(tags).Get("key")
-
 		if err != nil {
 			t.Error(err.Error())
 		}
-
 		if got != expected {
 			t.Error("Expected 9.99, got ", got)
 		}
-
-		cache.Tags(tags).Forget("key")
+		if _, err := cache.Tags(tags).Forget("key"); err != nil {
+			t.Fatal(err)
+		}
 	}
 }
 
@@ -79,22 +79,25 @@ func TestIncrementWithTags(t *testing.T) {
 		cache := store(driver)
 
 		tags := tag()
+		if _, err := cache.Tags(tags).Increment("increment_key", 1); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := cache.Tags(tags).Increment("increment_key", 1); err != nil {
+			t.Fatal(err)
+		}
 
-		cache.Tags(tags).Increment("increment_key", 1)
-		cache.Tags(tags).Increment("increment_key", 1)
 		got, err := cache.Tags(tags).Get("increment_key")
-
 		if err != nil {
 			t.Error(err.Error())
 		}
 
 		var expected int64 = 2
-
 		if got != expected {
 			t.Error("Expected 2, got ", got)
 		}
-
-		cache.Tags(tags).Forget("increment_key")
+		if _, err := cache.Tags(tags).Forget("increment_key"); err != nil {
+			t.Fatal(err)
+		}
 	}
 }
 
@@ -103,23 +106,25 @@ func TestDecrementWithTags(t *testing.T) {
 		cache := store(driver)
 
 		tags := tag()
-
-		cache.Tags(tags).Increment("decrement_key", 2)
-		cache.Tags(tags).Decrement("decrement_key", 1)
+		if _, err := cache.Tags(tags).Increment("decrement_key", 2); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := cache.Tags(tags).Decrement("decrement_key", 1); err != nil {
+			t.Fatal(err)
+		}
 
 		var expected int64 = 1
 
 		got, err := cache.Tags(tags).Get("decrement_key")
-
 		if err != nil {
 			t.Error(err.Error())
 		}
-
 		if got != expected {
 			t.Error("Expected "+string(expected)+", got ", got)
 		}
-
-		cache.Tags(tags).Forget("decrement_key")
+		if _, err := cache.Tags(tags).Forget("decrement_key"); err != nil {
+			t.Fatal(err)
+		}
 	}
 }
 
@@ -130,20 +135,20 @@ func TestForeverWithTags(t *testing.T) {
 		expected := "value"
 
 		tags := tag()
-
-		cache.Tags(tags).Forever("key", expected)
+		if err := cache.Tags(tags).Forever("key", expected); err != nil {
+			t.Fatal(err)
+		}
 
 		got, err := cache.Tags(tags).Get("key")
-
 		if err != nil {
 			t.Error(err.Error())
 		}
-
 		if got != expected {
 			t.Error("Expected "+expected+", got ", got)
 		}
-
-		cache.Tags(tags).Forget("key")
+		if _, err := cache.Tags(tags).Forget("key"); err != nil {
+			t.Fatal(err)
+		}
 	}
 }
 
@@ -159,7 +164,9 @@ func TestPutGetManyWithTags(t *testing.T) {
 		keys["key_2"] = int64(100)
 		keys["key_3"] = float64(9.99)
 
-		cache.Tags(tags).PutMany(keys, 10)
+		if err := cache.Tags(tags).PutMany(keys, 10); err != nil {
+			t.Fatal(err)
+		}
 
 		resultKeys := make([]string, 3)
 
@@ -168,7 +175,6 @@ func TestPutGetManyWithTags(t *testing.T) {
 		resultKeys[2] = "key_3"
 
 		results, err := cache.Tags(tags).Many(resultKeys)
-
 		if err != nil {
 			t.Error(err.Error())
 		}
@@ -179,7 +185,9 @@ func TestPutGetManyWithTags(t *testing.T) {
 			}
 		}
 
-		cache.Tags(tags).Flush()
+		if _, err := cache.Tags(tags).Flush(); err != nil {
+			t.Fatal(err)
+		}
 	}
 }
 
@@ -194,23 +202,24 @@ func TestPutGetStructWithTags(t *testing.T) {
 		tags[2] = "tag3"
 
 		var firstExample example
-
 		firstExample.Name = "Alejandro"
 		firstExample.Description = "Whatever"
 
-		cache.Tags(tags...).Put("key", firstExample, 10)
+		if err := cache.Tags(tags...).Put("key", firstExample, 10); err != nil {
+			t.Fatal(err)
+		}
 
 		var newExample example
 
 		if err := cache.Tags(tags...).GetStruct("key", &newExample); err != nil {
 			t.Error(err.Error())
 		}
-
 		if newExample != firstExample {
 			t.Error("The structs are not the same", newExample)
 		}
-
-		cache.Forget("key")
+		if _, err := cache.Forget("key"); err != nil {
+			t.Fatal(err)
+		}
 	}
 }
 
@@ -221,18 +230,13 @@ func TestTagSet(t *testing.T) {
 		tagSet := cache.Tags("Alejandro").GetTags()
 
 		namespace, err := tagSet.GetNamespace()
-
 		if err != nil {
 			t.Error(err.Error())
 		}
-
 		if len([]rune(namespace)) != 20 {
 			t.Error("The namespace is not 20 chars long.", namespace)
 		}
-
-		got := tagSet.Reset()
-
-		if got != nil {
+		if got := tagSet.Reset(); got != nil {
 			t.Error("Reset did not return nil.", got)
 		}
 	}

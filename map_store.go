@@ -7,7 +7,7 @@ import (
 )
 
 // MAP_NIL_ERROR_RESPONSE map nil response error
-const MAP_NIL_ERROR_RESPONSE = "map: cache miss"
+const MapNilErrorResponse = "map: cache miss"
 
 // MapStore is the representation of a map caching store
 type MapStore struct {
@@ -18,18 +18,15 @@ type MapStore struct {
 // Get gets a value from the store
 func (ms *MapStore) Get(key string) (interface{}, error) {
 	value, valid := ms.Client[ms.GetPrefix()+key]
-
 	if !valid {
-		return nil, errors.New(MAP_NIL_ERROR_RESPONSE)
+		return nil, errors.New(MapNilErrorResponse)
 	}
 
 	if isStringNumeric(value.(string)) {
 		floatValue, err := stringToFloat64(value.(string))
-
 		if err != nil {
 			return floatValue, err
 		}
-
 		if isFloat(floatValue) {
 			return floatValue, err
 		}
@@ -43,9 +40,8 @@ func (ms *MapStore) Get(key string) (interface{}, error) {
 // GetString gets a string value from the store
 func (ms *MapStore) GetString(key string) (string, error) {
 	value, valid := ms.Client[ms.GetPrefix()+key]
-
 	if !valid {
-		return "", errors.New(MAP_NIL_ERROR_RESPONSE)
+		return "", errors.New(MapNilErrorResponse)
 	}
 
 	return simpleDecode(fmt.Sprint(value))
@@ -54,13 +50,11 @@ func (ms *MapStore) GetString(key string) (string, error) {
 // GetFloat gets a float value from the store
 func (ms *MapStore) GetFloat(key string) (float64, error) {
 	value, valid := ms.Client[ms.GetPrefix()+key]
-
 	if !valid {
-		return 0, errors.New(MAP_NIL_ERROR_RESPONSE)
+		return 0, errors.New(MapNilErrorResponse)
 	}
-
 	if !isStringNumeric(value.(string)) {
-		return 0, errors.New("Invalid numeric value")
+		return 0, errors.New("invalid numeric value")
 	}
 
 	return stringToFloat64(value.(string))
@@ -69,13 +63,11 @@ func (ms *MapStore) GetFloat(key string) (float64, error) {
 // GetInt gets an int value from the store
 func (ms *MapStore) GetInt(key string) (int64, error) {
 	value, valid := ms.Client[ms.GetPrefix()+key]
-
 	if !valid {
-		return 0, errors.New(MAP_NIL_ERROR_RESPONSE)
+		return 0, errors.New(MapNilErrorResponse)
 	}
-
 	if !isStringNumeric(value.(string)) {
-		return 0, errors.New("Invalid numeric value")
+		return 0, errors.New("invalid numeric value")
 	}
 
 	val, err := stringToFloat64(value.(string))
@@ -86,27 +78,20 @@ func (ms *MapStore) GetInt(key string) (int64, error) {
 // Increment increments an integer counter by a given value
 func (ms *MapStore) Increment(key string, value int64) (int64, error) {
 	val := ms.Client[ms.GetPrefix()+key]
-
 	if val != nil {
 		if isStringNumeric(val.(string)) {
 			floatValue, err := stringToFloat64(val.(string))
-
 			if err != nil {
 				return 0, err
 			}
 
 			result := value + int64(floatValue)
 
-			err = ms.Put(key, result, 0)
-
-			return result, err
+			return result, ms.Put(key, result, 0)
 		}
-
 	}
 
-	err := ms.Put(key, value, 0)
-
-	return value, err
+	return value, ms.Put(key, value, 0)
 }
 
 // Decrement decrements an integer counter by a given value
@@ -117,6 +102,9 @@ func (ms *MapStore) Decrement(key string, value int64) (int64, error) {
 // Put puts a value in the given store for a predetermined amount of time in mins.
 func (ms *MapStore) Put(key string, value interface{}, minutes int) error {
 	val, err := encode(value)
+	if err != nil {
+		return err
+	}
 
 	mins := strconv.Itoa(minutes)
 
@@ -124,7 +112,7 @@ func (ms *MapStore) Put(key string, value interface{}, minutes int) error {
 
 	ms.Client[ms.GetPrefix()+key+mins] = val
 
-	return err
+	return nil
 }
 
 // Forever puts a value in the given store until it is forgotten/evicted
@@ -141,9 +129,7 @@ func (ms *MapStore) Flush() (bool, error) {
 
 // Forget forgets/evicts a given key-value pair from the store
 func (ms *MapStore) Forget(key string) (bool, error) {
-	_, ok := ms.Client[ms.GetPrefix()+key]
-
-	if ok {
+	if _, ok := ms.Client[ms.GetPrefix()+key]; ok {
 		delete(ms.Client, ms.GetPrefix()+key)
 
 		return true, nil
@@ -160,7 +146,9 @@ func (ms *MapStore) GetPrefix() string {
 // PutMany puts many values in the given store until they are forgotten/evicted
 func (ms *MapStore) PutMany(values map[string]interface{}, minutes int) error {
 	for key, value := range values {
-		ms.Put(key, value, minutes)
+		if err := ms.Put(key, value, minutes); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -172,7 +160,6 @@ func (ms *MapStore) Many(keys []string) (map[string]interface{}, error) {
 
 	for _, key := range keys {
 		val, err := ms.Get(key)
-
 		if err != nil {
 			return items, err
 		}
@@ -186,9 +173,8 @@ func (ms *MapStore) Many(keys []string) (map[string]interface{}, error) {
 // GetStruct gets the struct representation of a value from the store
 func (ms *MapStore) GetStruct(key string, entity interface{}) error {
 	value, valid := ms.Client[ms.GetPrefix()+key]
-
 	if !valid {
-		return errors.New(MAP_NIL_ERROR_RESPONSE)
+		return errors.New(MapNilErrorResponse)
 	}
 
 	_, err := decode(fmt.Sprint(value), entity)
@@ -197,7 +183,7 @@ func (ms *MapStore) GetStruct(key string, entity interface{}) error {
 }
 
 // Tags returns the TaggedCache for the given store
-func (ms *MapStore) Tags(names ...string) TaggedStoreInterface {
+func (ms *MapStore) Tags(names ...string) TaggedStore {
 	return &TaggedCache{
 		Store: ms,
 		Tags: TagSet{

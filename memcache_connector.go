@@ -10,9 +10,8 @@ import (
 type MemcacheConnector struct{}
 
 // Connect is responsible for connecting with the caching store
-func (mc *MemcacheConnector) Connect(params map[string]interface{}) (StoreInterface, error) {
+func (mc *MemcacheConnector) Connect(params map[string]interface{}) (Store, error) {
 	params, err := mc.validate(params)
-
 	if err != nil {
 		return &MemcacheStore{}, err
 	}
@@ -29,7 +28,6 @@ func (mc *MemcacheConnector) Connect(params map[string]interface{}) (StoreInterf
 
 func (mc *MemcacheConnector) client(params map[string]interface{}) memcache.Client {
 	servers := make([]string, len(params)-1)
-
 	for _, param := range params {
 		servers = append(servers, param.(string))
 	}
@@ -39,7 +37,7 @@ func (mc *MemcacheConnector) client(params map[string]interface{}) memcache.Clie
 
 func (mc *MemcacheConnector) validate(params map[string]interface{}) (map[string]interface{}, error) {
 	if _, ok := params["prefix"]; !ok {
-		return params, errors.New("You need to specify a caching prefix.")
+		return params, errors.New("you need to specify a caching prefix")
 	}
 
 	for key, param := range params {

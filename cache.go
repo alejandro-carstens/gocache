@@ -4,29 +4,29 @@ import (
 	"strings"
 )
 
-// REDIS_DRIVER specifies the redis driver name
-const REDIS_DRIVER = "redis"
+// RedisDriver specifies the redis driver name
+const RedisDriver = "redis"
 
-// MEMCACHE_DRIVER specifies the memcache driver name
-const MEMCACHE_DRIVER = "memcache"
+// MemcacheDriver specifies the memcache driver name
+const MemcacheDriver = "memcache"
 
 // MAP_DRIVER specifies the map driver name
-const MAP_DRIVER = "map"
+const MapDriver = "map"
 
-// New new-ups an instance of StoreInterface
-func New(driver string, params map[string]interface{}) (StoreInterface, error) {
+// New new-ups an instance of Store
+func New(driver string, params map[string]interface{}) (Store, error) {
 	switch strings.ToLower(driver) {
-	case REDIS_DRIVER:
+	case RedisDriver:
 		return connect(new(RedisConnector), params)
-	case MEMCACHE_DRIVER:
+	case MemcacheDriver:
 		return connect(new(MemcacheConnector), params)
-	case MAP_DRIVER:
+	case MapDriver:
 		return connect(new(MapConnector), params)
 	}
 
 	return connect(new(MapConnector), params)
 }
 
-func connect(connector CacheConnectorInterface, params map[string]interface{}) (StoreInterface, error) {
+func connect(connector CacheConnector, params map[string]interface{}) (Store, error) {
 	return connector.Connect(params)
 }

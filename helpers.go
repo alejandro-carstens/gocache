@@ -16,7 +16,7 @@ func encode(item interface{}) (string, error) {
 func simpleDecode(value string) (string, error) {
 	err := json.Unmarshal([]byte(value), &value)
 
-	return string(value), err
+	return value, err
 }
 
 func decode(value string, entity interface{}) (interface{}, error) {
@@ -43,11 +43,10 @@ func isNumeric(s interface{}) bool {
 func getTaggedManyKey(prefix string, key string) string {
 	count := len(prefix) + 41
 
-	sub := ""
-	subs := []string{}
+	var sub string
+	var subs []string
 
 	runs := bytes.Runes([]byte(key))
-
 	for i, run := range runs {
 		sub = sub + string(run)
 		if (i+1)%count == 0 {
@@ -56,6 +55,10 @@ func getTaggedManyKey(prefix string, key string) string {
 		} else if (i + 1) == len(runs) {
 			subs = append(subs, sub)
 		}
+	}
+
+	if len(subs) == 0 {
+		return ""
 	}
 
 	return subs[1]
@@ -76,7 +79,7 @@ func isFloat(value float64) bool {
 }
 
 func isCacheMissedError(err error) bool {
-	haystack := []string{MAP_NIL_ERROR_RESPONSE, MEMCACHE_NIL_ERROR_RESPONSE, REDIS_NIL_ERROR_RESPONSE}
+	haystack := []string{MapNilErrorResponse, MemcacheNilErrorResponse, RedisNilErrorResponse}
 
 	return inStringSlice(err.Error(), haystack)
 }
