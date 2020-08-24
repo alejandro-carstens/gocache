@@ -17,8 +17,8 @@ func (rc *RedisConnector) Connect(params map[string]interface{}) (Cache, error) 
 	}
 
 	return &RedisStore{
-		Client: rc.client(params["address"].(string), params["password"].(string), params["database"].(int)),
-		Prefix: params["prefix"].(string),
+		client: rc.client(params["address"].(string), params["password"].(string), params["database"].(int)),
+		prefix: params["prefix"].(string),
 	}, nil
 }
 

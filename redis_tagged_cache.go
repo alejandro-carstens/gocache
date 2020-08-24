@@ -14,7 +14,7 @@ type RedisTaggedCache struct {
 
 // Forever puts a value in the given store until it is forgotten/evicted
 func (rtc *RedisTaggedCache) Forever(key string, value interface{}) error {
-	namespace, err := rtc.Tags.GetNamespace()
+	namespace, err := rtc.tags.GetNamespace()
 	if err != nil {
 		return err
 	}
@@ -24,7 +24,7 @@ func (rtc *RedisTaggedCache) Forever(key string, value interface{}) error {
 	h := sha1.New()
 	h.Write([]byte(namespace))
 
-	return rtc.Store.Forever(rtc.GetPrefix()+hex.EncodeToString(h.Sum(nil))+":"+key, value)
+	return rtc.store.Forever(rtc.GetPrefix()+hex.EncodeToString(h.Sum(nil))+":"+key, value)
 }
 
 // TagFlush flushes the tags of the TaggedCache
@@ -44,12 +44,12 @@ func (rtc *RedisTaggedCache) pushForever(namespace string, key string) {
 			reflect.ValueOf(fullKey),
 		}
 
-		reflect.ValueOf(rtc.Store).MethodByName("Lpush").Call(inputs)
+		reflect.ValueOf(rtc.store).MethodByName("Lpush").Call(inputs)
 	}
 }
 
 func (rtc *RedisTaggedCache) deleteForeverKeys() error {
-	namespace, err := rtc.Tags.GetNamespace()
+	namespace, err := rtc.tags.GetNamespace()
 	if err != nil {
 		return err
 	}
@@ -59,7 +59,7 @@ func (rtc *RedisTaggedCache) deleteForeverKeys() error {
 		if err := rtc.deleteForeverValues(key); err != nil {
 			return err
 		}
-		if _, err = rtc.Store.Forget(segment); err != nil {
+		if _, err = rtc.store.Forget(segment); err != nil {
 			return err
 		}
 	}
@@ -74,12 +74,12 @@ func (rtc *RedisTaggedCache) deleteForeverValues(key string) error {
 		reflect.ValueOf(int64(-1)),
 	}
 
-	keys := reflect.ValueOf(rtc.Store).MethodByName("Lrange").Call(inputs)
+	keys := reflect.ValueOf(rtc.store).MethodByName("Lrange").Call(inputs)
 	if len(keys) > 0 {
 		for _, key := range keys {
 			if key.Len() > 0 {
 				for i := 0; i < key.Len(); i++ {
-					if _, err := rtc.Store.Forget(key.Index(i).String()); err != nil {
+					if _, err := rtc.store.Forget(key.Index(i).String()); err != nil {
 						return err
 					}
 				}

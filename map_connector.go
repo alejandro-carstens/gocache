@@ -19,8 +19,8 @@ func (ac *MapConnector) Connect(params map[string]interface{}) (Cache, error) {
 	delete(params, "prefix")
 
 	return &MapStore{
-		Client: make(map[string]interface{}),
-		Prefix: prefix,
+		client: make(map[string]interface{}),
+		prefix: prefix,
 	}, nil
 }
 

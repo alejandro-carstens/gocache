@@ -11,8 +11,8 @@ const MemcacheNilErrorResponse = "memcache: cache miss"
 
 // MemcacheStore is the representation of the memcache caching store
 type MemcacheStore struct {
-	Client memcache.Client
-	Prefix string
+	client memcache.Client
+	prefix string
 }
 
 // Put puts a value in the given store for a predetermined amount of time in mins.
@@ -22,7 +22,7 @@ func (ms *MemcacheStore) Put(key string, value interface{}, minutes int) error {
 		return err
 	}
 
-	return ms.Client.Set(item)
+	return ms.client.Set(item)
 }
 
 // Forever puts a value in the given store until it is forgotten/evicted
@@ -81,7 +81,7 @@ func (ms *MemcacheStore) GetString(key string) (string, error) {
 
 // Increment increments an integer counter by a given value
 func (ms *MemcacheStore) Increment(key string, value int64) (int64, error) {
-	newValue, err := ms.Client.Increment(ms.GetPrefix()+key, uint64(value))
+	newValue, err := ms.client.Increment(ms.GetPrefix()+key, uint64(value))
 	if err != nil {
 		if err.Error() != MemcacheNilErrorResponse {
 			return value, err
@@ -98,7 +98,7 @@ func (ms *MemcacheStore) Increment(key string, value int64) (int64, error) {
 
 // Decrement decrements an integer counter by a given value
 func (ms *MemcacheStore) Decrement(key string, value int64) (int64, error) {
-	newValue, err := ms.Client.Decrement(ms.GetPrefix()+key, uint64(value))
+	newValue, err := ms.client.Decrement(ms.GetPrefix()+key, uint64(value))
 	if err != nil {
 		if err.Error() != MemcacheNilErrorResponse {
 			return value, err
@@ -115,7 +115,7 @@ func (ms *MemcacheStore) Decrement(key string, value int64) (int64, error) {
 
 // GetPrefix gets the cache key prefix
 func (ms *MemcacheStore) GetPrefix() string {
-	return ms.Prefix
+	return ms.prefix
 }
 
 // PutMany puts many values in the given store until they are forgotten/evicted
@@ -148,7 +148,7 @@ func (ms *MemcacheStore) Many(keys []string) (map[string]interface{}, error) {
 
 // Forget forgets/evicts a given key-value pair from the store
 func (ms *MemcacheStore) Forget(key string) (bool, error) {
-	if err := ms.Client.Delete(ms.GetPrefix() + key); err != nil {
+	if err := ms.client.Delete(ms.GetPrefix() + key); err != nil {
 		return false, err
 	}
 
@@ -157,7 +157,7 @@ func (ms *MemcacheStore) Forget(key string) (bool, error) {
 
 // Flush flushes the store
 func (ms *MemcacheStore) Flush() (bool, error) {
-	if err := ms.Client.DeleteAll(); err != nil {
+	if err := ms.client.DeleteAll(); err != nil {
 		return false, err
 	}
 
@@ -183,8 +183,8 @@ func (ms *MemcacheStore) Close() error {
 // Tags returns the TaggedCache for the given store
 func (ms *MemcacheStore) Tags(names ...string) TaggedStore {
 	return &TaggedCache{
-		Store: ms,
-		Tags: TagSet{
+		store: ms,
+		tags: TagSet{
 			Store: ms,
 			Names: names,
 		},
@@ -192,7 +192,7 @@ func (ms *MemcacheStore) Tags(names ...string) TaggedStore {
 }
 
 func (ms *MemcacheStore) get(key string) (string, error) {
-	item, err := ms.Client.Get(ms.GetPrefix() + key)
+	item, err := ms.client.Get(ms.GetPrefix() + key)
 	if err != nil {
 		return "", err
 	}

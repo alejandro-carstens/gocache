@@ -7,8 +7,8 @@ import (
 
 // TaggedCache is the representation of a tagged caching store
 type TaggedCache struct {
-	Store Store
-	Tags  TagSet
+	store Store
+	tags  TagSet
 }
 
 // Get gets a value from the store
@@ -18,7 +18,7 @@ func (tc *TaggedCache) Get(key string) (interface{}, error) {
 		return tagKey, err
 	}
 
-	return tc.Store.Get(tagKey)
+	return tc.store.Get(tagKey)
 }
 
 // Put puts a value in the given store for a predetermined amount of time in mins.
@@ -28,7 +28,7 @@ func (tc *TaggedCache) Put(key string, value interface{}, minutes int) error {
 		return err
 	}
 
-	return tc.Store.Put(tagKey, value, minutes)
+	return tc.store.Put(tagKey, value, minutes)
 }
 
 // Increment increments an integer counter by a given value
@@ -38,7 +38,7 @@ func (tc *TaggedCache) Increment(key string, value int64) (int64, error) {
 		return 0, err
 	}
 
-	return tc.Store.Increment(tagKey, value)
+	return tc.store.Increment(tagKey, value)
 }
 
 // Decrement decrements an integer counter by a given value
@@ -48,7 +48,7 @@ func (tc *TaggedCache) Decrement(key string, value int64) (int64, error) {
 		return 0, err
 	}
 
-	return tc.Store.Decrement(tagKey, value)
+	return tc.store.Decrement(tagKey, value)
 }
 
 // Forget forgets/evicts a given key-value pair from the store
@@ -58,7 +58,7 @@ func (tc *TaggedCache) Forget(key string) (bool, error) {
 		return false, err
 	}
 
-	return tc.Store.Forget(tagKey)
+	return tc.store.Forget(tagKey)
 }
 
 // Forever puts a value in the given store until it is forgotten/evicted
@@ -68,12 +68,12 @@ func (tc *TaggedCache) Forever(key string, value interface{}) error {
 		return err
 	}
 
-	return tc.Store.Forever(tagKey, value)
+	return tc.store.Forever(tagKey, value)
 }
 
 // Flush flushes the store
 func (tc *TaggedCache) Flush() (bool, error) {
-	return tc.Store.Flush()
+	return tc.store.Flush()
 }
 
 // Many gets many values from the store
@@ -90,7 +90,7 @@ func (tc *TaggedCache) Many(keys []string) (map[string]interface{}, error) {
 		taggedKeys[i] = tagKey
 	}
 
-	results, err := tc.Store.Many(taggedKeys)
+	results, err := tc.store.Many(taggedKeys)
 	if err != nil {
 		return results, err
 	}
@@ -115,12 +115,12 @@ func (tc *TaggedCache) PutMany(values map[string]interface{}, minutes int) error
 		taggedMap[tagKey] = value
 	}
 
-	return tc.Store.PutMany(taggedMap, minutes)
+	return tc.store.PutMany(taggedMap, minutes)
 }
 
 // GetPrefix gets the cache key prefix
 func (tc *TaggedCache) GetPrefix() string {
-	return tc.Store.GetPrefix()
+	return tc.store.GetPrefix()
 }
 
 // GetInt gets an int value from the store
@@ -130,7 +130,7 @@ func (tc *TaggedCache) GetInt(key string) (int64, error) {
 		return 0, err
 	}
 
-	return tc.Store.GetInt(tagKey)
+	return tc.store.GetInt(tagKey)
 }
 
 // GetFloat gets a float value from the store
@@ -140,7 +140,7 @@ func (tc *TaggedCache) GetFloat(key string) (float64, error) {
 		return 0, err
 	}
 
-	return tc.Store.GetFloat(tagKey)
+	return tc.store.GetFloat(tagKey)
 }
 
 // GetStruct gets the struct representation of a value from the store
@@ -150,11 +150,11 @@ func (tc *TaggedCache) GetStruct(key string, entity interface{}) error {
 		return err
 	}
 
-	return tc.Store.GetStruct(tagKey, entity)
+	return tc.store.GetStruct(tagKey, entity)
 }
 
 func (tc *TaggedCache) Close() error {
-	return tc.Store.Close()
+	return tc.store.Close()
 }
 
 func (tc *TaggedCache) GetString(key string) (string, error) {
@@ -163,18 +163,18 @@ func (tc *TaggedCache) GetString(key string) (string, error) {
 		return "", err
 	}
 
-	return tc.Store.GetString(tagKey)
+	return tc.store.GetString(tagKey)
 }
 
 // TagFlush flushes the tags of the TaggedCache
 func (tc *TaggedCache) TagFlush() error {
-	return tc.Tags.Reset()
+	return tc.tags.Reset()
 }
 
 func (tc *TaggedCache) taggedItemKey(key string) (string, error) {
 	h := sha1.New()
 
-	namespace, err := tc.Tags.GetNamespace()
+	namespace, err := tc.tags.GetNamespace()
 	if err != nil {
 		return namespace, err
 	}
@@ -186,5 +186,5 @@ func (tc *TaggedCache) taggedItemKey(key string) (string, error) {
 
 // GetTags returns the TaggedCache Tags
 func (tc *TaggedCache) GetTags() TagSet {
-	return tc.Tags
+	return tc.tags
 }

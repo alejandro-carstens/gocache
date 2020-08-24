@@ -11,13 +11,13 @@ const MapNilErrorResponse = "map: cache miss"
 
 // MapStore is the representation of a map caching store
 type MapStore struct {
-	Client map[string]interface{}
-	Prefix string
+	client map[string]interface{}
+	prefix string
 }
 
 // Get gets a value from the store
 func (ms *MapStore) Get(key string) (interface{}, error) {
-	value, valid := ms.Client[ms.GetPrefix()+key]
+	value, valid := ms.client[ms.GetPrefix()+key]
 	if !valid {
 		return nil, errors.New(MapNilErrorResponse)
 	}
@@ -39,7 +39,7 @@ func (ms *MapStore) Get(key string) (interface{}, error) {
 
 // GetString gets a string value from the store
 func (ms *MapStore) GetString(key string) (string, error) {
-	value, valid := ms.Client[ms.GetPrefix()+key]
+	value, valid := ms.client[ms.GetPrefix()+key]
 	if !valid {
 		return "", errors.New(MapNilErrorResponse)
 	}
@@ -49,7 +49,7 @@ func (ms *MapStore) GetString(key string) (string, error) {
 
 // GetFloat gets a float value from the store
 func (ms *MapStore) GetFloat(key string) (float64, error) {
-	value, valid := ms.Client[ms.GetPrefix()+key]
+	value, valid := ms.client[ms.GetPrefix()+key]
 	if !valid {
 		return 0, errors.New(MapNilErrorResponse)
 	}
@@ -62,7 +62,7 @@ func (ms *MapStore) GetFloat(key string) (float64, error) {
 
 // GetInt gets an int value from the store
 func (ms *MapStore) GetInt(key string) (int64, error) {
-	value, valid := ms.Client[ms.GetPrefix()+key]
+	value, valid := ms.client[ms.GetPrefix()+key]
 	if !valid {
 		return 0, errors.New(MapNilErrorResponse)
 	}
@@ -77,7 +77,7 @@ func (ms *MapStore) GetInt(key string) (int64, error) {
 
 // Increment increments an integer counter by a given value
 func (ms *MapStore) Increment(key string, value int64) (int64, error) {
-	val := ms.Client[ms.GetPrefix()+key]
+	val := ms.client[ms.GetPrefix()+key]
 	if val != nil {
 		if isStringNumeric(val.(string)) {
 			floatValue, err := stringToFloat64(val.(string))
@@ -110,7 +110,7 @@ func (ms *MapStore) Put(key string, value interface{}, minutes int) error {
 
 	mins = ""
 
-	ms.Client[ms.GetPrefix()+key+mins] = val
+	ms.client[ms.GetPrefix()+key+mins] = val
 
 	return nil
 }
@@ -122,15 +122,15 @@ func (ms *MapStore) Forever(key string, value interface{}) error {
 
 // Flush flushes the store
 func (ms *MapStore) Flush() (bool, error) {
-	ms.Client = make(map[string]interface{})
+	ms.client = make(map[string]interface{})
 
 	return true, nil
 }
 
 // Forget forgets/evicts a given key-value pair from the store
 func (ms *MapStore) Forget(key string) (bool, error) {
-	if _, ok := ms.Client[ms.GetPrefix()+key]; ok {
-		delete(ms.Client, ms.GetPrefix()+key)
+	if _, ok := ms.client[ms.GetPrefix()+key]; ok {
+		delete(ms.client, ms.GetPrefix()+key)
 
 		return true, nil
 	}
@@ -140,7 +140,7 @@ func (ms *MapStore) Forget(key string) (bool, error) {
 
 // GetPrefix gets the cache key prefix
 func (ms *MapStore) GetPrefix() string {
-	return ms.Prefix
+	return ms.prefix
 }
 
 // PutMany puts many values in the given store until they are forgotten/evicted
@@ -172,7 +172,7 @@ func (ms *MapStore) Many(keys []string) (map[string]interface{}, error) {
 
 // GetStruct gets the struct representation of a value from the store
 func (ms *MapStore) GetStruct(key string, entity interface{}) error {
-	value, valid := ms.Client[ms.GetPrefix()+key]
+	value, valid := ms.client[ms.GetPrefix()+key]
 	if !valid {
 		return errors.New(MapNilErrorResponse)
 	}
@@ -190,8 +190,8 @@ func (ms *MapStore) Close() error {
 // Tags returns the TaggedCache for the given store
 func (ms *MapStore) Tags(names ...string) TaggedStore {
 	return &TaggedCache{
-		Store: ms,
-		Tags: TagSet{
+		store: ms,
+		tags: TagSet{
 			Store: ms,
 			Names: names,
 		},

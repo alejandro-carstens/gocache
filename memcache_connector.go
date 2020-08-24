@@ -21,8 +21,8 @@ func (mc *MemcacheConnector) Connect(params map[string]interface{}) (Cache, erro
 	delete(params, "prefix")
 
 	return &MemcacheStore{
-		Client: mc.client(params),
-		Prefix: prefix,
+		client: mc.client(params),
+		prefix: prefix,
 	}, nil
 }
 
