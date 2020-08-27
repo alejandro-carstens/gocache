@@ -2,29 +2,18 @@ package gocache
 
 import (
 	"fmt"
-	"strings"
-
 	"github.com/rs/xid"
+	"strings"
 )
 
-// TagSet is the representation of a tag set for the cahing stores
+// TagSet is the representation of a tag set for the caching stores
 type TagSet struct {
 	Store Store
 	Names []string
 }
 
-// GetNamespace gets the current TagSet namespace
-func (ts *TagSet) GetNamespace() (string, error) {
-	tagsIds, err := ts.tagIds()
-	if err != nil {
-		return "", err
-	}
-
-	return strings.Join(tagsIds, "|"), err
-}
-
 // Reset resets the tag set
-func (ts *TagSet) Reset() error {
+func (ts *TagSet) reset() error {
 	for i, name := range ts.Names {
 		id, err := ts.resetTag(name)
 		if err != nil {
@@ -37,20 +26,14 @@ func (ts *TagSet) Reset() error {
 	return nil
 }
 
-func (ts *TagSet) tagId(name string) (string, error) {
-	value, err := ts.Store.Get(ts.tagKey(name))
-	if err != nil && !isCacheMissedError(err) {
+// GetNamespace gets the current TagSet namespace
+func (ts *TagSet) getNamespace() (string, error) {
+	tagsIds, err := ts.tagIds()
+	if err != nil {
 		return "", err
 	}
-	if value == nil {
-		return ts.resetTag(name)
-	}
 
-	return fmt.Sprint(value), nil
-}
-
-func (ts *TagSet) tagKey(name string) string {
-	return "tag:" + name + ":key"
+	return strings.Join(tagsIds, "|"), err
 }
 
 func (ts *TagSet) tagIds() ([]string, error) {
@@ -66,6 +49,22 @@ func (ts *TagSet) tagIds() ([]string, error) {
 	}
 
 	return tagIds, nil
+}
+
+func (ts *TagSet) tagId(name string) (string, error) {
+	value, err := ts.Store.GetString(ts.tagKey(name))
+	if err != nil && !isCacheMissedError(err) {
+		return "", err
+	}
+	if len(value) == 0 {
+		return ts.resetTag(name)
+	}
+
+	return fmt.Sprint(value), nil
+}
+
+func (ts *TagSet) tagKey(name string) string {
+	return "tag:" + name + ":key"
 }
 
 func (ts *TagSet) resetTag(name string) (string, error) {

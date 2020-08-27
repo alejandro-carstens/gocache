@@ -14,7 +14,7 @@ type RedisTaggedCache struct {
 
 // Forever puts a value in the given store until it is forgotten/evicted
 func (rtc *RedisTaggedCache) Forever(key string, value interface{}) error {
-	namespace, err := rtc.tags.GetNamespace()
+	namespace, err := rtc.tags.getNamespace()
 	if err != nil {
 		return err
 	}
@@ -49,7 +49,7 @@ func (rtc *RedisTaggedCache) pushForever(namespace string, key string) {
 }
 
 func (rtc *RedisTaggedCache) deleteForeverKeys() error {
-	namespace, err := rtc.tags.GetNamespace()
+	namespace, err := rtc.tags.getNamespace()
 	if err != nil {
 		return err
 	}

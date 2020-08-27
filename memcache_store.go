@@ -30,18 +30,8 @@ func (ms *MemcacheStore) Forever(key string, value interface{}) error {
 	return ms.Put(key, value, 0)
 }
 
-// Get gets a value from the store
-func (ms *MemcacheStore) Get(key string) (interface{}, error) {
-	value, err := ms.get(key)
-	if err != nil {
-		return nil, err
-	}
-
-	return ms.processValue(value)
-}
-
-// GetFloat gets a float value from the store
-func (ms *MemcacheStore) GetFloat(key string) (float64, error) {
+// GetFloat64 gets a float value from the store
+func (ms *MemcacheStore) GetFloat64(key string) (float64, error) {
 	value, err := ms.get(key)
 	if err != nil {
 		return 0.0, err
@@ -53,8 +43,8 @@ func (ms *MemcacheStore) GetFloat(key string) (float64, error) {
 	return stringToFloat64(value)
 }
 
-// GetInt gets an int value from the store
-func (ms *MemcacheStore) GetInt(key string) (int64, error) {
+// GetInt64 gets an int value from the store
+func (ms *MemcacheStore) GetInt64(key string) (int64, error) {
 	value, err := ms.get(key)
 
 	if err != nil {
@@ -119,7 +109,7 @@ func (ms *MemcacheStore) GetPrefix() string {
 }
 
 // PutMany puts many values in the given store until they are forgotten/evicted
-func (ms *MemcacheStore) PutMany(values map[string]interface{}, minutes int) error {
+func (ms *MemcacheStore) PutMany(values map[string]string, minutes int) error {
 	for key, value := range values {
 		err := ms.Put(key, value, minutes)
 		if err != nil {
@@ -131,11 +121,11 @@ func (ms *MemcacheStore) PutMany(values map[string]interface{}, minutes int) err
 }
 
 // Many gets many values from the store
-func (ms *MemcacheStore) Many(keys []string) (map[string]interface{}, error) {
-	items := make(map[string]interface{})
+func (ms *MemcacheStore) Many(keys []string) (map[string]string, error) {
+	items := make(map[string]string)
 
 	for _, key := range keys {
-		val, err := ms.Get(key)
+		val, err := ms.GetString(key)
 		if err != nil {
 			return items, err
 		}
@@ -164,8 +154,8 @@ func (ms *MemcacheStore) Flush() (bool, error) {
 	return true, nil
 }
 
-// GetStruct gets the struct representation of a value from the store
-func (ms *MemcacheStore) GetStruct(key string, entity interface{}) error {
+// Get gets the struct representation of a value from the store
+func (ms *MemcacheStore) Get(key string, entity interface{}) error {
 	value, err := ms.get(key)
 	if err != nil {
 		return err

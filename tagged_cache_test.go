@@ -2,31 +2,7 @@ package gocache
 
 import "testing"
 
-func TestPutGetWithTags(t *testing.T) {
-	for _, driver := range drivers {
-		cache := store(driver)
-
-		expected := "value"
-
-		tags := tag()
-		if err := cache.Tags(tags).Put("key", "value", 10); err != nil {
-			t.Fatal(err)
-		}
-
-		got, err := cache.Tags(tags).Get("key")
-		if err != nil {
-			t.Error(err.Error())
-		}
-		if got != expected {
-			t.Error("Expected value, got ", got)
-		}
-		if _, err := cache.Tags(tags).Forget("key"); err != nil {
-			t.Fatal(err)
-		}
-	}
-}
-
-func TestPutGetIntWithTags(t *testing.T) {
+func TestPutGetInt64WithTags(t *testing.T) {
 	for _, driver := range drivers {
 		cache := store(driver)
 
@@ -35,7 +11,7 @@ func TestPutGetIntWithTags(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		got, err := cache.Tags(tags).Get("key")
+		got, err := cache.Tags(tags).GetInt64("key")
 		if err != nil {
 			t.Error(err.Error())
 		}
@@ -48,7 +24,7 @@ func TestPutGetIntWithTags(t *testing.T) {
 	}
 }
 
-func TestPutGetFloatWithTags(t *testing.T) {
+func TestPutGetFloat64WithTags(t *testing.T) {
 	for _, driver := range drivers {
 		cache := store(driver)
 
@@ -61,7 +37,7 @@ func TestPutGetFloatWithTags(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		got, err := cache.Tags(tags).Get("key")
+		got, err := cache.Tags(tags).GetFloat64("key")
 		if err != nil {
 			t.Error(err.Error())
 		}
@@ -86,7 +62,7 @@ func TestIncrementWithTags(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		got, err := cache.Tags(tags).Get("increment_key")
+		got, err := cache.Tags(tags).GetInt64("increment_key")
 		if err != nil {
 			t.Error(err.Error())
 		}
@@ -115,7 +91,7 @@ func TestDecrementWithTags(t *testing.T) {
 
 		var expected int64 = 1
 
-		got, err := cache.Tags(tags).Get("decrement_key")
+		got, err := cache.Tags(tags).GetInt64("decrement_key")
 		if err != nil {
 			t.Error(err.Error())
 		}
@@ -139,7 +115,7 @@ func TestForeverWithTags(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		got, err := cache.Tags(tags).Get("key")
+		got, err := cache.Tags(tags).GetString("key")
 		if err != nil {
 			t.Error(err.Error())
 		}
@@ -158,11 +134,11 @@ func TestPutGetManyWithTags(t *testing.T) {
 
 		tags := tag()
 
-		keys := make(map[string]interface{})
+		keys := make(map[string]string)
 
 		keys["key_1"] = "value"
-		keys["key_2"] = int64(100)
-		keys["key_3"] = 9.99
+		keys["key_2"] = "100"
+		keys["key_3"] = "9.99"
 
 		if err := cache.Tags(tags).PutMany(keys, 10); err != nil {
 			t.Fatal(err)
@@ -191,7 +167,7 @@ func TestPutGetManyWithTags(t *testing.T) {
 	}
 }
 
-func TestPutGetStructWithTags(t *testing.T) {
+func TestPutGetWithTags(t *testing.T) {
 	for _, driver := range drivers {
 		cache := store(driver)
 
@@ -211,7 +187,7 @@ func TestPutGetStructWithTags(t *testing.T) {
 
 		var newExample example
 
-		if err := cache.Tags(tags...).GetStruct("key", &newExample); err != nil {
+		if err := cache.Tags(tags...).Get("key", &newExample); err != nil {
 			t.Error(err.Error())
 		}
 		if newExample != firstExample {
@@ -229,14 +205,14 @@ func TestTagSet(t *testing.T) {
 
 		tagSet := cache.Tags("Alejandro").GetTags()
 
-		namespace, err := tagSet.GetNamespace()
+		namespace, err := tagSet.getNamespace()
 		if err != nil {
 			t.Error(err.Error())
 		}
 		if len([]rune(namespace)) != 20 {
 			t.Error("The namespace is not 20 chars long.", namespace)
 		}
-		if got := tagSet.Reset(); got != nil {
+		if got := tagSet.reset(); got != nil {
 			t.Error("Reset did not return nil.", got)
 		}
 	}

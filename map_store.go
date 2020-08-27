@@ -15,28 +15,6 @@ type MapStore struct {
 	prefix string
 }
 
-// Get gets a value from the store
-func (ms *MapStore) Get(key string) (interface{}, error) {
-	value, valid := ms.client[ms.GetPrefix()+key]
-	if !valid {
-		return nil, errors.New(MapNilErrorResponse)
-	}
-
-	if isStringNumeric(value.(string)) {
-		floatValue, err := stringToFloat64(value.(string))
-		if err != nil {
-			return floatValue, err
-		}
-		if isFloat(floatValue) {
-			return floatValue, err
-		}
-
-		return int64(floatValue), err
-	}
-
-	return simpleDecode(fmt.Sprint(value))
-}
-
 // GetString gets a string value from the store
 func (ms *MapStore) GetString(key string) (string, error) {
 	value, valid := ms.client[ms.GetPrefix()+key]
@@ -47,8 +25,8 @@ func (ms *MapStore) GetString(key string) (string, error) {
 	return simpleDecode(fmt.Sprint(value))
 }
 
-// GetFloat gets a float value from the store
-func (ms *MapStore) GetFloat(key string) (float64, error) {
+// GetFloat64 gets a float value from the store
+func (ms *MapStore) GetFloat64(key string) (float64, error) {
 	value, valid := ms.client[ms.GetPrefix()+key]
 	if !valid {
 		return 0, errors.New(MapNilErrorResponse)
@@ -60,8 +38,8 @@ func (ms *MapStore) GetFloat(key string) (float64, error) {
 	return stringToFloat64(value.(string))
 }
 
-// GetInt gets an int value from the store
-func (ms *MapStore) GetInt(key string) (int64, error) {
+// GetInt64 gets an int value from the store
+func (ms *MapStore) GetInt64(key string) (int64, error) {
 	value, valid := ms.client[ms.GetPrefix()+key]
 	if !valid {
 		return 0, errors.New(MapNilErrorResponse)
@@ -144,7 +122,7 @@ func (ms *MapStore) GetPrefix() string {
 }
 
 // PutMany puts many values in the given store until they are forgotten/evicted
-func (ms *MapStore) PutMany(values map[string]interface{}, minutes int) error {
+func (ms *MapStore) PutMany(values map[string]string, minutes int) error {
 	for key, value := range values {
 		if err := ms.Put(key, value, minutes); err != nil {
 			return err
@@ -155,11 +133,11 @@ func (ms *MapStore) PutMany(values map[string]interface{}, minutes int) error {
 }
 
 // Many gets many values from the store
-func (ms *MapStore) Many(keys []string) (map[string]interface{}, error) {
-	items := make(map[string]interface{})
+func (ms *MapStore) Many(keys []string) (map[string]string, error) {
+	items := make(map[string]string)
 
 	for _, key := range keys {
-		val, err := ms.Get(key)
+		val, err := ms.GetString(key)
 		if err != nil {
 			return items, err
 		}
@@ -170,8 +148,8 @@ func (ms *MapStore) Many(keys []string) (map[string]interface{}, error) {
 	return items, nil
 }
 
-// GetStruct gets the struct representation of a value from the store
-func (ms *MapStore) GetStruct(key string, entity interface{}) error {
+// Get gets the struct representation of a value from the store
+func (ms *MapStore) Get(key string, entity interface{}) error {
 	value, valid := ms.client[ms.GetPrefix()+key]
 	if !valid {
 		return errors.New(MapNilErrorResponse)
