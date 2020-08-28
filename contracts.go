@@ -59,5 +59,5 @@ type TaggedStore interface {
 	// TagFlush flushes the tags of the TaggedCache
 	TagFlush() error
 	// GetTags returns the TaggedCache Tags
-	GetTags() TagSet
+	GetTags() tagSet
 }

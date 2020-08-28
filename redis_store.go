@@ -157,12 +157,12 @@ func (rs *RedisStore) Lrange(key string, start int64, stop int64) []string {
 	return rs.client.LRange(key, start, stop).Val()
 }
 
-// Tags returns the TaggedCache for the given store
+// Tags returns the taggedCache for the given store
 func (rs *RedisStore) Tags(names ...string) TaggedStore {
-	return &RedisTaggedCache{
-		TaggedCache{
+	return &redisTaggedCache{
+		taggedCache{
 			store: rs,
-			tags: TagSet{
+			tags: tagSet{
 				Store: rs,
 				Names: names,
 			},

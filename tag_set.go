@@ -6,14 +6,14 @@ import (
 	"strings"
 )
 
-// TagSet is the representation of a tag set for the caching stores
-type TagSet struct {
+// tagSet is the representation of a tag set for the caching stores
+type tagSet struct {
 	Store Store
 	Names []string
 }
 
 // Reset resets the tag set
-func (ts *TagSet) reset() error {
+func (ts *tagSet) reset() error {
 	for i, name := range ts.Names {
 		id, err := ts.resetTag(name)
 		if err != nil {
@@ -26,8 +26,8 @@ func (ts *TagSet) reset() error {
 	return nil
 }
 
-// GetNamespace gets the current TagSet namespace
-func (ts *TagSet) getNamespace() (string, error) {
+// GetNamespace gets the current tagSet namespace
+func (ts *tagSet) getNamespace() (string, error) {
 	tagsIds, err := ts.tagIds()
 	if err != nil {
 		return "", err
@@ -36,7 +36,7 @@ func (ts *TagSet) getNamespace() (string, error) {
 	return strings.Join(tagsIds, "|"), err
 }
 
-func (ts *TagSet) tagIds() ([]string, error) {
+func (ts *tagSet) tagIds() ([]string, error) {
 	tagIds := make([]string, len(ts.Names))
 
 	for i, name := range ts.Names {
@@ -51,7 +51,7 @@ func (ts *TagSet) tagIds() ([]string, error) {
 	return tagIds, nil
 }
 
-func (ts *TagSet) tagId(name string) (string, error) {
+func (ts *tagSet) tagId(name string) (string, error) {
 	value, err := ts.Store.GetString(ts.tagKey(name))
 	if err != nil && !isCacheMissedError(err) {
 		return "", err
@@ -63,11 +63,11 @@ func (ts *TagSet) tagId(name string) (string, error) {
 	return fmt.Sprint(value), nil
 }
 
-func (ts *TagSet) tagKey(name string) string {
+func (ts *tagSet) tagKey(name string) string {
 	return "tag:" + name + ":key"
 }
 
-func (ts *TagSet) resetTag(name string) (string, error) {
+func (ts *tagSet) resetTag(name string) (string, error) {
 	id := xid.New().String()
 
 	return id, ts.Store.Forever(ts.tagKey(name), id)

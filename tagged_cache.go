@@ -5,14 +5,14 @@ import (
 	"encoding/hex"
 )
 
-// TaggedCache is the representation of a tagged caching store
-type TaggedCache struct {
+// taggedCache is the representation of a tagged caching store
+type taggedCache struct {
 	store Store
-	tags  TagSet
+	tags  tagSet
 }
 
 // Put puts a value in the given store for a predetermined amount of time in mins.
-func (tc *TaggedCache) Put(key string, value interface{}, minutes int) error {
+func (tc *taggedCache) Put(key string, value interface{}, minutes int) error {
 	tagKey, err := tc.taggedItemKey(key)
 	if err != nil {
 		return err
@@ -22,7 +22,7 @@ func (tc *TaggedCache) Put(key string, value interface{}, minutes int) error {
 }
 
 // Increment increments an integer counter by a given value
-func (tc *TaggedCache) Increment(key string, value int64) (int64, error) {
+func (tc *taggedCache) Increment(key string, value int64) (int64, error) {
 	tagKey, err := tc.taggedItemKey(key)
 	if err != nil {
 		return 0, err
@@ -32,7 +32,7 @@ func (tc *TaggedCache) Increment(key string, value int64) (int64, error) {
 }
 
 // Decrement decrements an integer counter by a given value
-func (tc *TaggedCache) Decrement(key string, value int64) (int64, error) {
+func (tc *taggedCache) Decrement(key string, value int64) (int64, error) {
 	tagKey, err := tc.taggedItemKey(key)
 	if err != nil {
 		return 0, err
@@ -42,7 +42,7 @@ func (tc *TaggedCache) Decrement(key string, value int64) (int64, error) {
 }
 
 // Forget forgets/evicts a given key-value pair from the store
-func (tc *TaggedCache) Forget(key string) (bool, error) {
+func (tc *taggedCache) Forget(key string) (bool, error) {
 	tagKey, err := tc.taggedItemKey(key)
 	if err != nil {
 		return false, err
@@ -52,7 +52,7 @@ func (tc *TaggedCache) Forget(key string) (bool, error) {
 }
 
 // Forever puts a value in the given store until it is forgotten/evicted
-func (tc *TaggedCache) Forever(key string, value interface{}) error {
+func (tc *taggedCache) Forever(key string, value interface{}) error {
 	tagKey, err := tc.taggedItemKey(key)
 	if err != nil {
 		return err
@@ -62,12 +62,12 @@ func (tc *TaggedCache) Forever(key string, value interface{}) error {
 }
 
 // Flush flushes the store
-func (tc *TaggedCache) Flush() (bool, error) {
+func (tc *taggedCache) Flush() (bool, error) {
 	return tc.store.Flush()
 }
 
 // Many gets many values from the store
-func (tc *TaggedCache) Many(keys []string) (map[string]string, error) {
+func (tc *taggedCache) Many(keys []string) (map[string]string, error) {
 	taggedKeys := make([]string, len(keys))
 	values := make(map[string]string)
 
@@ -93,7 +93,7 @@ func (tc *TaggedCache) Many(keys []string) (map[string]string, error) {
 }
 
 // PutMany puts many values in the given store until they are forgotten/evicted
-func (tc *TaggedCache) PutMany(values map[string]string, minutes int) error {
+func (tc *taggedCache) PutMany(values map[string]string, minutes int) error {
 	taggedMap := make(map[string]string)
 
 	for key, value := range values {
@@ -109,12 +109,12 @@ func (tc *TaggedCache) PutMany(values map[string]string, minutes int) error {
 }
 
 // GetPrefix gets the cache key prefix
-func (tc *TaggedCache) GetPrefix() string {
+func (tc *taggedCache) GetPrefix() string {
 	return tc.store.GetPrefix()
 }
 
 // GetInt64 gets an int value from the store
-func (tc *TaggedCache) GetInt64(key string) (int64, error) {
+func (tc *taggedCache) GetInt64(key string) (int64, error) {
 	tagKey, err := tc.taggedItemKey(key)
 	if err != nil {
 		return 0, err
@@ -124,7 +124,7 @@ func (tc *TaggedCache) GetInt64(key string) (int64, error) {
 }
 
 // GetFloat64 gets a float value from the store
-func (tc *TaggedCache) GetFloat64(key string) (float64, error) {
+func (tc *taggedCache) GetFloat64(key string) (float64, error) {
 	tagKey, err := tc.taggedItemKey(key)
 	if err != nil {
 		return 0, err
@@ -134,7 +134,7 @@ func (tc *TaggedCache) GetFloat64(key string) (float64, error) {
 }
 
 // Get gets the struct representation of a value from the store
-func (tc *TaggedCache) Get(key string, entity interface{}) error {
+func (tc *taggedCache) Get(key string, entity interface{}) error {
 	tagKey, err := tc.taggedItemKey(key)
 	if err != nil {
 		return err
@@ -143,11 +143,11 @@ func (tc *TaggedCache) Get(key string, entity interface{}) error {
 	return tc.store.Get(tagKey, entity)
 }
 
-func (tc *TaggedCache) Close() error {
+func (tc *taggedCache) Close() error {
 	return tc.store.Close()
 }
 
-func (tc *TaggedCache) GetString(key string) (string, error) {
+func (tc *taggedCache) GetString(key string) (string, error) {
 	tagKey, err := tc.taggedItemKey(key)
 	if err != nil {
 		return "", err
@@ -156,12 +156,12 @@ func (tc *TaggedCache) GetString(key string) (string, error) {
 	return tc.store.GetString(tagKey)
 }
 
-// TagFlush flushes the tags of the TaggedCache
-func (tc *TaggedCache) TagFlush() error {
+// TagFlush flushes the tags of the taggedCache
+func (tc *taggedCache) TagFlush() error {
 	return tc.tags.reset()
 }
 
-func (tc *TaggedCache) taggedItemKey(key string) (string, error) {
+func (tc *taggedCache) taggedItemKey(key string) (string, error) {
 	h := sha1.New()
 
 	namespace, err := tc.tags.getNamespace()
@@ -174,7 +174,7 @@ func (tc *TaggedCache) taggedItemKey(key string) (string, error) {
 	return tc.GetPrefix() + hex.EncodeToString(h.Sum(nil)) + ":" + key, nil
 }
 
-// GetTags returns the TaggedCache Tags
-func (tc *TaggedCache) GetTags() TagSet {
+// GetTags returns the taggedCache Tags
+func (tc *taggedCache) GetTags() tagSet {
 	return tc.tags
 }

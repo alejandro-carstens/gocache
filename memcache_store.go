@@ -170,11 +170,11 @@ func (ms *MemcacheStore) Close() error {
 	return nil
 }
 
-// Tags returns the TaggedCache for the given store
+// Tags returns the taggedCache for the given store
 func (ms *MemcacheStore) Tags(names ...string) TaggedStore {
-	return &TaggedCache{
+	return &taggedCache{
 		store: ms,
-		tags: TagSet{
+		tags: tagSet{
 			Store: ms,
 			Names: names,
 		},

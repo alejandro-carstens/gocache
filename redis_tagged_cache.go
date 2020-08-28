@@ -7,13 +7,13 @@ import (
 	"strings"
 )
 
-// RedisTaggedCache is the representation of the redis tagged cache store
-type RedisTaggedCache struct {
-	TaggedCache
+// redisTaggedCache is the representation of the redis tagged cache store
+type redisTaggedCache struct {
+	taggedCache
 }
 
 // Forever puts a value in the given store until it is forgotten/evicted
-func (rtc *RedisTaggedCache) Forever(key string, value interface{}) error {
+func (rtc *redisTaggedCache) Forever(key string, value interface{}) error {
 	namespace, err := rtc.tags.getNamespace()
 	if err != nil {
 		return err
@@ -28,11 +28,11 @@ func (rtc *RedisTaggedCache) Forever(key string, value interface{}) error {
 }
 
 // TagFlush flushes the tags of the TaggedCache
-func (rtc *RedisTaggedCache) TagFlush() error {
+func (rtc *redisTaggedCache) TagFlush() error {
 	return rtc.deleteForeverKeys()
 }
 
-func (rtc *RedisTaggedCache) pushForever(namespace string, key string) {
+func (rtc *redisTaggedCache) pushForever(namespace string, key string) {
 	h := sha1.New()
 	h.Write([]byte(namespace))
 
@@ -48,7 +48,7 @@ func (rtc *RedisTaggedCache) pushForever(namespace string, key string) {
 	}
 }
 
-func (rtc *RedisTaggedCache) deleteForeverKeys() error {
+func (rtc *redisTaggedCache) deleteForeverKeys() error {
 	namespace, err := rtc.tags.getNamespace()
 	if err != nil {
 		return err
@@ -67,7 +67,7 @@ func (rtc *RedisTaggedCache) deleteForeverKeys() error {
 	return nil
 }
 
-func (rtc *RedisTaggedCache) deleteForeverValues(key string) error {
+func (rtc *redisTaggedCache) deleteForeverValues(key string) error {
 	inputs := []reflect.Value{
 		reflect.ValueOf(key),
 		reflect.ValueOf(int64(0)),
@@ -90,6 +90,6 @@ func (rtc *RedisTaggedCache) deleteForeverValues(key string) error {
 	return nil
 }
 
-func (rtc *RedisTaggedCache) foreverKey(segment string) string {
+func (rtc *redisTaggedCache) foreverKey(segment string) string {
 	return rtc.GetPrefix() + segment + ":forever"
 }
