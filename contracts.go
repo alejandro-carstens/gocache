@@ -1,16 +1,16 @@
 package gocache
 
 // CacheConnector represents the connector methods to be implemented
-type CacheConnector interface {
+type cacheConnector interface {
 	// Connect is responsible for connecting with the caching store
-	Connect(params map[string]interface{}) (Cache, error)
+	connect(params map[string]interface{}) (Cache, error)
 	// validate verifies that the given params
 	// are valid for establishing a connection
 	validate(params map[string]interface{}) (map[string]interface{}, error)
 }
 
-// Store represents the caching methods to be implemented
-type Store interface {
+// store represents the caching methods to be implemented
+type store interface {
 	// GetString gets a string value from the store
 	GetString(key string) (string, error)
 	// Put puts a value in the given store for a predetermined amount of time in mins.
@@ -41,21 +41,21 @@ type Store interface {
 	Close() error
 }
 
-// Tags represents the tagging methods to be implemented
-type Tags interface {
+// tags represents the tagging methods to be implemented
+type tags interface {
 	// Tags returns the TaggedCache for the given store
 	Tags(names ...string) TaggedStore
 }
 
 // Store represents the methods a caching store needs to implement
 type Cache interface {
-	Store
-	Tags
+	store
+	tags
 }
 
 // TaggedStore represents the methods a tagged-caching store needs to implement
 type TaggedStore interface {
-	Store
+	store
 	// TagFlush flushes the tags of the TaggedCache
 	TagFlush() error
 	// GetTags returns the TaggedCache Tags

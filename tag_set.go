@@ -8,7 +8,7 @@ import (
 
 // tagSet is the representation of a tag set for the caching stores
 type tagSet struct {
-	store Store
+	store store
 	names []string
 }
 

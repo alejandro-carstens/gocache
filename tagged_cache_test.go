@@ -4,7 +4,7 @@ import "testing"
 
 func TestPutGetInt64WithTags(t *testing.T) {
 	for _, driver := range drivers {
-		cache := store(driver)
+		cache := createStore(driver)
 
 		tags := tag()
 		if err := cache.Tags(tags).Put("key", 100, 1); err != nil {
@@ -26,7 +26,7 @@ func TestPutGetInt64WithTags(t *testing.T) {
 
 func TestPutGetFloat64WithTags(t *testing.T) {
 	for _, driver := range drivers {
-		cache := store(driver)
+		cache := createStore(driver)
 
 		var expected float64
 
@@ -52,7 +52,7 @@ func TestPutGetFloat64WithTags(t *testing.T) {
 
 func TestIncrementWithTags(t *testing.T) {
 	for _, driver := range drivers {
-		cache := store(driver)
+		cache := createStore(driver)
 
 		tags := tag()
 		if _, err := cache.Tags(tags).Increment("increment_key", 1); err != nil {
@@ -79,7 +79,7 @@ func TestIncrementWithTags(t *testing.T) {
 
 func TestDecrementWithTags(t *testing.T) {
 	for _, driver := range drivers {
-		cache := store(driver)
+		cache := createStore(driver)
 
 		tags := tag()
 		if _, err := cache.Tags(tags).Increment("decrement_key", 2); err != nil {
@@ -106,7 +106,7 @@ func TestDecrementWithTags(t *testing.T) {
 
 func TestForeverWithTags(t *testing.T) {
 	for _, driver := range drivers {
-		cache := store(driver)
+		cache := createStore(driver)
 
 		expected := "value"
 
@@ -130,7 +130,7 @@ func TestForeverWithTags(t *testing.T) {
 
 func TestPutGetManyWithTags(t *testing.T) {
 	for _, driver := range drivers {
-		cache := store(driver)
+		cache := createStore(driver)
 
 		tags := tag()
 
@@ -169,7 +169,7 @@ func TestPutGetManyWithTags(t *testing.T) {
 
 func TestPutGetWithTags(t *testing.T) {
 	for _, driver := range drivers {
-		cache := store(driver)
+		cache := createStore(driver)
 
 		tags := make([]string, 3)
 
@@ -201,7 +201,7 @@ func TestPutGetWithTags(t *testing.T) {
 
 func TestTagSet(t *testing.T) {
 	for _, driver := range drivers {
-		cache := store(driver)
+		cache := createStore(driver)
 
 		tagSet := cache.Tags("Alejandro").GetTags()
 

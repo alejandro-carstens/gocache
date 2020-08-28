@@ -7,7 +7,7 @@ import (
 
 // taggedCache is the representation of a tagged caching store
 type taggedCache struct {
-	store Store
+	store store
 	tags  tagSet
 }
 
