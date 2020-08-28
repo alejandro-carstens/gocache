@@ -1,18 +1,16 @@
 package gocache
 
 // CacheConnector represents the connector methods to be implemented
-type CacheConnector interface {
+type cacheConnector interface {
 	// Connect is responsible for connecting with the caching store
-	Connect(params map[string]interface{}) (Cache, error)
+	connect(params map[string]interface{}) (Cache, error)
 	// validate verifies that the given params
 	// are valid for establishing a connection
 	validate(params map[string]interface{}) (map[string]interface{}, error)
 }
 
-// Store represents the caching methods to be implemented
-type Store interface {
-	// Get gets a value from the store
-	Get(key string) (interface{}, error)
+// store represents the caching methods to be implemented
+type store interface {
 	// GetString gets a string value from the store
 	GetString(key string) (string, error)
 	// Put puts a value in the given store for a predetermined amount of time in mins.
@@ -27,39 +25,39 @@ type Store interface {
 	Forever(key string, value interface{}) error
 	// Flush flushes the store
 	Flush() (bool, error)
-	// GetInt gets an int value from the store
-	GetInt(key string) (int64, error)
-	// GetFloat gets a float value from the store
-	GetFloat(key string) (float64, error)
+	// GetInt64 gets an int value from the store
+	GetInt64(key string) (int64, error)
+	// GetFloat64 gets a float value from the store
+	GetFloat64(key string) (float64, error)
 	// GetPrefix gets the cache key prefix
 	GetPrefix() string
 	// Many gets many values from the store
-	Many(keys []string) (map[string]interface{}, error)
+	Many(keys []string) (map[string]string, error)
 	// PutMany puts many values in the given store until they are forgotten/evicted
-	PutMany(values map[string]interface{}, minutes int) error
-	// GetStruct gets the struct representation of a value from the store
-	GetStruct(key string, entity interface{}) error
+	PutMany(values map[string]string, minutes int) error
+	// Get gets the struct representation of a value from the store
+	Get(key string, entity interface{}) error
 	// Close closes the client releasing all open resources
 	Close() error
 }
 
-// Tags represents the tagging methods to be implemented
-type Tags interface {
+// tags represents the tagging methods to be implemented
+type tags interface {
 	// Tags returns the TaggedCache for the given store
-	Tags(names ...string) TaggedStore
+	Tags(names ...string) TaggedCache
 }
 
 // Store represents the methods a caching store needs to implement
 type Cache interface {
-	Store
-	Tags
+	store
+	tags
 }
 
-// TaggedStore represents the methods a tagged-caching store needs to implement
-type TaggedStore interface {
-	Store
+// TaggedCache represents the methods a tagged-caching store needs to implement
+type TaggedCache interface {
+	store
 	// TagFlush flushes the tags of the TaggedCache
 	TagFlush() error
 	// GetTags returns the TaggedCache Tags
-	GetTags() TagSet
+	GetTags() tagSet
 }

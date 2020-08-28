@@ -2,19 +2,32 @@ package gocache
 
 import (
 	"fmt"
-	"strings"
-
 	"github.com/rs/xid"
+	"strings"
 )
 
-// TagSet is the representation of a tag set for the cahing stores
-type TagSet struct {
-	Store Store
-	Names []string
+// tagSet is the representation of a tag set for the caching stores
+type tagSet struct {
+	store store
+	names []string
 }
 
-// GetNamespace gets the current TagSet namespace
-func (ts *TagSet) GetNamespace() (string, error) {
+// Reset resets the tag set
+func (ts *tagSet) reset() error {
+	for i, name := range ts.names {
+		id, err := ts.resetTag(name)
+		if err != nil {
+			return err
+		}
+
+		ts.names[i] = id
+	}
+
+	return nil
+}
+
+// GetNamespace gets the current tagSet namespace
+func (ts *tagSet) getNamespace() (string, error) {
 	tagsIds, err := ts.tagIds()
 	if err != nil {
 		return "", err
@@ -23,40 +36,10 @@ func (ts *TagSet) GetNamespace() (string, error) {
 	return strings.Join(tagsIds, "|"), err
 }
 
-// Reset resets the tag set
-func (ts *TagSet) Reset() error {
-	for i, name := range ts.Names {
-		id, err := ts.resetTag(name)
-		if err != nil {
-			return err
-		}
+func (ts *tagSet) tagIds() ([]string, error) {
+	tagIds := make([]string, len(ts.names))
 
-		ts.Names[i] = id
-	}
-
-	return nil
-}
-
-func (ts *TagSet) tagId(name string) (string, error) {
-	value, err := ts.Store.Get(ts.tagKey(name))
-	if err != nil && !isCacheMissedError(err) {
-		return "", err
-	}
-	if value == nil {
-		return ts.resetTag(name)
-	}
-
-	return fmt.Sprint(value), nil
-}
-
-func (ts *TagSet) tagKey(name string) string {
-	return "tag:" + name + ":key"
-}
-
-func (ts *TagSet) tagIds() ([]string, error) {
-	tagIds := make([]string, len(ts.Names))
-
-	for i, name := range ts.Names {
+	for i, name := range ts.names {
 		val, err := ts.tagId(name)
 		if err != nil {
 			return tagIds, err
@@ -68,8 +51,24 @@ func (ts *TagSet) tagIds() ([]string, error) {
 	return tagIds, nil
 }
 
-func (ts *TagSet) resetTag(name string) (string, error) {
+func (ts *tagSet) tagId(name string) (string, error) {
+	value, err := ts.store.GetString(ts.tagKey(name))
+	if err != nil && !isCacheMissedError(err) {
+		return "", err
+	}
+	if len(value) == 0 {
+		return ts.resetTag(name)
+	}
+
+	return fmt.Sprint(value), nil
+}
+
+func (ts *tagSet) tagKey(name string) string {
+	return "tag:" + name + ":key"
+}
+
+func (ts *tagSet) resetTag(name string) (string, error) {
 	id := xid.New().String()
 
-	return id, ts.Store.Forever(ts.tagKey(name), id)
+	return id, ts.store.Forever(ts.tagKey(name), id)
 }

@@ -6,11 +6,11 @@ import (
 	"github.com/go-redis/redis"
 )
 
-// RedisConnector is the representation of the redis store connector
-type RedisConnector struct{}
+// redisConnector is the representation of the redis store connector
+type redisConnector struct{}
 
-// Connect is responsible for connecting with the caching store
-func (rc *RedisConnector) Connect(params map[string]interface{}) (Cache, error) {
+// connect is responsible for connecting with the caching store
+func (rc *redisConnector) connect(params map[string]interface{}) (Cache, error) {
 	params, err := rc.validate(params)
 	if err != nil {
 		return nil, err
@@ -22,7 +22,7 @@ func (rc *RedisConnector) Connect(params map[string]interface{}) (Cache, error) 
 	}, nil
 }
 
-func (rc *RedisConnector) client(address string, password string, database int) redis.Client {
+func (rc *redisConnector) client(address string, password string, database int) redis.Client {
 	return *redis.NewClient(&redis.Options{
 		Addr:     address,
 		Password: password,
@@ -30,7 +30,7 @@ func (rc *RedisConnector) client(address string, password string, database int) 
 	})
 }
 
-func (rc *RedisConnector) validate(params map[string]interface{}) (map[string]interface{}, error) {
+func (rc *redisConnector) validate(params map[string]interface{}) (map[string]interface{}, error) {
 	if _, ok := params["address"]; !ok {
 		return params, errors.New("you need to specify an address for your redis server. Ex: localhost:6379")
 	}

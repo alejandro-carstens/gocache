@@ -5,31 +5,31 @@ import (
 )
 
 func TestMemcacheConnector(t *testing.T) {
-	memcacheStore, err := new(MemcacheConnector).Connect(memcacheStore())
+	memcacheStore, err := new(memcacheConnector).connect(memcacheStore())
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, ok := memcacheStore.(Store); !ok {
+	if _, ok := memcacheStore.(store); !ok {
 		t.Error("Expected StoreInterface got", memcacheStore)
 	}
 }
 
 func TestRedisConnector(t *testing.T) {
-	redisStore, err := new(RedisConnector).Connect(redisStore())
+	redisStore, err := new(redisConnector).connect(redisStore())
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, ok := redisStore.(Store); !ok {
+	if _, ok := redisStore.(store); !ok {
 		t.Error("Expected StoreInterface got", redisStore)
 	}
 }
 
 func TestArrayConnector(t *testing.T) {
-	mapStore, err := new(MapConnector).Connect(mapStore())
+	mapStore, err := new(mapConnector).connect(mapStore())
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, ok := mapStore.(Store); !ok {
+	if _, ok := mapStore.(store); !ok {
 		t.Error("Expected StoreInterface got", mapStore)
 	}
 }

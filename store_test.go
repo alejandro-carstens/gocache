@@ -16,49 +16,15 @@ type example struct {
 	Description string
 }
 
-func TestPutGet(t *testing.T) {
+func TestPutGetInt64(t *testing.T) {
 	for _, driver := range drivers {
-		cache := store(driver)
-
-		if err := cache.Put("key", "value", 1); err != nil {
-			t.Fatal(err)
-		}
-
-		got, err := cache.Get("key")
-		if got != "value" || err != nil {
-			t.Error("Expected value, got ", got)
-		}
-		if err := cache.Put("key", 1, 1); err != nil {
-			t.Fatal(err)
-		}
-
-		got, err = cache.Get("key")
-		if got != int64(1) || err != nil {
-			t.Error("Expected 1, got ", got)
-		}
-		if err := cache.Put("key", 2.99, 1); err != nil {
-			t.Fatal(err)
-		}
-
-		got, err = cache.Get("key")
-		if got != 2.99 || err != nil {
-			t.Error("Expected 2.99, got", got)
-		}
-		if _, err := cache.Forget("key"); err != nil {
-			t.Fatal(err)
-		}
-	}
-}
-
-func TestPutGetInt(t *testing.T) {
-	for _, driver := range drivers {
-		cache := store(driver)
+		cache := createStore(driver)
 
 		if err := cache.Put("key", 100, 1); err != nil {
 			t.Fatal(err)
 		}
 
-		got, err := cache.GetInt("key")
+		got, err := cache.GetInt64("key")
 		if got != int64(100) || err != nil {
 			t.Error("Expected 100, got ", got)
 		}
@@ -70,7 +36,7 @@ func TestPutGetInt(t *testing.T) {
 
 func TestPutGetString(t *testing.T) {
 	for _, driver := range drivers {
-		cache := store(driver)
+		cache := createStore(driver)
 
 		if err := cache.Put("key", "value", 1); err != nil {
 			t.Fatal(err)
@@ -86,9 +52,9 @@ func TestPutGetString(t *testing.T) {
 	}
 }
 
-func TestPutGetFloat(t *testing.T) {
+func TestPutGetFloat64(t *testing.T) {
 	for _, driver := range drivers {
-		cache := store(driver)
+		cache := createStore(driver)
 
 		var expected float64
 
@@ -96,7 +62,7 @@ func TestPutGetFloat(t *testing.T) {
 		if err := cache.Put("key", expected, 1); err != nil {
 			t.Fatal(err)
 		}
-		got, err := cache.GetFloat("key")
+		got, err := cache.GetFloat64("key")
 		if got != expected || err != nil {
 			t.Error("Expected 9.99, got ", got)
 		}
@@ -108,14 +74,14 @@ func TestPutGetFloat(t *testing.T) {
 
 func TestForever(t *testing.T) {
 	for _, driver := range drivers {
-		cache := store(driver)
+		cache := createStore(driver)
 
 		expected := "value"
 		if err := cache.Forever("key", expected); err != nil {
 			t.Fatal(err)
 		}
 
-		got, err := cache.Get("key")
+		got, err := cache.GetString("key")
 		if got != expected || err != nil {
 			t.Error("Expected "+expected+", got ", got)
 		}
@@ -127,13 +93,13 @@ func TestForever(t *testing.T) {
 
 func TestPutGetMany(t *testing.T) {
 	for _, driver := range drivers {
-		cache := store(driver)
+		cache := createStore(driver)
 
-		keys := make(map[string]interface{})
+		keys := make(map[string]string)
 
 		keys["key_1"] = "value"
-		keys["key_2"] = int64(100)
-		keys["key_3"] = 9.99
+		keys["key_2"] = "100"
+		keys["key_3"] = "9.99"
 
 		if err := cache.PutMany(keys, 10); err != nil {
 			t.Fatal(err)
@@ -162,9 +128,9 @@ func TestPutGetMany(t *testing.T) {
 	}
 }
 
-func TestPutGetStruct(t *testing.T) {
+func TestPutGet(t *testing.T) {
 	for _, driver := range drivers {
-		cache := store(driver)
+		cache := createStore(driver)
 
 		var firstExample example
 
@@ -177,13 +143,12 @@ func TestPutGetStruct(t *testing.T) {
 
 		var newExample example
 
-		if err := cache.GetStruct("key", &newExample); err != nil {
+		if err := cache.Get("key", &newExample); err != nil {
 			t.Fatal(err)
 		}
 		if newExample != firstExample {
 			t.Error("The structs are not the same", newExample)
 		}
-
 		if _, err := cache.Forget("key"); err != nil {
 			t.Fatal(err)
 		}
@@ -192,7 +157,7 @@ func TestPutGetStruct(t *testing.T) {
 
 func TestIncrement(t *testing.T) {
 	for _, driver := range drivers {
-		cache := store(driver)
+		cache := createStore(driver)
 
 		if _, err := cache.Increment("increment_key", 1); err != nil {
 			t.Fatal(err)
@@ -201,7 +166,7 @@ func TestIncrement(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		got, err := cache.GetInt("increment_key")
+		got, err := cache.GetInt64("increment_key")
 		if _, err := cache.Forget("increment_key"); err != nil {
 			t.Fatal(err)
 		}
@@ -215,7 +180,7 @@ func TestIncrement(t *testing.T) {
 
 func TestDecrement(t *testing.T) {
 	for _, driver := range drivers {
-		cache := store(driver)
+		cache := createStore(driver)
 
 		if _, err := cache.Increment("decrement_key", 2); err != nil {
 			t.Fatal(err)
@@ -226,7 +191,7 @@ func TestDecrement(t *testing.T) {
 
 		var expected int64 = 1
 
-		got, err := cache.GetInt("decrement_key")
+		got, err := cache.GetInt64("decrement_key")
 		if got != expected || err != nil {
 			t.Error("Expected "+string(expected)+", got ", got)
 		}
@@ -238,7 +203,7 @@ func TestDecrement(t *testing.T) {
 
 func TestIncrementDecrement(t *testing.T) {
 	for _, driver := range drivers {
-		cache := store(driver)
+		cache := createStore(driver)
 
 		got, err := cache.Increment("key", 2)
 		if got != int64(2) {
@@ -278,7 +243,7 @@ func TestIncrementDecrement(t *testing.T) {
 	}
 }
 
-func store(store string) Cache {
+func createStore(store string) Cache {
 	switch strings.ToLower(store) {
 	case RedisDriver:
 		cache, err := New(store, redisStore())

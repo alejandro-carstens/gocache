@@ -1,7 +1,6 @@
 package gocache
 
 import (
-	"errors"
 	"strconv"
 	"time"
 
@@ -16,39 +15,13 @@ type RedisStore struct {
 	prefix string
 }
 
-// Get gets a value from the store
-func (rs *RedisStore) Get(key string) (interface{}, error) {
-	intVal, err := rs.get(key).Int64()
-	if err != nil {
-		floatVal, err := rs.get(key).Float64()
-		if err != nil {
-			value, err := rs.get(key).Result()
-			if err != nil {
-				return nil, err
-			}
-
-			return simpleDecode(value)
-		}
-		if &floatVal == nil {
-			return floatVal, errors.New("float value is nil")
-		}
-
-		return floatVal, nil
-	}
-	if &intVal == nil {
-		return intVal, errors.New("int value is nil")
-	}
-
-	return intVal, nil
-}
-
-// GetFloat gets a float value from the store
-func (rs *RedisStore) GetFloat(key string) (float64, error) {
+// GetFloat64 gets a float value from the store
+func (rs *RedisStore) GetFloat64(key string) (float64, error) {
 	return rs.get(key).Float64()
 }
 
-// GetInt gets an int value from the store
-func (rs *RedisStore) GetInt(key string) (int64, error) {
+// GetInt64 gets an int value from the store
+func (rs *RedisStore) GetInt64(key string) (int64, error) {
 	return rs.get(key).Int64()
 }
 
@@ -135,7 +108,7 @@ func (rs *RedisStore) GetPrefix() string {
 }
 
 // PutMany puts many values in the given store until they are forgotten/evicted
-func (rs *RedisStore) PutMany(values map[string]interface{}, minutes int) error {
+func (rs *RedisStore) PutMany(values map[string]string, minutes int) error {
 	pipe := rs.client.TxPipeline()
 
 	for key, value := range values {
@@ -150,13 +123,13 @@ func (rs *RedisStore) PutMany(values map[string]interface{}, minutes int) error 
 }
 
 // Many gets many values from the store
-func (rs *RedisStore) Many(keys []string) (map[string]interface{}, error) {
-	values := make(map[string]interface{})
+func (rs *RedisStore) Many(keys []string) (map[string]string, error) {
+	values := make(map[string]string)
 
 	pipe := rs.client.TxPipeline()
 
 	for _, key := range keys {
-		val, err := rs.Get(key)
+		val, err := rs.GetString(key)
 		if err != nil {
 			return values, err
 		}
@@ -184,14 +157,14 @@ func (rs *RedisStore) Lrange(key string, start int64, stop int64) []string {
 	return rs.client.LRange(key, start, stop).Val()
 }
 
-// Tags returns the TaggedCache for the given store
-func (rs *RedisStore) Tags(names ...string) TaggedStore {
-	return &RedisTaggedCache{
-		TaggedCache{
+// Tags returns the taggedCache for the given store
+func (rs *RedisStore) Tags(names ...string) TaggedCache {
+	return &redisTaggedCache{
+		taggedCache{
 			store: rs,
-			tags: TagSet{
-				Store: rs,
-				Names: names,
+			tags: tagSet{
+				store: rs,
+				names: names,
 			},
 		},
 	}
@@ -202,8 +175,8 @@ func (rs *RedisStore) Close() error {
 	return rs.client.Close()
 }
 
-// GetStruct gets the struct representation of a value from the store
-func (rs *RedisStore) GetStruct(key string, entity interface{}) error {
+// Get gets the struct representation of a value from the store
+func (rs *RedisStore) Get(key string, entity interface{}) error {
 	value, err := rs.get(key).Result()
 	if err != nil {
 		return err
