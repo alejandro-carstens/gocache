@@ -171,7 +171,7 @@ func (ms *MemcacheStore) Close() error {
 }
 
 // Tags returns the taggedCache for the given store
-func (ms *MemcacheStore) Tags(names ...string) TaggedStore {
+func (ms *MemcacheStore) Tags(names ...string) TaggedCache {
 	return &taggedCache{
 		store: ms,
 		tags: tagSet{

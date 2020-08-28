@@ -44,7 +44,7 @@ type store interface {
 // tags represents the tagging methods to be implemented
 type tags interface {
 	// Tags returns the TaggedCache for the given store
-	Tags(names ...string) TaggedStore
+	Tags(names ...string) TaggedCache
 }
 
 // Store represents the methods a caching store needs to implement
@@ -53,8 +53,8 @@ type Cache interface {
 	tags
 }
 
-// TaggedStore represents the methods a tagged-caching store needs to implement
-type TaggedStore interface {
+// TaggedCache represents the methods a tagged-caching store needs to implement
+type TaggedCache interface {
 	store
 	// TagFlush flushes the tags of the TaggedCache
 	TagFlush() error

@@ -158,7 +158,7 @@ func (rs *RedisStore) Lrange(key string, start int64, stop int64) []string {
 }
 
 // Tags returns the taggedCache for the given store
-func (rs *RedisStore) Tags(names ...string) TaggedStore {
+func (rs *RedisStore) Tags(names ...string) TaggedCache {
 	return &redisTaggedCache{
 		taggedCache{
 			store: rs,

@@ -166,7 +166,7 @@ func (ms *MapStore) Close() error {
 }
 
 // Tags returns the taggedCache for the given store
-func (ms *MapStore) Tags(names ...string) TaggedStore {
+func (ms *MapStore) Tags(names ...string) TaggedCache {
 	return &taggedCache{
 		store: ms,
 		tags: tagSet{
