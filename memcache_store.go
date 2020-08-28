@@ -175,8 +175,8 @@ func (ms *MemcacheStore) Tags(names ...string) TaggedStore {
 	return &taggedCache{
 		store: ms,
 		tags: tagSet{
-			Store: ms,
-			Names: names,
+			store: ms,
+			names: names,
 		},
 	}
 }

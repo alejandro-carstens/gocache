@@ -163,8 +163,8 @@ func (rs *RedisStore) Tags(names ...string) TaggedStore {
 		taggedCache{
 			store: rs,
 			tags: tagSet{
-				Store: rs,
-				Names: names,
+				store: rs,
+				names: names,
 			},
 		},
 	}

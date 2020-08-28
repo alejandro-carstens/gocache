@@ -8,19 +8,19 @@ import (
 
 // tagSet is the representation of a tag set for the caching stores
 type tagSet struct {
-	Store Store
-	Names []string
+	store Store
+	names []string
 }
 
 // Reset resets the tag set
 func (ts *tagSet) reset() error {
-	for i, name := range ts.Names {
+	for i, name := range ts.names {
 		id, err := ts.resetTag(name)
 		if err != nil {
 			return err
 		}
 
-		ts.Names[i] = id
+		ts.names[i] = id
 	}
 
 	return nil
@@ -37,9 +37,9 @@ func (ts *tagSet) getNamespace() (string, error) {
 }
 
 func (ts *tagSet) tagIds() ([]string, error) {
-	tagIds := make([]string, len(ts.Names))
+	tagIds := make([]string, len(ts.names))
 
-	for i, name := range ts.Names {
+	for i, name := range ts.names {
 		val, err := ts.tagId(name)
 		if err != nil {
 			return tagIds, err
@@ -52,7 +52,7 @@ func (ts *tagSet) tagIds() ([]string, error) {
 }
 
 func (ts *tagSet) tagId(name string) (string, error) {
-	value, err := ts.Store.GetString(ts.tagKey(name))
+	value, err := ts.store.GetString(ts.tagKey(name))
 	if err != nil && !isCacheMissedError(err) {
 		return "", err
 	}
@@ -70,5 +70,5 @@ func (ts *tagSet) tagKey(name string) string {
 func (ts *tagSet) resetTag(name string) (string, error) {
 	id := xid.New().String()
 
-	return id, ts.Store.Forever(ts.tagKey(name), id)
+	return id, ts.store.Forever(ts.tagKey(name), id)
 }
