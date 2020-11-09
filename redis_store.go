@@ -11,7 +11,7 @@ const RedisNilErrorResponse string = "redis: nil"
 
 // RedisStore is the representation of the redis caching store
 type RedisStore struct {
-	client redis.Client
+	client *redis.Client
 	prefix string
 }
 
@@ -184,6 +184,15 @@ func (rs *RedisStore) Get(key string, entity interface{}) error {
 	_, err = decode(value, entity)
 
 	return err
+}
+
+func (rs *RedisStore) Lock(name, owner string, seconds int64) Lock {
+	return &redisLock{
+		client:  rs.client,
+		seconds: seconds,
+		name:    name,
+		owner:   owner,
+	}
 }
 
 func (rs *RedisStore) get(key string) *redis.StringCmd {

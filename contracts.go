@@ -61,3 +61,10 @@ type TaggedCache interface {
 	// GetTags returns the TaggedCache Tags
 	GetTags() tagSet
 }
+
+type Lock interface {
+	Acquire() (bool, error)
+	ForceRelease() error
+	GetCurrentOwner() (string, error)
+	Release() (bool, error)
+}

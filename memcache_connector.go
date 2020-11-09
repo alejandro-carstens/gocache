@@ -17,7 +17,6 @@ func (mc *memcacheConnector) connect(params map[string]interface{}) (Cache, erro
 	}
 
 	prefix := params["prefix"].(string)
-
 	delete(params, "prefix")
 
 	return &MemcacheStore{
@@ -26,13 +25,13 @@ func (mc *memcacheConnector) connect(params map[string]interface{}) (Cache, erro
 	}, nil
 }
 
-func (mc *memcacheConnector) client(params map[string]interface{}) memcache.Client {
+func (mc *memcacheConnector) client(params map[string]interface{}) *memcache.Client {
 	servers := make([]string, len(params)-1)
 	for _, param := range params {
 		servers = append(servers, param.(string))
 	}
 
-	return *memcache.New(servers...)
+	return memcache.New(servers...)
 }
 
 func (mc *memcacheConnector) validate(params map[string]interface{}) (map[string]interface{}, error) {
