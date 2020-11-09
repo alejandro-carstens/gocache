@@ -27,7 +27,7 @@ func (ml *memcacheLock) Acquire() (bool, error) {
 	return true, nil
 }
 
-func (ml memcacheLock) Release() (bool, error) {
+func (ml *memcacheLock) Release() (bool, error) {
 	currentOwner, err := ml.GetCurrentOwner()
 	if err != nil {
 		return false, err
