@@ -11,9 +11,10 @@ go:
   - 1.14.x
 
 env:
-  - GO111MODULE=on
-  - REDIS_ADDR=localhost:6379
-  - MEMCACHE_SERVER=127.0.0.1:11211
+  global:
+    - GO111MODULE=on
+    - REDIS_ADDR=localhost:6379
+    - MEMCACHE_SERVER=127.0.0.1:11211
 
 install:
   - go get
