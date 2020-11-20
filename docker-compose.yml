@@ -1,0 +1,38 @@
+version: '3.3'
+
+services:
+
+  redis:
+    image: redis:latest
+    expose:
+      - 6379
+    networks:
+      - devnet
+
+  memcache:
+    image: 'bitnami/memcached:latest'
+    expose:
+      - 11211
+    networks:
+      - devnet
+
+  dev:
+    tty: true
+    build:
+      context: ./
+      dockerfile: Dockerfile.dev
+    depends_on:
+      - redis
+      - memcache
+    environment:
+      - "REDIS_ADDR=redis:6379"
+      - "MEMCACHE_SERVER=memcache:11211"
+      - "GO111MODULE=on"
+    volumes:
+      - .:/go/src/gocache
+    networks:
+      - devnet
+
+networks:
+  devnet:
+    driver: bridge

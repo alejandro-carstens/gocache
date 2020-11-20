@@ -1,49 +1,58 @@
 package gocache
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/stretchr/testify/require"
+)
 
 func TestLock(t *testing.T) {
 	for _, driver := range drivers {
 		cache := createStore(driver)
 
-		got, err := cache.Lock("test", "test", 10).Acquire()
-		if !got {
-			t.Error("Expected to acquire lock", got)
-		}
+		lock := cache.Lock("test", "test", 10)
+		got, err := lock.Acquire()
+		require.NoError(t, err)
+		require.True(t, got)
 
-		got, err = cache.Lock("test", "test", 10).Acquire()
-		if got {
-			t.Error("Expected to not acquire lock", got)
+		if driver == mapDriver {
+			got, err = lock.Acquire()
+		} else {
+			got, err = cache.Lock("test", "test", 10).Acquire()
 		}
-		if err != nil {
-			t.Fatal(err)
-		}
+		require.NoError(t, err)
+		require.False(t, got)
 
-		user, err := cache.Lock("test", "test", 10).GetCurrentOwner()
-		if user != "test" {
-			t.Error("Expected to not acquire lock", user)
+		var user string
+		if driver == mapDriver {
+			user, err = lock.GetCurrentOwner()
+		} else {
+			user, err = cache.Lock("test", "test", 10).GetCurrentOwner()
 		}
-		if err != nil {
-			t.Fatal(err)
-		}
+		require.NoError(t, err)
+		require.Equal(t, "test", user)
 
-		got, err = cache.Lock("test", "test", 10).Release()
-		if got {
-			t.Error("Expected to release lock", got)
+		if driver == mapDriver {
+			got, err = lock.Release()
+		} else {
+			got, err = cache.Lock("test", "test", 10).Release()
 		}
+		require.NoError(t, err)
+		require.True(t, got)
 
-		got, err = cache.Lock("test", "test", 10).Acquire()
-		if !got {
-			t.Error("Expected to acquire lock", got)
+		lock = cache.Lock("test", "test", 10)
+		got, err = lock.Acquire()
+		require.NoError(t, err)
+		require.True(t, got)
+
+		if driver == mapDriver {
+			err = lock.ForceRelease()
+		} else {
+			err = cache.Lock("test", "test", 10).ForceRelease()
 		}
-		if err != nil {
-			t.Fatal(err)
-		}
-		if err = cache.Lock("test", "test", 10).ForceRelease(); err != nil {
-			t.Fatal(err)
-		}
-		if _, err := cache.Flush(); err != nil {
-			t.Fatal(err)
-		}
+		require.NoError(t, err)
+
+		_, err = cache.Flush()
+		require.NoError(t, err)
 	}
 }

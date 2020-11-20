@@ -10,39 +10,40 @@ import (
 type redisConnector struct{}
 
 // connect is responsible for connecting with the caching store
-func (rc *redisConnector) connect(params map[string]interface{}) (Cache, error) {
-	params, err := rc.validate(params)
-	if err != nil {
-		return nil, err
-	}
-
+func (rc *redisConnector) connect(config *Config) (Cache, error) {
 	return &RedisStore{
-		client: rc.client(params["address"].(string), params["password"].(string), params["database"].(int)),
-		prefix: params["prefix"].(string),
+		client: redis.NewClient(&redis.Options{
+			Network:            "",
+			Addr:               config.Redis.Addr,
+			Dialer:             nil,
+			OnConnect:          nil,
+			Password:           config.Redis.Password,
+			DB:                 config.Redis.DB,
+			MaxRetries:         config.Redis.MaxRetries,
+			MinRetryBackoff:    config.Redis.MinRetryBackoff,
+			MaxRetryBackoff:    config.Redis.MaxRetryBackoff,
+			DialTimeout:        config.Redis.DialTimeout,
+			ReadTimeout:        config.Redis.ReadTimeout,
+			WriteTimeout:       config.Redis.WriteTimeout,
+			PoolSize:           config.Redis.PoolSize,
+			MinIdleConns:       config.Redis.MinIdleConns,
+			MaxConnAge:         config.Redis.MaxConnAge,
+			PoolTimeout:        config.Redis.PoolTimeout,
+			IdleTimeout:        config.Redis.IdleTimeout,
+			IdleCheckFrequency: config.Redis.IdleCheckFrequency,
+			TLSConfig:          config.Redis.TLSConfig,
+		}),
+		prefix: config.Redis.Prefix,
 	}, nil
 }
 
-func (rc *redisConnector) client(address string, password string, database int) *redis.Client {
-	return redis.NewClient(&redis.Options{
-		Addr:     address,
-		Password: password,
-		DB:       database,
-	})
-}
-
-func (rc *redisConnector) validate(params map[string]interface{}) (map[string]interface{}, error) {
-	if _, ok := params["address"]; !ok {
-		return params, errors.New("you need to specify an address for your redis server. Ex: localhost:6379")
+func (rc *redisConnector) validate(config *Config) error {
+	if config.Redis == nil {
+		return errors.New("a redis config needs to be specified")
 	}
-	if _, ok := params["database"]; !ok {
-		return params, errors.New("you need to specify a database for your redis server. From 1 to 16 0-indexed")
-	}
-	if _, ok := params["password"]; !ok {
-		return params, errors.New("you need to specify a password for your redis server")
-	}
-	if _, ok := params["prefix"]; !ok {
-		return params, errors.New("you need to specify a caching prefix")
+	if len(config.Redis.Addr) == 0 {
+		return errors.New("a redis address needs to be specified")
 	}
 
-	return params, nil
+	return nil
 }

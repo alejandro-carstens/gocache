@@ -1,63 +1,57 @@
 package gocache
 
 import (
+	"github.com/stretchr/testify/require"
+	"os"
 	"testing"
 )
 
 func TestMemcacheConnector(t *testing.T) {
-	memcacheStore, err := new(memcacheConnector).connect(memcacheStore())
-	if err != nil {
-		t.Fatal(err)
-	}
-	if _, ok := memcacheStore.(store); !ok {
-		t.Error("Expected StoreInterface got", memcacheStore)
-	}
+	memcacheStore, err := New(memcacheStore())
+	require.NoError(t, err)
+
+	_, ok := memcacheStore.(store)
+	require.True(t, ok)
 }
 
 func TestRedisConnector(t *testing.T) {
-	redisStore, err := new(redisConnector).connect(redisStore())
-	if err != nil {
-		t.Fatal(err)
-	}
-	if _, ok := redisStore.(store); !ok {
-		t.Error("Expected StoreInterface got", redisStore)
-	}
+	redisStore, err := New(redisStore())
+	require.NoError(t, err)
+
+	_, ok := redisStore.(store)
+	require.True(t, ok)
 }
 
 func TestArrayConnector(t *testing.T) {
-	mapStore, err := new(mapConnector).connect(mapStore())
-	if err != nil {
-		t.Fatal(err)
+	mapStore, err := New(mapStore())
+	require.NoError(t, err)
+
+	_, ok := mapStore.(store)
+	require.True(t, ok)
+}
+
+func redisStore() *Config {
+	return &Config{
+		Redis: &RedisConfig{
+			Prefix: "golavel:",
+			Addr:   os.Getenv("REDIS_ADDR"),
+		},
 	}
-	if _, ok := mapStore.(store); !ok {
-		t.Error("Expected StoreInterface got", mapStore)
+}
+
+func memcacheStore() *Config {
+	return &Config{
+		Memcache: &MemcacheConfig{
+			Prefix:  "golavel:",
+			Servers: []string{os.Getenv("MEMCACHE_SERVER")},
+		},
 	}
 }
 
-func redisStore() map[string]interface{} {
-	params := make(map[string]interface{})
-
-	params["address"] = "localhost:6379"
-	params["password"] = ""
-	params["database"] = 0
-	params["prefix"] = "golavel:"
-
-	return params
-}
-
-func memcacheStore() map[string]interface{} {
-	params := make(map[string]interface{})
-
-	params["server 1"] = "127.0.0.1:11211"
-	params["prefix"] = "golavel:"
-
-	return params
-}
-
-func mapStore() map[string]interface{} {
-	params := make(map[string]interface{})
-
-	params["prefix"] = "golavel:"
-
-	return params
+func mapStore() *Config {
+	return &Config{
+		Map: &MapConfig{
+			Prefix: "golavel:",
+		},
+	}
 }

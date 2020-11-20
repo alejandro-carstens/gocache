@@ -3,24 +3,10 @@ package gocache
 import (
 	"fmt"
 	"sync"
-	"sync/atomic"
 )
 
 type mapLocker struct {
-	mu      sync.Mutex
-	waiters int32
-}
-
-func (l *mapLocker) inc() {
-	atomic.AddInt32(&l.waiters, 1)
-}
-
-func (l *mapLocker) dec() {
-	atomic.AddInt32(&l.waiters, -1)
-}
-
-func (l *mapLocker) count() int32 {
-	return atomic.LoadInt32(&l.waiters)
+	mu sync.Mutex
 }
 
 func (l *mapLocker) lock() {
@@ -41,17 +27,16 @@ type mapLock struct {
 
 // Acquire implementation of the Lock interface
 func (ml *mapLock) Acquire() (bool, error) {
-	nameLock, exists := ml.locks[ml.key()]
-	if !exists {
-		nameLock = new(mapLocker)
-		ml.locks[ml.name] = nameLock
+	ml.mu.Lock()
+	if _, exists := ml.locks[ml.key()]; exists {
+		ml.mu.Unlock()
+
+		return false, nil
 	}
 
-	nameLock.inc()
+	ml.locks[ml.key()] = new(mapLocker)
 	ml.mu.Unlock()
-
-	nameLock.lock()
-	nameLock.dec()
+	ml.locks[ml.key()].lock()
 
 	return true, nil
 }
@@ -59,18 +44,15 @@ func (ml *mapLock) Acquire() (bool, error) {
 // Release implementation of the Lock interface
 func (ml *mapLock) Release() (bool, error) {
 	ml.mu.Lock()
+	defer ml.mu.Unlock()
 	nameLock, exists := ml.locks[ml.key()]
 	if !exists {
-		ml.mu.Unlock()
 		return true, nil
 	}
 
-	if nameLock.count() == 0 {
-		delete(ml.locks, ml.key())
-	}
+	delete(ml.locks, ml.key())
 	nameLock.unlock()
 
-	ml.mu.Unlock()
 	return true, nil
 }
 
@@ -84,10 +66,10 @@ func (ml *mapLock) ForceRelease() error {
 // GetCurrentOwner implementation of the Lock interface
 func (ml *mapLock) GetCurrentOwner() (string, error) {
 	ml.mu.Lock()
-	if _, exists := ml.locks[ml.key()]; !exists {
-		return ml.name, nil
+	defer ml.mu.Unlock()
+	if _, exists := ml.locks[ml.key()]; exists {
+		return ml.owner, nil
 	}
-	ml.mu.Unlock()
 
 	return "", nil
 }

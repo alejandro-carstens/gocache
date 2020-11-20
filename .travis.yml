@@ -13,6 +13,8 @@ go:
 env:
   matrix:
   - GO111MODULE=on
+  - REDIS_ADDR=localhost:6379
+  - MEMCACHE_SERVER=127.0.0.1:11211
 
 install:
   - go get
