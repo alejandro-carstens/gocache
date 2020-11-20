@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-// MAP_NIL_ERROR_RESPONSE map nil response error
+// MapNilErrorResponse map nil response error
 const MapNilErrorResponse = "map: cache miss"
 
 // MapStore is the representation of a map caching store
@@ -168,5 +168,13 @@ func (ms *MapStore) Tags(names ...string) TaggedCache {
 			store: ms,
 			names: names,
 		},
+	}
+}
+
+func (ms *MapStore) Lock(name, owner string, _ int64) Lock {
+	return &mapLock{
+		locks: make(map[string]*mapLocker),
+		name:  name,
+		owner: owner,
 	}
 }
