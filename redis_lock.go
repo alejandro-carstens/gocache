@@ -5,8 +5,6 @@ import (
 	"time"
 )
 
-const redisOK string = "OK"
-
 type redisLock struct {
 	client  *redis.Client
 	seconds int64
