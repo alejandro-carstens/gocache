@@ -64,9 +64,16 @@ type TaggedCache interface {
 	GetTags() tagSet
 }
 
+// Lock represents the methods to be implemented by a cache lock
 type Lock interface {
+	// Acquire is responsible for acquiring a lock
 	Acquire() (bool, error)
+	// ForceRelease forces a cache lock release
 	ForceRelease() error
+	// GetCurrentOwner retrieves the current
+	// owner of a given cache lock
 	GetCurrentOwner() (string, error)
+	// Release frees up a lock for use by
+	// a different concurrent process
 	Release() (bool, error)
 }

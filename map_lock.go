@@ -39,6 +39,7 @@ type mapLock struct {
 	owner   string
 }
 
+// Acquire implementation of the Lock interface
 func (ml *mapLock) Acquire() (bool, error) {
 	nameLock, exists := ml.locks[ml.key()]
 	if !exists {
@@ -55,6 +56,7 @@ func (ml *mapLock) Acquire() (bool, error) {
 	return true, nil
 }
 
+// Release implementation of the Lock interface
 func (ml *mapLock) Release() (bool, error) {
 	ml.mu.Lock()
 	nameLock, exists := ml.locks[ml.key()]
@@ -72,12 +74,14 @@ func (ml *mapLock) Release() (bool, error) {
 	return true, nil
 }
 
+// ForceRelease implementation of the Lock interface
 func (ml *mapLock) ForceRelease() error {
 	_, err := ml.Release()
 
 	return err
 }
 
+// GetCurrentOwner implementation of the Lock interface
 func (ml *mapLock) GetCurrentOwner() (string, error) {
 	ml.mu.Lock()
 	if _, exists := ml.locks[ml.key()]; !exists {

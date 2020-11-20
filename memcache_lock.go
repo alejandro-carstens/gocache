@@ -11,6 +11,7 @@ type memcacheLock struct {
 	seconds int64
 }
 
+// Acquire implementation of the Lock interface
 func (ml *memcacheLock) Acquire() (bool, error) {
 	err := ml.client.Add(&memcache.Item{
 		Key:        ml.name,
@@ -27,6 +28,7 @@ func (ml *memcacheLock) Acquire() (bool, error) {
 	return true, nil
 }
 
+// Release implementation of the Lock interface
 func (ml *memcacheLock) Release() (bool, error) {
 	currentOwner, err := ml.GetCurrentOwner()
 	if err != nil {
@@ -39,10 +41,12 @@ func (ml *memcacheLock) Release() (bool, error) {
 	return false, nil
 }
 
+// ForceRelease implementation of the Lock interface
 func (ml *memcacheLock) ForceRelease() error {
 	return ml.client.Delete(ml.name)
 }
 
+// GetCurrentOwner implementation of the Lock interface
 func (ml *memcacheLock) GetCurrentOwner() (string, error) {
 	item, err := ml.client.Get(ml.name)
 	if err == memcache.ErrCacheMiss {
