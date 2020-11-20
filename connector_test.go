@@ -5,7 +5,7 @@ import (
 )
 
 func TestMemcacheConnector(t *testing.T) {
-	memcacheStore, err := new(memcacheConnector).connect(memcacheStore())
+	memcacheStore, err := New(memcacheStore())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -15,7 +15,7 @@ func TestMemcacheConnector(t *testing.T) {
 }
 
 func TestRedisConnector(t *testing.T) {
-	redisStore, err := new(redisConnector).connect(redisStore())
+	redisStore, err := New(redisStore())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -25,7 +25,7 @@ func TestRedisConnector(t *testing.T) {
 }
 
 func TestArrayConnector(t *testing.T) {
-	mapStore, err := new(mapConnector).connect(mapStore())
+	mapStore, err := New(mapStore())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -34,30 +34,28 @@ func TestArrayConnector(t *testing.T) {
 	}
 }
 
-func redisStore() map[string]interface{} {
-	params := make(map[string]interface{})
-
-	params["address"] = "localhost:6379"
-	params["password"] = ""
-	params["database"] = 0
-	params["prefix"] = "golavel:"
-
-	return params
+func redisStore() *Config {
+	return &Config{
+		Redis: &RedisConfig{
+			Prefix: "golavel:",
+			Addr:   "localhost:6379",
+		},
+	}
 }
 
-func memcacheStore() map[string]interface{} {
-	params := make(map[string]interface{})
-
-	params["server 1"] = "127.0.0.1:11211"
-	params["prefix"] = "golavel:"
-
-	return params
+func memcacheStore() *Config {
+	return &Config{
+		Memcache: &MemcacheConfig{
+			Prefix:  "golavel:",
+			Servers: []string{"127.0.0.1:11211"},
+		},
+	}
 }
 
-func mapStore() map[string]interface{} {
-	params := make(map[string]interface{})
-
-	params["prefix"] = "golavel:"
-
-	return params
+func mapStore() *Config {
+	return &Config{
+		Map: &MapConfig{
+			Prefix: "golavel:",
+		},
+	}
 }

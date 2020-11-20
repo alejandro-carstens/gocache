@@ -5,6 +5,12 @@ import (
 	"testing"
 )
 
+const (
+	redisDriver    string = "redis"
+	memcacheDriver string = "memcache"
+	mapDriver      string = "map"
+)
+
 var drivers = []string{
 	"map",
 	"memcache",
@@ -241,29 +247,24 @@ func TestIncrementDecrement(t *testing.T) {
 }
 
 func createStore(store string) Cache {
+	var (
+		cache Cache
+		err   error
+	)
 	switch strings.ToLower(store) {
-	case RedisDriver:
-		cache, err := New(store, redisStore())
-		if err != nil {
-			panic(err)
-		}
-
-		return cache
-	case MemcacheDriver:
-		cache, err := New(store, memcacheStore())
-		if err != nil {
-			panic(err)
-		}
-
-		return cache
-	case MapDriver:
-		cache, err := New(store, mapStore())
-		if err != nil {
-			panic(err)
-		}
-
-		return cache
+	case redisDriver:
+		cache, err = New(redisStore())
+	case memcacheDriver:
+		cache, err = New(memcacheStore())
+	case mapDriver:
+		cache, err = New(mapStore())
+	}
+	if err != nil {
+		panic(err)
+	}
+	if cache == nil {
+		panic("No valid driver provided.")
 	}
 
-	panic("No valid driver provided.")
+	return cache
 }

@@ -1,12 +1,12 @@
 package gocache
 
-// CacheConnector represents the connector methods to be implemented
+// cacheConnector represents the connector methods to be implemented
 type cacheConnector interface {
 	// Connect is responsible for connecting with the caching store
-	connect(params map[string]interface{}) (Cache, error)
+	connect(config *Config) (Cache, error)
 	// validate verifies that the given params
 	// are valid for establishing a connection
-	validate(params map[string]interface{}) (map[string]interface{}, error)
+	validate(config *Config) error
 }
 
 // store represents the caching methods to be implemented

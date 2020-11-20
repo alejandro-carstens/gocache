@@ -2,9 +2,10 @@ package gocache
 
 import (
 	"crypto/tls"
-	"github.com/go-redis/redis"
 	"net"
 	"time"
+
+	"github.com/go-redis/redis"
 )
 
 // Config represents the cache configuration to
