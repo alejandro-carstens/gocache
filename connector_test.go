@@ -1,6 +1,7 @@
 package gocache
 
 import (
+	"os"
 	"testing"
 )
 
@@ -38,7 +39,7 @@ func redisStore() *Config {
 	return &Config{
 		Redis: &RedisConfig{
 			Prefix: "golavel:",
-			Addr:   "localhost:6379",
+			Addr:   os.Getenv("REDIS_ADDR"),
 		},
 	}
 }
@@ -47,7 +48,7 @@ func memcacheStore() *Config {
 	return &Config{
 		Memcache: &MemcacheConfig{
 			Prefix:  "golavel:",
-			Servers: []string{"127.0.0.1:11211"},
+			Servers: []string{os.Getenv("MEMCACHE_SERVER")},
 		},
 	}
 }

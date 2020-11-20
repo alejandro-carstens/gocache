@@ -13,8 +13,8 @@ const (
 
 var drivers = []string{
 	"map",
-	"memcache",
-	"redis",
+	//"memcache",
+	//"redis",
 }
 
 type example struct {

@@ -5,6 +5,8 @@ import (
 	"time"
 )
 
+const redisOK string = "OK"
+
 type redisLock struct {
 	client  *redis.Client
 	seconds int64
@@ -14,12 +16,12 @@ type redisLock struct {
 
 // Acquire implementation of the Lock interface
 func (rl *redisLock) Acquire() (bool, error) {
-	return rl.client.SetXX(rl.name, rl.owner, time.Duration(rl.seconds)*time.Second).Result()
+	return rl.client.SetNX(rl.name, rl.owner, time.Duration(rl.seconds)*time.Second).Result()
 }
 
 // Release implementation of the Lock interface
 func (rl *redisLock) Release() (bool, error) {
-	res, err := rl.client.Eval(redisLuaReleaseLockScript, []string{"1", rl.name, rl.owner}).Int64()
+	res, err := rl.client.Eval(redisLuaReleaseLockScript, []string{rl.name}, rl.owner).Int64()
 
 	return res > 0, err
 }
