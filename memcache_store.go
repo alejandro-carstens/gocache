@@ -6,8 +6,7 @@ import (
 	"github.com/bradfitz/gomemcache/memcache"
 )
 
-// MemcacheNilErrorResponse is the gomemcache nil response error
-const MemcacheNilErrorResponse = "memcache: cache miss"
+const memcacheNilErrorResponse = "memcache: cache miss"
 
 // MemcacheStore is the representation of the memcache caching store
 type MemcacheStore struct {
@@ -73,7 +72,7 @@ func (ms *MemcacheStore) GetString(key string) (string, error) {
 func (ms *MemcacheStore) Increment(key string, value int64) (int64, error) {
 	newValue, err := ms.client.Increment(ms.GetPrefix()+key, uint64(value))
 	if err != nil {
-		if err.Error() != MemcacheNilErrorResponse {
+		if err.Error() != memcacheNilErrorResponse {
 			return value, err
 		}
 		if err := ms.Put(key, value, 0); err != nil {
@@ -90,7 +89,7 @@ func (ms *MemcacheStore) Increment(key string, value int64) (int64, error) {
 func (ms *MemcacheStore) Decrement(key string, value int64) (int64, error) {
 	newValue, err := ms.client.Decrement(ms.GetPrefix()+key, uint64(value))
 	if err != nil {
-		if err.Error() != MemcacheNilErrorResponse {
+		if err.Error() != memcacheNilErrorResponse {
 			return value, err
 		}
 		if err := ms.Put(key, 0, 0); err != nil {
@@ -181,6 +180,7 @@ func (ms *MemcacheStore) Tags(names ...string) TaggedCache {
 	}
 }
 
+// Lock returns a memcache implementation of the Lock interface
 func (ms *MemcacheStore) Lock(name, owner string, seconds int64) Lock {
 	return &memcacheLock{
 		client:  ms.client,

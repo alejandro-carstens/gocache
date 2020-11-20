@@ -79,7 +79,7 @@ func isFloat(value float64) bool {
 }
 
 func isCacheMissedError(err error) bool {
-	haystack := []string{MapNilErrorResponse, MemcacheNilErrorResponse, RedisNilErrorResponse}
+	haystack := []string{mapNilErrorResponse, memcacheNilErrorResponse, redisNilErrorResponse}
 
 	return inStringSlice(err.Error(), haystack)
 }

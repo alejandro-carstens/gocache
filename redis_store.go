@@ -7,7 +7,7 @@ import (
 	"github.com/go-redis/redis"
 )
 
-const RedisNilErrorResponse string = "redis: nil"
+const redisNilErrorResponse string = "redis: nil"
 
 // RedisStore is the representation of the redis caching store
 type RedisStore struct {
@@ -186,6 +186,7 @@ func (rs *RedisStore) Get(key string, entity interface{}) error {
 	return err
 }
 
+// Lock returns a redis implementation of the Lock interface
 func (rs *RedisStore) Lock(name, owner string, seconds int64) Lock {
 	return &redisLock{
 		client:  rs.client,

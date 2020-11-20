@@ -47,7 +47,7 @@ type tags interface {
 	Tags(names ...string) TaggedCache
 }
 
-// Store represents the methods a caching store needs to implement
+// Cache represents the methods a caching store needs to implement
 type Cache interface {
 	store
 	tags

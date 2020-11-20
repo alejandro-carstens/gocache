@@ -5,8 +5,7 @@ import (
 	"fmt"
 )
 
-// MapNilErrorResponse map nil response error
-const MapNilErrorResponse = "map: cache miss"
+const mapNilErrorResponse = "map: cache miss"
 
 // MapStore is the representation of a map caching store
 type MapStore struct {
@@ -18,7 +17,7 @@ type MapStore struct {
 func (ms *MapStore) GetString(key string) (string, error) {
 	value, valid := ms.client[ms.GetPrefix()+key]
 	if !valid {
-		return "", errors.New(MapNilErrorResponse)
+		return "", errors.New(mapNilErrorResponse)
 	}
 
 	return simpleDecode(fmt.Sprint(value))
@@ -28,7 +27,7 @@ func (ms *MapStore) GetString(key string) (string, error) {
 func (ms *MapStore) GetFloat64(key string) (float64, error) {
 	value, valid := ms.client[ms.GetPrefix()+key]
 	if !valid {
-		return 0, errors.New(MapNilErrorResponse)
+		return 0, errors.New(mapNilErrorResponse)
 	}
 	if !isStringNumeric(value.(string)) {
 		return 0, errors.New("invalid numeric value")
@@ -41,7 +40,7 @@ func (ms *MapStore) GetFloat64(key string) (float64, error) {
 func (ms *MapStore) GetInt64(key string) (int64, error) {
 	value, valid := ms.client[ms.GetPrefix()+key]
 	if !valid {
-		return 0, errors.New(MapNilErrorResponse)
+		return 0, errors.New(mapNilErrorResponse)
 	}
 	if !isStringNumeric(value.(string)) {
 		return 0, errors.New("invalid numeric value")
@@ -147,7 +146,7 @@ func (ms *MapStore) Many(keys []string) (map[string]string, error) {
 func (ms *MapStore) Get(key string, entity interface{}) error {
 	value, valid := ms.client[ms.GetPrefix()+key]
 	if !valid {
-		return errors.New(MapNilErrorResponse)
+		return errors.New(mapNilErrorResponse)
 	}
 
 	_, err := decode(fmt.Sprint(value), entity)
@@ -171,6 +170,7 @@ func (ms *MapStore) Tags(names ...string) TaggedCache {
 	}
 }
 
+// Lock returns a map implementation of the Lock interface
 func (ms *MapStore) Lock(name, owner string, _ int64) Lock {
 	return &mapLock{
 		locks: make(map[string]*mapLocker),
