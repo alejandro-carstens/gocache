@@ -11,7 +11,7 @@ const MemcacheNilErrorResponse = "memcache: cache miss"
 
 // MemcacheStore is the representation of the memcache caching store
 type MemcacheStore struct {
-	client memcache.Client
+	client *memcache.Client
 	prefix string
 }
 
@@ -178,6 +178,15 @@ func (ms *MemcacheStore) Tags(names ...string) TaggedCache {
 			store: ms,
 			names: names,
 		},
+	}
+}
+
+func (ms *MemcacheStore) Lock(name, owner string, seconds int64) Lock {
+	return &memcacheLock{
+		client:  ms.client,
+		name:    name,
+		owner:   owner,
+		seconds: seconds,
 	}
 }
 

@@ -22,8 +22,8 @@ func (rc *redisConnector) connect(params map[string]interface{}) (Cache, error) 
 	}, nil
 }
 
-func (rc *redisConnector) client(address string, password string, database int) redis.Client {
-	return *redis.NewClient(&redis.Options{
+func (rc *redisConnector) client(address string, password string, database int) *redis.Client {
+	return redis.NewClient(&redis.Options{
 		Addr:     address,
 		Password: password,
 		DB:       database,

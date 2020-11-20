@@ -133,16 +133,13 @@ func TestPutGet(t *testing.T) {
 		cache := createStore(driver)
 
 		var firstExample example
-
 		firstExample.Name = "Alejandro"
 		firstExample.Description = "Whatever"
-
 		if err := cache.Put("key", firstExample, 10); err != nil {
 			t.Fatal(err)
 		}
 
 		var newExample example
-
 		if err := cache.Get("key", &newExample); err != nil {
 			t.Fatal(err)
 		}

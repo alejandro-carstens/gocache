@@ -3,10 +3,9 @@ package gocache
 import (
 	"errors"
 	"fmt"
-	"strconv"
 )
 
-// MAP_NIL_ERROR_RESPONSE map nil response error
+// MapNilErrorResponse map nil response error
 const MapNilErrorResponse = "map: cache miss"
 
 // MapStore is the representation of a map caching store
@@ -78,17 +77,13 @@ func (ms *MapStore) Decrement(key string, value int64) (int64, error) {
 }
 
 // Put puts a value in the given store for a predetermined amount of time in mins.
-func (ms *MapStore) Put(key string, value interface{}, minutes int) error {
+func (ms *MapStore) Put(key string, value interface{}, _ int) error {
 	val, err := encode(value)
 	if err != nil {
 		return err
 	}
 
-	mins := strconv.Itoa(minutes)
-
-	mins = ""
-
-	ms.client[ms.GetPrefix()+key+mins] = val
+	ms.client[ms.GetPrefix()+key] = val
 
 	return nil
 }
@@ -173,5 +168,13 @@ func (ms *MapStore) Tags(names ...string) TaggedCache {
 			store: ms,
 			names: names,
 		},
+	}
+}
+
+func (ms *MapStore) Lock(name, owner string, _ int64) Lock {
+	return &mapLock{
+		locks: make(map[string]*mapLocker),
+		name:  name,
+		owner: owner,
 	}
 }

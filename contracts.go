@@ -51,6 +51,8 @@ type tags interface {
 type Cache interface {
 	store
 	tags
+	// Lock returns an implementation of the Lock interface
+	Lock(name, owner string, seconds int64) Lock
 }
 
 // TaggedCache represents the methods a tagged-caching store needs to implement
@@ -60,4 +62,11 @@ type TaggedCache interface {
 	TagFlush() error
 	// GetTags returns the TaggedCache Tags
 	GetTags() tagSet
+}
+
+type Lock interface {
+	Acquire() (bool, error)
+	ForceRelease() error
+	GetCurrentOwner() (string, error)
+	Release() (bool, error)
 }
