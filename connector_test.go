@@ -1,38 +1,33 @@
 package gocache
 
 import (
+	"github.com/stretchr/testify/require"
 	"os"
 	"testing"
 )
 
 func TestMemcacheConnector(t *testing.T) {
 	memcacheStore, err := New(memcacheStore())
-	if err != nil {
-		t.Fatal(err)
-	}
-	if _, ok := memcacheStore.(store); !ok {
-		t.Error("Expected StoreInterface got", memcacheStore)
-	}
+	require.NoError(t, err)
+
+	_, ok := memcacheStore.(store)
+	require.True(t, ok)
 }
 
 func TestRedisConnector(t *testing.T) {
 	redisStore, err := New(redisStore())
-	if err != nil {
-		t.Fatal(err)
-	}
-	if _, ok := redisStore.(store); !ok {
-		t.Error("Expected StoreInterface got", redisStore)
-	}
+	require.NoError(t, err)
+
+	_, ok := redisStore.(store)
+	require.True(t, ok)
 }
 
 func TestArrayConnector(t *testing.T) {
 	mapStore, err := New(mapStore())
-	if err != nil {
-		t.Fatal(err)
-	}
-	if _, ok := mapStore.(store); !ok {
-		t.Error("Expected StoreInterface got", mapStore)
-	}
+	require.NoError(t, err)
+
+	_, ok := mapStore.(store)
+	require.True(t, ok)
 }
 
 func redisStore() *Config {

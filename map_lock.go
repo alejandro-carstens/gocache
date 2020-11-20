@@ -3,24 +3,10 @@ package gocache
 import (
 	"fmt"
 	"sync"
-	"sync/atomic"
 )
 
 type mapLocker struct {
-	mu      sync.Mutex
-	waiters int32
-}
-
-func (l *mapLocker) inc() {
-	atomic.AddInt32(&l.waiters, 1)
-}
-
-func (l *mapLocker) dec() {
-	atomic.AddInt32(&l.waiters, -1)
-}
-
-func (l *mapLocker) count() int32 {
-	return atomic.LoadInt32(&l.waiters)
+	mu sync.Mutex
 }
 
 func (l *mapLocker) lock() {
@@ -44,6 +30,7 @@ func (ml *mapLock) Acquire() (bool, error) {
 	ml.mu.Lock()
 	if _, exists := ml.locks[ml.key()]; exists {
 		ml.mu.Unlock()
+
 		return false, nil
 	}
 
