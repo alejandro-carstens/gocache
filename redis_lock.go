@@ -33,5 +33,10 @@ func (rl *redisLock) ForceRelease() error {
 
 // GetCurrentOwner implementation of the Lock interface
 func (rl *redisLock) GetCurrentOwner() (string, error) {
-	return rl.client.Get(rl.name).Result()
+	res, err := rl.client.Get(rl.name).Result()
+	if err != nil && err.Error() == redisNilErrorResponse {
+		return "", nil
+	}
+
+	return res, err
 }
