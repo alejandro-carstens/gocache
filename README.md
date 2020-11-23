@@ -10,7 +10,7 @@ This package allows you to implement a store agnostic caching system via a commo
 
 ## Contributing
 
-<b>By using this package you are already contributing, if you would like to go a bit further simply give the project a star and spread the word (it would be greatly appreciated)</b>. Otherwise, find an area you can help with and do it. Open source is about collaboration and open participation. Try to make your code look like what already exists or hopefully better and submit a pull request. Also, if you have any ideas on how to make the code better or on improving its scope and functionality please raise an issue and I will do my best to address it in a timely manner.
+Find an area you can help with and do it. Open source is about collaboration and open participation. Try to make your code look like what already exists or hopefully better and submit a pull request. Also, if you have any ideas on how to make the code better or on improving its scope and functionality please raise an issue and I will do my best to address it in a timely manner.
 
 ## Usage
 
