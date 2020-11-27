@@ -20,21 +20,6 @@ Set the params for the store you want:
 
 ```go
 
-params := make(map[string]interface{})
-  
-// Redis
-params["password"] = ""
-params["database"] = 0
-params["address"] = "localhost:6379"
-params["prefix"] = "golavel"
-  
-// Memcache (you can spacify multiple servers)
-params["server"] = "127.0.0.1:11211"
-params["prefix"] = "golavel:"
-  
-// Map
-params["prefix"] = "golavel"
-
 ```
 
 New up the cache by passing the store name and the appropiate params:
