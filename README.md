@@ -19,164 +19,26 @@ To start using this package in your application simply run:`go get github.com/al
 Set the params for the store you want:
 
 ```go
-
 ```
 
 New up the cache by passing the store name and the appropiate params:
 
 ```go
-
-// Can be any of the following: "redis", "memcache" or "map"
-store := "redis"
-
-c, err := cache.New(store, params)
 ```
 
 Start using it:
 
 ```go
-package main
-
-import (
-	"fmt"
-	"github.com/alejandro-carstens/gocache"
-)
-
-func main() {
-	params := make(map[string]interface{})
-
-	params["password"] = ""
-	params["database"] = 0
-	params["address"] = "localhost:6379"
-	params["prefix"] = "golavel"
-
-	c, err := cache.New("redis", params)
-
-	// Put a value in the cache for 10 mins.
-	c.Put("foo", "bar", 10)
-
-	// Retrieve a value from the cache, 
-	// may return a string, an int64, 
-	// or a float64 depending on 
-	// the value type
-	val, err := c.Get("foo") 
-
-	if err != nil {
-		fmt.Print(val) // bar
-	}
-
-	// Delete a k-v pair
-	c.Forget("foo")
-
-	// Remember a value forever
-	c.Forever("baz", "buz")
-
-	// Flush the cache
-	c.Flush()
-}
 ```
 
 Use it with structs:
 
 ```go
-package main
-
-import (
-	"fmt"
-	"github.com/alejandro-carstens/gocache"
-)
-
-type Foo struct {
-	Name        string
-	Description string
-}
-
-func main() {
-	params := make(map[string]interface{})
-
-	params["server"] = "127.0.0.1:11211"
-	params["prefix"] = "golavel"
-
-	c, err := cache.New("memcache", params)
-
-	var foo Foo
-
-	foo.Name = "Alejandro"
-	foo.Description = "Whatever"
-
-	c.Put("foo", foo, 10)
-
-	var bar Foo
-
-	// Retrieve a struct from the cache
-	val, err := c.GetStruct("foo", &bar)
-
-	if err != nil {
-		fmt.Print(bar.Name)        // Alejandro
-		fmt.Print(bar.Description) // Whatever
-	}
-}
 ```
 
 Use it with tags:
 
 ```go
-package main
-
-import (
-	"fmt"
-	"github.com/alejandro-carstens/gocache"
-)
-
-type Foo struct {
-	Name        string
-	Description string
-}
-
-func main() {
-	params := make(map[string]interface{})
-
-	params["prefix"] = "golavel"
-
-	c, err := cache.New("map", params)
-
-	var foo Foo
-
-	foo.Name = "Alejandro"
-	foo.Description = "Whatever"
-	
-	c.Tags("tag").Forever("foo", foo, 10)
-
-	var bar Foo
-
-	// Retrieve a struct from the cache
-	val, err := c.Tags("tag").GetStruct("foo", &bar)
-
-	if err != nil {
-		fmt.Print(bar.Name)        // Alejandro
-		fmt.Print(bar.Description) // Whatever
-	}
-	
-	tags := make([]string, 3)
-	
-	tags[0] = "tag1"
-	tags[1] = "tag2"
-	tags[2] = "tag3"
-	
-	// Put a value in the cache for 10 mins.
-	c.Tags(tags...).Put("foo", "bar", 10)
-
-	val, err := c.Tags(tags...).Get("foo") 
-
-	if err != nil {
-		fmt.Print(val) // bar
-	}
-
-	// Delete a k-v pair
-	c.Tags(tags...).Forget("foo")
-	
-	c.Tags(tags...).Flush()
-}
 ```
 
 For more examples please refer to the tests.
