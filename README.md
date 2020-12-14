@@ -20,12 +20,6 @@ Set the params for the store you want:
 
 ```go
 ```
-
-New up the cache by passing the store name and the appropiate params:
-
-```go
-```
-
 Start using it:
 
 ```go
