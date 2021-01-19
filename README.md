@@ -16,6 +16,8 @@ Find an area you can help with and do it. Open source is about collaboration and
 
 To start using this package in your application simply run:`go get github.com/alejandro-carstens/gocache`
 
+Wrapping docs soon.
+
 Set the params for the store you want:
 
 ```go
