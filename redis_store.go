@@ -120,10 +120,9 @@ func (rs *RedisStore) PutMany(values map[string]string, seconds int) error {
 
 // Many gets many values from the store
 func (rs *RedisStore) Many(keys []string) (map[string]string, error) {
-	values := make(map[string]string)
-
 	pipe := rs.client.TxPipeline()
 
+	values := map[string]string{}
 	for _, key := range keys {
 		val, err := rs.GetString(key)
 		if err != nil {
@@ -180,6 +179,16 @@ func (rs *RedisStore) Lock(name, owner string, seconds int64) Lock {
 		name:    name,
 		owner:   owner,
 	}
+}
+
+// Lpush runs the Redis lpush command (used via reflection, do not delete)
+func (rs *RedisStore) Lpush(segment string, key string) {
+	rs.client.LPush(segment, key)
+}
+
+// Lrange runs the Redis lrange command (used via reflection, do not delete)
+func (rs *RedisStore) Lrange(key string, start int64, stop int64) []string {
+	return rs.client.LRange(key, start, stop).Val()
 }
 
 func (rs *RedisStore) get(key string) *redis.StringCmd {
