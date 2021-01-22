@@ -2,8 +2,9 @@ package gocache
 
 import (
 	"fmt"
-	"github.com/rs/xid"
 	"strings"
+
+	"github.com/rs/xid"
 )
 
 // tagSet is the representation of a tag set for the caching stores

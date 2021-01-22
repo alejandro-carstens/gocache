@@ -1,7 +1,6 @@
 package gocache
 
 import (
-	"strconv"
 	"time"
 
 	"github.com/go-redis/redis"
@@ -45,14 +44,11 @@ func (rs *RedisStore) Decrement(key string, value int64) (int64, error) {
 	return rs.client.DecrBy(rs.prefix+key, value).Result()
 }
 
-// Put puts a value in the given store for a predetermined amount of time in mins.
-func (rs *RedisStore) Put(key string, value interface{}, minutes int) error {
-	t, err := time.ParseDuration(strconv.Itoa(minutes) + "m")
-	if err != nil {
-		return err
-	}
+// Put puts a value in the given store for a predetermined amount of time in seconds
+func (rs *RedisStore) Put(key string, value interface{}, seconds int) error {
+	duration := time.Duration(int64(seconds)) * time.Second
 	if isNumeric(value) {
-		return rs.client.Set(rs.GetPrefix()+key, value, t).Err()
+		return rs.client.Set(rs.GetPrefix()+key, value, duration).Err()
 	}
 
 	val, err := encode(value)
@@ -60,7 +56,7 @@ func (rs *RedisStore) Put(key string, value interface{}, minutes int) error {
 		return err
 	}
 
-	return rs.client.Set(rs.GetPrefix()+key, val, t).Err()
+	return rs.client.Set(rs.GetPrefix()+key, val, duration).Err()
 }
 
 // Forever puts a value in the given store until it is forgotten/evicted
@@ -108,11 +104,11 @@ func (rs *RedisStore) GetPrefix() string {
 }
 
 // PutMany puts many values in the given store until they are forgotten/evicted
-func (rs *RedisStore) PutMany(values map[string]string, minutes int) error {
+func (rs *RedisStore) PutMany(values map[string]string, seconds int) error {
 	pipe := rs.client.TxPipeline()
 
 	for key, value := range values {
-		if err := rs.Put(key, value, minutes); err != nil {
+		if err := rs.Put(key, value, seconds); err != nil {
 			return err
 		}
 	}
@@ -145,16 +141,6 @@ func (rs *RedisStore) Many(keys []string) (map[string]string, error) {
 // Connection returns the the store's client
 func (rs *RedisStore) Connection() interface{} {
 	return rs.client
-}
-
-// Lpush runs the Redis lpush command
-func (rs *RedisStore) Lpush(segment string, key string) {
-	rs.client.LPush(segment, key)
-}
-
-// Lrange runs the Redis lrange command
-func (rs *RedisStore) Lrange(key string, start int64, stop int64) []string {
-	return rs.client.LRange(key, start, stop).Val()
 }
 
 // Tags returns the taggedCache for the given store

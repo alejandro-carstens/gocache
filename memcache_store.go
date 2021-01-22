@@ -14,9 +14,9 @@ type MemcacheStore struct {
 	prefix string
 }
 
-// Put puts a value in the given store for a predetermined amount of time in mins.
-func (ms *MemcacheStore) Put(key string, value interface{}, minutes int) error {
-	item, err := ms.item(key, value, minutes)
+// Put puts a value in the given store for a predetermined amount of time in seconds
+func (ms *MemcacheStore) Put(key string, value interface{}, seconds int) error {
+	item, err := ms.item(key, value, seconds)
 	if err != nil {
 		return err
 	}
@@ -45,7 +45,6 @@ func (ms *MemcacheStore) GetFloat64(key string) (float64, error) {
 // GetInt64 gets an int value from the store
 func (ms *MemcacheStore) GetInt64(key string) (int64, error) {
 	value, err := ms.get(key)
-
 	if err != nil {
 		return 0, err
 	}
@@ -108,10 +107,9 @@ func (ms *MemcacheStore) GetPrefix() string {
 }
 
 // PutMany puts many values in the given store until they are forgotten/evicted
-func (ms *MemcacheStore) PutMany(values map[string]string, minutes int) error {
+func (ms *MemcacheStore) PutMany(values map[string]string, seconds int) error {
 	for key, value := range values {
-		err := ms.Put(key, value, minutes)
-		if err != nil {
+		if err := ms.Put(key, value, seconds); err != nil {
 			return err
 		}
 	}
@@ -208,23 +206,7 @@ func (ms *MemcacheStore) getItemValue(itemValue []byte) string {
 	return value
 }
 
-func (ms *MemcacheStore) processValue(value string) (interface{}, error) {
-	if isStringNumeric(value) {
-		floatValue, err := stringToFloat64(value)
-		if err != nil {
-			return floatValue, err
-		}
-		if isFloat(floatValue) {
-			return floatValue, err
-		}
-
-		return int64(floatValue), err
-	}
-
-	return value, nil
-}
-
-func (ms *MemcacheStore) item(key string, value interface{}, minutes int) (*memcache.Item, error) {
+func (ms *MemcacheStore) item(key string, value interface{}, seconds int) (*memcache.Item, error) {
 	val, err := encode(value)
 	if err != nil {
 		return nil, err
@@ -233,6 +215,6 @@ func (ms *MemcacheStore) item(key string, value interface{}, minutes int) (*memc
 	return &memcache.Item{
 		Key:        ms.GetPrefix() + key,
 		Value:      []byte(val),
-		Expiration: int32(minutes),
+		Expiration: int32(seconds),
 	}, nil
 }

@@ -11,14 +11,14 @@ type taggedCache struct {
 	tags  tagSet
 }
 
-// Put puts a value in the given store for a predetermined amount of time in mins.
-func (tc *taggedCache) Put(key string, value interface{}, minutes int) error {
+// Put puts a value in the given store for a predetermined amount of time in seconds
+func (tc *taggedCache) Put(key string, value interface{}, seconds int) error {
 	tagKey, err := tc.taggedItemKey(key)
 	if err != nil {
 		return err
 	}
 
-	return tc.store.Put(tagKey, value, minutes)
+	return tc.store.Put(tagKey, value, seconds)
 }
 
 // Increment increments an integer counter by a given value
@@ -93,7 +93,7 @@ func (tc *taggedCache) Many(keys []string) (map[string]string, error) {
 }
 
 // PutMany puts many values in the given store until they are forgotten/evicted
-func (tc *taggedCache) PutMany(values map[string]string, minutes int) error {
+func (tc *taggedCache) PutMany(values map[string]string, seconds int) error {
 	taggedMap := make(map[string]string)
 
 	for key, value := range values {
@@ -105,7 +105,7 @@ func (tc *taggedCache) PutMany(values map[string]string, minutes int) error {
 		taggedMap[tagKey] = value
 	}
 
-	return tc.store.PutMany(taggedMap, minutes)
+	return tc.store.PutMany(taggedMap, seconds)
 }
 
 // GetPrefix gets the cache key prefix
@@ -161,6 +161,11 @@ func (tc *taggedCache) TagFlush() error {
 	return tc.tags.reset()
 }
 
+// GetTags returns the taggedCache Tags
+func (tc *taggedCache) GetTags() tagSet {
+	return tc.tags
+}
+
 func (tc *taggedCache) taggedItemKey(key string) (string, error) {
 	h := sha1.New()
 
@@ -172,9 +177,4 @@ func (tc *taggedCache) taggedItemKey(key string) (string, error) {
 	h.Write([]byte(namespace))
 
 	return tc.GetPrefix() + hex.EncodeToString(h.Sum(nil)) + ":" + key, nil
-}
-
-// GetTags returns the taggedCache Tags
-func (tc *taggedCache) GetTags() tagSet {
-	return tc.tags
 }

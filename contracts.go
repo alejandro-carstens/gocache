@@ -13,8 +13,8 @@ type cacheConnector interface {
 type store interface {
 	// GetString gets a string value from the store
 	GetString(key string) (string, error)
-	// Put puts a value in the given store for a predetermined amount of time in mins.
-	Put(key string, value interface{}, minutes int) error
+	// Put puts a value in the given store for a predetermined amount of time in seconds
+	Put(key string, value interface{}, seconds int) error
 	// Increment increments an integer counter by a given value
 	Increment(key string, value int64) (int64, error)
 	// Decrement decrements an integer counter by a given value
@@ -34,7 +34,7 @@ type store interface {
 	// Many gets many values from the store
 	Many(keys []string) (map[string]string, error)
 	// PutMany puts many values in the given store until they are forgotten/evicted
-	PutMany(values map[string]string, minutes int) error
+	PutMany(values map[string]string, seconds int) error
 	// Get gets the struct representation of a value from the store
 	Get(key string, entity interface{}) error
 	// Close closes the client releasing all open resources
