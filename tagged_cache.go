@@ -21,6 +21,11 @@ func (tc *taggedCache) Put(key string, value interface{}, seconds int) error {
 	return tc.store.Put(tagKey, value, seconds)
 }
 
+// PutRawString puts a raw string value in the given store for a predetermined amount of time in seconds
+func (tc *taggedCache) PutRawString(key, value string, seconds int) error {
+	return tc.Put(key, value, seconds)
+}
+
 // Increment increments an integer counter by a given value
 func (tc *taggedCache) Increment(key string, value int64) (int64, error) {
 	tagKey, err := tc.taggedItemKey(key)
@@ -154,6 +159,10 @@ func (tc *taggedCache) GetString(key string) (string, error) {
 	}
 
 	return tc.store.GetString(tagKey)
+}
+
+func (tc *taggedCache) GetRawString(key string) (string, error) {
+	return tc.GetString(key)
 }
 
 // TagFlush flushes the tags of the taggedCache

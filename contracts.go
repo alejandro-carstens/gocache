@@ -13,8 +13,12 @@ type cacheConnector interface {
 type store interface {
 	// GetString gets a string value from the store
 	GetString(key string) (string, error)
+	// GetRawString gets a raw string value from the store
+	GetRawString(key string) (string, error)
 	// Put puts a value in the given store for a predetermined amount of time in seconds
 	Put(key string, value interface{}, seconds int) error
+	// PutRawString puts a raw string value in the given store for a predetermined amount of time in seconds
+	PutRawString(key, value string, seconds int) error
 	// Increment increments an integer counter by a given value
 	Increment(key string, value int64) (int64, error)
 	// Decrement decrements an integer counter by a given value

@@ -34,6 +34,16 @@ func (rs *RedisStore) GetString(key string) (string, error) {
 	return simpleDecode(value)
 }
 
+// GetRawString gets a raw string value from the store
+func (rs *RedisStore) GetRawString(key string) (string, error) {
+	value, err := rs.get(key).Result()
+	if err != nil {
+		return "", err
+	}
+
+	return value, nil
+}
+
 // Increment increments an integer counter by a given value
 func (rs *RedisStore) Increment(key string, value int64) (int64, error) {
 	return rs.client.IncrBy(rs.prefix+key, value).Result()
@@ -57,6 +67,13 @@ func (rs *RedisStore) Put(key string, value interface{}, seconds int) error {
 	}
 
 	return rs.client.Set(rs.GetPrefix()+key, val, duration).Err()
+}
+
+// PutRawString puts a raw string value in the given store for a predetermined amount of time in seconds
+func (rs *RedisStore) PutRawString(key, value string, seconds int) error {
+	duration := time.Duration(int64(seconds)) * time.Second
+
+	return rs.client.Set(rs.GetPrefix()+key, value, duration).Err()
 }
 
 // Forever puts a value in the given store until it is forgotten/evicted

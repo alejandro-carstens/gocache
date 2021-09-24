@@ -16,12 +16,16 @@ type MemcacheStore struct {
 
 // Put puts a value in the given store for a predetermined amount of time in seconds
 func (ms *MemcacheStore) Put(key string, value interface{}, seconds int) error {
-	item, err := ms.item(key, value, seconds)
+	val, err := encode(value)
 	if err != nil {
 		return err
 	}
 
-	return ms.client.Set(item)
+	return ms.client.Set(ms.item(key, val, seconds))
+}
+
+func (ms *MemcacheStore) PutRawString(key, value string, seconds int) error {
+	return ms.client.Set(ms.item(key, value, seconds))
 }
 
 // Forever puts a value in the given store until it is forgotten/evicted
@@ -65,6 +69,16 @@ func (ms *MemcacheStore) GetString(key string) (string, error) {
 	}
 
 	return value, nil
+}
+
+// GetRawString gets a raw string value from the store
+func (ms *MemcacheStore) GetRawString(key string) (string, error) {
+	item, err := ms.client.Get(ms.GetPrefix() + key)
+	if err != nil {
+		return "", err
+	}
+
+	return string(item.Value), nil
 }
 
 // Increment increments an integer counter by a given value
@@ -206,15 +220,10 @@ func (ms *MemcacheStore) getItemValue(itemValue []byte) string {
 	return value
 }
 
-func (ms *MemcacheStore) item(key string, value interface{}, seconds int) (*memcache.Item, error) {
-	val, err := encode(value)
-	if err != nil {
-		return nil, err
-	}
-
+func (ms *MemcacheStore) item(key string, value string, seconds int) *memcache.Item {
 	return &memcache.Item{
 		Key:        ms.GetPrefix() + key,
-		Value:      []byte(val),
+		Value:      []byte(value),
 		Expiration: int32(seconds),
-	}, nil
+	}
 }

@@ -23,6 +23,16 @@ func (ms *MapStore) GetString(key string) (string, error) {
 	return simpleDecode(fmt.Sprint(value))
 }
 
+// GetRawString gets a raw string value from the store
+func (ms *MapStore) GetRawString(key string) (string, error) {
+	value, valid := ms.client[ms.GetPrefix()+key]
+	if !valid {
+		return "", errors.New(mapNilErrorResponse)
+	}
+
+	return value.(string), nil
+}
+
 // GetFloat64 gets a float value from the store
 func (ms *MapStore) GetFloat64(key string) (float64, error) {
 	value, valid := ms.client[ms.GetPrefix()+key]
@@ -83,6 +93,13 @@ func (ms *MapStore) Put(key string, value interface{}, _ int) error {
 	}
 
 	ms.client[ms.GetPrefix()+key] = val
+
+	return nil
+}
+
+// PutRawString puts a string in the given store for a predetermined amount of time
+func (ms *MapStore) PutRawString(key, value string, _ int) error {
+	ms.client[ms.GetPrefix()+key] = value
 
 	return nil
 }
