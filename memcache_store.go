@@ -91,7 +91,7 @@ func (ms *MemcacheStore) Decrement(key string, value int64) (int64, error) {
 		if err.Error() != memcacheNilErrorResponse {
 			return value, err
 		}
-		if err := ms.Put(key, 0, 0); err != nil {
+		if err = ms.Put(key, 0, 0); err != nil {
 			return 0, err
 		}
 

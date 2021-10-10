@@ -175,7 +175,7 @@ func (s *LocalStore) Tags(names ...string) TaggedCache {
 // Lock returns a map implementation of the Lock interface
 func (s *LocalStore) Lock(name, owner string, seconds int64) Lock {
 	return &localLock{
-		c:       cache.New(s.defaultExpiration, s.defaultInterval),
+		c:       s.c,
 		name:    name,
 		owner:   owner,
 		seconds: seconds,

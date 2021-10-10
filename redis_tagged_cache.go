@@ -37,7 +37,6 @@ func (rtc *redisTaggedCache) pushForever(namespace string, key string) {
 	h.Write([]byte(namespace))
 
 	fullKey := rtc.GetPrefix() + hex.EncodeToString(h.Sum(nil)) + ":" + key
-
 	for _, segment := range strings.Split(namespace, "|") {
 		inputs := []reflect.Value{
 			reflect.ValueOf(rtc.foreverKey(segment)),
@@ -56,7 +55,7 @@ func (rtc *redisTaggedCache) deleteForeverKeys() error {
 
 	for _, segment := range strings.Split(namespace, "|") {
 		key := rtc.foreverKey(segment)
-		if err := rtc.deleteForeverValues(key); err != nil {
+		if err = rtc.deleteForeverValues(key); err != nil {
 			return err
 		}
 		if _, err = rtc.store.Forget(segment); err != nil {
@@ -68,21 +67,22 @@ func (rtc *redisTaggedCache) deleteForeverKeys() error {
 }
 
 func (rtc *redisTaggedCache) deleteForeverValues(key string) error {
-	inputs := []reflect.Value{
-		reflect.ValueOf(key),
-		reflect.ValueOf(int64(0)),
-		reflect.ValueOf(int64(-1)),
+	var (
+		inputs = []reflect.Value{reflect.ValueOf(key), reflect.ValueOf(int64(0)), reflect.ValueOf(int64(-1))}
+		keys   = reflect.ValueOf(rtc.store).MethodByName("Lrange").Call(inputs)
+	)
+	if len(keys) == 0 {
+		return nil
 	}
 
-	keys := reflect.ValueOf(rtc.store).MethodByName("Lrange").Call(inputs)
-	if len(keys) > 0 {
-		for _, key := range keys {
-			if key.Len() > 0 {
-				for i := 0; i < key.Len(); i++ {
-					if _, err := rtc.store.Forget(key.Index(i).String()); err != nil {
-						return err
-					}
-				}
+	for _, k := range keys {
+		if k.Len() == 0 {
+			continue
+		}
+
+		for i := 0; i < k.Len(); i++ {
+			if _, err := rtc.store.Forget(k.Index(i).String()); err != nil {
+				return err
 			}
 		}
 	}
