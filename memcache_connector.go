@@ -13,6 +13,7 @@ func (mc *memcacheConnector) connect(config *Config) (Cache, error) {
 	if config.Memcache.MaxIdleConns > 0 {
 		client.MaxIdleConns = config.Memcache.MaxIdleConns
 	}
+
 	client.Timeout = config.Memcache.Timeout
 
 	return &MemcacheStore{

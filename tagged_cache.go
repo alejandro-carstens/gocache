@@ -68,9 +68,10 @@ func (tc *taggedCache) Flush() (bool, error) {
 
 // Many gets many values from the store
 func (tc *taggedCache) Many(keys []string) (map[string]string, error) {
-	taggedKeys := make([]string, len(keys))
-	values := make(map[string]string)
-
+	var (
+		taggedKeys = make([]string, len(keys))
+		values     = map[string]string{}
+	)
 	for i, key := range keys {
 		tagKey, err := tc.taggedItemKey(key)
 		if err != nil {
@@ -95,7 +96,6 @@ func (tc *taggedCache) Many(keys []string) (map[string]string, error) {
 // PutMany puts many values in the given store until they are forgotten/evicted
 func (tc *taggedCache) PutMany(values map[string]string, seconds int) error {
 	taggedMap := make(map[string]string)
-
 	for key, value := range values {
 		tagKey, err := tc.taggedItemKey(key)
 		if err != nil {
@@ -167,13 +167,12 @@ func (tc *taggedCache) GetTags() tagSet {
 }
 
 func (tc *taggedCache) taggedItemKey(key string) (string, error) {
-	h := sha1.New()
-
 	namespace, err := tc.tags.getNamespace()
 	if err != nil {
 		return namespace, err
 	}
 
+	h := sha1.New()
 	h.Write([]byte(namespace))
 
 	return tc.GetPrefix() + hex.EncodeToString(h.Sum(nil)) + ":" + key, nil

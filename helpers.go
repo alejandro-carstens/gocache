@@ -3,7 +3,6 @@ package gocache
 import (
 	"bytes"
 	"encoding/json"
-	"math"
 	"strconv"
 )
 
@@ -41,12 +40,12 @@ func isNumeric(s interface{}) bool {
 }
 
 func getTaggedManyKey(prefix string, key string) string {
-	count := len(prefix) + 41
-
-	var sub string
-	var subs []string
-
-	runs := bytes.Runes([]byte(key))
+	var (
+		sub   string
+		subs  []string
+		runs  = bytes.Runes([]byte(key))
+		count = len(prefix) + 41
+	)
 	for i, run := range runs {
 		sub = sub + string(run)
 		if (i+1)%count == 0 {
@@ -74,14 +73,8 @@ func stringToFloat64(value string) (float64, error) {
 	return strconv.ParseFloat(value, 64)
 }
 
-func isFloat(value float64) bool {
-	return value != math.Trunc(value)
-}
-
 func isCacheMissedError(err error) bool {
-	haystack := []string{mapNilErrorResponse, memcacheNilErrorResponse, redisNilErrorResponse}
-
-	return inStringSlice(err.Error(), haystack)
+	return inStringSlice(err.Error(), []string{localNilErrorResponse, memcacheNilErrorResponse, redisNilErrorResponse})
 }
 
 func inStringSlice(needle string, haystack []string) bool {

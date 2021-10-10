@@ -74,7 +74,7 @@ func (ms *MemcacheStore) Increment(key string, value int64) (int64, error) {
 		if err.Error() != memcacheNilErrorResponse {
 			return value, err
 		}
-		if err := ms.Put(key, value, 0); err != nil {
+		if err = ms.Put(key, value, 0); err != nil {
 			return 0, err
 		}
 
@@ -120,7 +120,6 @@ func (ms *MemcacheStore) PutMany(values map[string]string, seconds int) error {
 // Many gets many values from the store
 func (ms *MemcacheStore) Many(keys []string) (map[string]string, error) {
 	items := make(map[string]string)
-
 	for _, key := range keys {
 		val, err := ms.GetString(key)
 		if err != nil {
@@ -162,7 +161,7 @@ func (ms *MemcacheStore) Get(key string, entity interface{}) error {
 	return err
 }
 
-// Close closes the client releasing all open resources
+// Close closes the c releasing all open resources
 func (ms *MemcacheStore) Close() error {
 	return nil
 }

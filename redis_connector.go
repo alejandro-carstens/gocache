@@ -13,10 +13,10 @@ type redisConnector struct{}
 func (rc *redisConnector) connect(config *Config) (Cache, error) {
 	return &RedisStore{
 		client: redis.NewClient(&redis.Options{
-			Network:            "",
+			Network:            config.Redis.Network,
 			Addr:               config.Redis.Addr,
-			Dialer:             nil,
-			OnConnect:          nil,
+			Dialer:             config.Redis.Dialer,
+			OnConnect:          config.Redis.OnConnect,
 			Password:           config.Redis.Password,
 			DB:                 config.Redis.DB,
 			MaxRetries:         config.Redis.MaxRetries,

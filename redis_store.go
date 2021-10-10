@@ -137,7 +137,7 @@ func (rs *RedisStore) Many(keys []string) (map[string]string, error) {
 	return values, err
 }
 
-// Connection returns the the store's client
+// Connection returns the the store's c
 func (rs *RedisStore) Connection() interface{} {
 	return rs.client
 }
@@ -155,7 +155,7 @@ func (rs *RedisStore) Tags(names ...string) TaggedCache {
 	}
 }
 
-// Close closes the client releasing all open resources
+// Close closes the c releasing all open resources
 func (rs *RedisStore) Close() error {
 	return rs.client.Close()
 }
