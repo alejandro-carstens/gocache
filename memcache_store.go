@@ -15,23 +15,23 @@ type MemcacheStore struct {
 }
 
 // Put puts a value in the given store for a predetermined amount of time in seconds
-func (ms *MemcacheStore) Put(key string, value interface{}, seconds int) error {
-	item, err := ms.item(key, value, seconds)
+func (s *MemcacheStore) Put(key string, value interface{}, seconds int) error {
+	item, err := s.item(key, value, seconds)
 	if err != nil {
 		return err
 	}
 
-	return ms.client.Set(item)
+	return s.client.Set(item)
 }
 
 // Forever puts a value in the given store until it is forgotten/evicted
-func (ms *MemcacheStore) Forever(key string, value interface{}) error {
-	return ms.Put(key, value, 0)
+func (s *MemcacheStore) Forever(key string, value interface{}) error {
+	return s.Put(key, value, 0)
 }
 
 // GetFloat64 gets a float value from the store
-func (ms *MemcacheStore) GetFloat64(key string) (float64, error) {
-	value, err := ms.get(key)
+func (s *MemcacheStore) GetFloat64(key string) (float64, error) {
+	value, err := s.get(key)
 	if err != nil {
 		return 0.0, err
 	}
@@ -43,8 +43,8 @@ func (ms *MemcacheStore) GetFloat64(key string) (float64, error) {
 }
 
 // GetInt64 gets an int value from the store
-func (ms *MemcacheStore) GetInt64(key string) (int64, error) {
-	value, err := ms.get(key)
+func (s *MemcacheStore) GetInt64(key string) (int64, error) {
+	value, err := s.get(key)
 	if err != nil {
 		return 0, err
 	}
@@ -58,8 +58,8 @@ func (ms *MemcacheStore) GetInt64(key string) (int64, error) {
 }
 
 // GetString gets a string value from the store
-func (ms *MemcacheStore) GetString(key string) (string, error) {
-	value, err := ms.get(key)
+func (s *MemcacheStore) GetString(key string) (string, error) {
+	value, err := s.get(key)
 	if err != nil {
 		return "", err
 	}
@@ -68,13 +68,13 @@ func (ms *MemcacheStore) GetString(key string) (string, error) {
 }
 
 // Increment increments an integer counter by a given value
-func (ms *MemcacheStore) Increment(key string, value int64) (int64, error) {
-	newValue, err := ms.client.Increment(ms.GetPrefix()+key, uint64(value))
+func (s *MemcacheStore) Increment(key string, value int64) (int64, error) {
+	newValue, err := s.client.Increment(s.GetPrefix()+key, uint64(value))
 	if err != nil {
 		if err.Error() != memcacheNilErrorResponse {
 			return value, err
 		}
-		if err = ms.Put(key, value, 0); err != nil {
+		if err = s.Put(key, value, 0); err != nil {
 			return 0, err
 		}
 
@@ -85,13 +85,13 @@ func (ms *MemcacheStore) Increment(key string, value int64) (int64, error) {
 }
 
 // Decrement decrements an integer counter by a given value
-func (ms *MemcacheStore) Decrement(key string, value int64) (int64, error) {
-	newValue, err := ms.client.Decrement(ms.GetPrefix()+key, uint64(value))
+func (s *MemcacheStore) Decrement(key string, value int64) (int64, error) {
+	newValue, err := s.client.Decrement(s.GetPrefix()+key, uint64(value))
 	if err != nil {
 		if err.Error() != memcacheNilErrorResponse {
 			return value, err
 		}
-		if err = ms.Put(key, 0, 0); err != nil {
+		if err = s.Put(key, 0, 0); err != nil {
 			return 0, err
 		}
 
@@ -102,14 +102,14 @@ func (ms *MemcacheStore) Decrement(key string, value int64) (int64, error) {
 }
 
 // GetPrefix gets the cache key prefix
-func (ms *MemcacheStore) GetPrefix() string {
-	return ms.prefix
+func (s *MemcacheStore) GetPrefix() string {
+	return s.prefix
 }
 
 // PutMany puts many values in the given store until they are forgotten/evicted
-func (ms *MemcacheStore) PutMany(values map[string]string, seconds int) error {
+func (s *MemcacheStore) PutMany(values map[string]string, seconds int) error {
 	for key, value := range values {
-		if err := ms.Put(key, value, seconds); err != nil {
+		if err := s.Put(key, value, seconds); err != nil {
 			return err
 		}
 	}
@@ -118,10 +118,10 @@ func (ms *MemcacheStore) PutMany(values map[string]string, seconds int) error {
 }
 
 // Many gets many values from the store
-func (ms *MemcacheStore) Many(keys []string) (map[string]string, error) {
+func (s *MemcacheStore) Many(keys []string) (map[string]string, error) {
 	items := make(map[string]string)
 	for _, key := range keys {
-		val, err := ms.GetString(key)
+		val, err := s.GetString(key)
 		if err != nil {
 			return items, err
 		}
@@ -133,8 +133,8 @@ func (ms *MemcacheStore) Many(keys []string) (map[string]string, error) {
 }
 
 // Forget forgets/evicts a given key-value pair from the store
-func (ms *MemcacheStore) Forget(key string) (bool, error) {
-	if err := ms.client.Delete(ms.GetPrefix() + key); err != nil {
+func (s *MemcacheStore) Forget(key string) (bool, error) {
+	if err := s.client.Delete(s.GetPrefix() + key); err != nil {
 		return false, err
 	}
 
@@ -142,8 +142,8 @@ func (ms *MemcacheStore) Forget(key string) (bool, error) {
 }
 
 // Flush flushes the store
-func (ms *MemcacheStore) Flush() (bool, error) {
-	if err := ms.client.DeleteAll(); err != nil {
+func (s *MemcacheStore) Flush() (bool, error) {
+	if err := s.client.DeleteAll(); err != nil {
 		return false, err
 	}
 
@@ -151,8 +151,8 @@ func (ms *MemcacheStore) Flush() (bool, error) {
 }
 
 // Get gets the struct representation of a value from the store
-func (ms *MemcacheStore) Get(key string, entity interface{}) error {
-	value, err := ms.get(key)
+func (s *MemcacheStore) Get(key string, entity interface{}) error {
+	value, err := s.get(key)
 	if err != nil {
 		return err
 	}
@@ -162,41 +162,41 @@ func (ms *MemcacheStore) Get(key string, entity interface{}) error {
 }
 
 // Close closes the c releasing all open resources
-func (ms *MemcacheStore) Close() error {
+func (s *MemcacheStore) Close() error {
 	return nil
 }
 
 // Tags returns the taggedCache for the given store
-func (ms *MemcacheStore) Tags(names ...string) TaggedCache {
+func (s *MemcacheStore) Tags(names ...string) TaggedCache {
 	return &taggedCache{
-		store: ms,
+		store: s,
 		tags: tagSet{
-			store: ms,
+			store: s,
 			names: names,
 		},
 	}
 }
 
 // Lock returns a memcache implementation of the Lock interface
-func (ms *MemcacheStore) Lock(name, owner string, seconds int64) Lock {
+func (s *MemcacheStore) Lock(name, owner string, seconds int64) Lock {
 	return &memcacheLock{
-		client:  ms.client,
+		client:  s.client,
 		name:    name,
 		owner:   owner,
 		seconds: seconds,
 	}
 }
 
-func (ms *MemcacheStore) get(key string) (string, error) {
-	item, err := ms.client.Get(ms.GetPrefix() + key)
+func (s *MemcacheStore) get(key string) (string, error) {
+	item, err := s.client.Get(s.GetPrefix() + key)
 	if err != nil {
 		return "", err
 	}
 
-	return ms.getItemValue(item.Value), nil
+	return s.getItemValue(item.Value), nil
 }
 
-func (ms *MemcacheStore) getItemValue(itemValue []byte) string {
+func (s *MemcacheStore) getItemValue(itemValue []byte) string {
 	value, err := simpleDecode(string(itemValue))
 	if err != nil {
 		return string(itemValue)
@@ -205,14 +205,14 @@ func (ms *MemcacheStore) getItemValue(itemValue []byte) string {
 	return value
 }
 
-func (ms *MemcacheStore) item(key string, value interface{}, seconds int) (*memcache.Item, error) {
+func (s *MemcacheStore) item(key string, value interface{}, seconds int) (*memcache.Item, error) {
 	val, err := encode(value)
 	if err != nil {
 		return nil, err
 	}
 
 	return &memcache.Item{
-		Key:        ms.GetPrefix() + key,
+		Key:        s.GetPrefix() + key,
 		Value:      []byte(val),
 		Expiration: int32(seconds),
 	}, nil

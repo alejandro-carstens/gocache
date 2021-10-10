@@ -15,18 +15,18 @@ type RedisStore struct {
 }
 
 // GetFloat64 gets a float value from the store
-func (rs *RedisStore) GetFloat64(key string) (float64, error) {
-	return rs.get(key).Float64()
+func (s *RedisStore) GetFloat64(key string) (float64, error) {
+	return s.get(key).Float64()
 }
 
 // GetInt64 gets an int value from the store
-func (rs *RedisStore) GetInt64(key string) (int64, error) {
-	return rs.get(key).Int64()
+func (s *RedisStore) GetInt64(key string) (int64, error) {
+	return s.get(key).Int64()
 }
 
 // GetString gets a string value from the store
-func (rs *RedisStore) GetString(key string) (string, error) {
-	value, err := rs.get(key).Result()
+func (s *RedisStore) GetString(key string) (string, error) {
+	value, err := s.get(key).Result()
 	if err != nil {
 		return "", err
 	}
@@ -35,20 +35,20 @@ func (rs *RedisStore) GetString(key string) (string, error) {
 }
 
 // Increment increments an integer counter by a given value
-func (rs *RedisStore) Increment(key string, value int64) (int64, error) {
-	return rs.client.IncrBy(rs.prefix+key, value).Result()
+func (s *RedisStore) Increment(key string, value int64) (int64, error) {
+	return s.client.IncrBy(s.prefix+key, value).Result()
 }
 
 // Decrement decrements an integer counter by a given value
-func (rs *RedisStore) Decrement(key string, value int64) (int64, error) {
-	return rs.client.DecrBy(rs.prefix+key, value).Result()
+func (s *RedisStore) Decrement(key string, value int64) (int64, error) {
+	return s.client.DecrBy(s.prefix+key, value).Result()
 }
 
 // Put puts a value in the given store for a predetermined amount of time in seconds
-func (rs *RedisStore) Put(key string, value interface{}, seconds int) error {
+func (s *RedisStore) Put(key string, value interface{}, seconds int) error {
 	duration := time.Duration(int64(seconds)) * time.Second
 	if isNumeric(value) {
-		return rs.client.Set(rs.GetPrefix()+key, value, duration).Err()
+		return s.client.Set(s.GetPrefix()+key, value, duration).Err()
 	}
 
 	val, err := encode(value)
@@ -56,33 +56,33 @@ func (rs *RedisStore) Put(key string, value interface{}, seconds int) error {
 		return err
 	}
 
-	return rs.client.Set(rs.GetPrefix()+key, val, duration).Err()
+	return s.client.Set(s.GetPrefix()+key, val, duration).Err()
 }
 
 // Forever puts a value in the given store until it is forgotten/evicted
-func (rs *RedisStore) Forever(key string, value interface{}) error {
+func (s *RedisStore) Forever(key string, value interface{}) error {
 	if isNumeric(value) {
-		if err := rs.client.Set(rs.GetPrefix()+key, value, 0).Err(); err != nil {
+		if err := s.client.Set(s.GetPrefix()+key, value, 0).Err(); err != nil {
 			return err
 		}
 
-		return rs.client.Persist(rs.GetPrefix() + key).Err()
+		return s.client.Persist(s.GetPrefix() + key).Err()
 	}
 
 	val, err := encode(value)
 	if err != nil {
 		return err
 	}
-	if err = rs.client.Set(rs.GetPrefix()+key, val, 0).Err(); err != nil {
+	if err = s.client.Set(s.GetPrefix()+key, val, 0).Err(); err != nil {
 		return err
 	}
 
-	return rs.client.Persist(rs.GetPrefix() + key).Err()
+	return s.client.Persist(s.GetPrefix() + key).Err()
 }
 
 // Flush flushes the store
-func (rs *RedisStore) Flush() (bool, error) {
-	if err := rs.client.FlushDB().Err(); err != nil {
+func (s *RedisStore) Flush() (bool, error) {
+	if err := s.client.FlushDB().Err(); err != nil {
 		return false, err
 	}
 
@@ -90,8 +90,8 @@ func (rs *RedisStore) Flush() (bool, error) {
 }
 
 // Forget forgets/evicts a given key-value pair from the store
-func (rs *RedisStore) Forget(key string) (bool, error) {
-	if err := rs.client.Del(rs.prefix + key).Err(); err != nil {
+func (s *RedisStore) Forget(key string) (bool, error) {
+	if err := s.client.Del(s.prefix + key).Err(); err != nil {
 		return false, err
 	}
 
@@ -99,16 +99,16 @@ func (rs *RedisStore) Forget(key string) (bool, error) {
 }
 
 // GetPrefix gets the cache key prefix
-func (rs *RedisStore) GetPrefix() string {
-	return rs.prefix
+func (s *RedisStore) GetPrefix() string {
+	return s.prefix
 }
 
 // PutMany puts many values in the given store until they are forgotten/evicted
-func (rs *RedisStore) PutMany(values map[string]string, seconds int) error {
-	pipe := rs.client.TxPipeline()
+func (s *RedisStore) PutMany(values map[string]string, seconds int) error {
+	pipe := s.client.TxPipeline()
 
 	for key, value := range values {
-		if err := rs.Put(key, value, seconds); err != nil {
+		if err := s.Put(key, value, seconds); err != nil {
 			return err
 		}
 	}
@@ -119,12 +119,12 @@ func (rs *RedisStore) PutMany(values map[string]string, seconds int) error {
 }
 
 // Many gets many values from the store
-func (rs *RedisStore) Many(keys []string) (map[string]string, error) {
-	pipe := rs.client.TxPipeline()
+func (s *RedisStore) Many(keys []string) (map[string]string, error) {
+	pipe := s.client.TxPipeline()
 
 	values := map[string]string{}
 	for _, key := range keys {
-		val, err := rs.GetString(key)
+		val, err := s.GetString(key)
 		if err != nil {
 			return values, err
 		}
@@ -138,17 +138,17 @@ func (rs *RedisStore) Many(keys []string) (map[string]string, error) {
 }
 
 // Connection returns the the store's c
-func (rs *RedisStore) Connection() interface{} {
-	return rs.client
+func (s *RedisStore) Connection() interface{} {
+	return s.client
 }
 
 // Tags returns the taggedCache for the given store
-func (rs *RedisStore) Tags(names ...string) TaggedCache {
+func (s *RedisStore) Tags(names ...string) TaggedCache {
 	return &redisTaggedCache{
 		taggedCache{
-			store: rs,
+			store: s,
 			tags: tagSet{
-				store: rs,
+				store: s,
 				names: names,
 			},
 		},
@@ -156,13 +156,13 @@ func (rs *RedisStore) Tags(names ...string) TaggedCache {
 }
 
 // Close closes the c releasing all open resources
-func (rs *RedisStore) Close() error {
-	return rs.client.Close()
+func (s *RedisStore) Close() error {
+	return s.client.Close()
 }
 
 // Get gets the struct representation of a value from the store
-func (rs *RedisStore) Get(key string, entity interface{}) error {
-	value, err := rs.get(key).Result()
+func (s *RedisStore) Get(key string, entity interface{}) error {
+	value, err := s.get(key).Result()
 	if err != nil {
 		return err
 	}
@@ -172,9 +172,9 @@ func (rs *RedisStore) Get(key string, entity interface{}) error {
 }
 
 // Lock returns a redis implementation of the Lock interface
-func (rs *RedisStore) Lock(name, owner string, seconds int64) Lock {
+func (s *RedisStore) Lock(name, owner string, seconds int64) Lock {
 	return &redisLock{
-		client:  rs.client,
+		client:  s.client,
 		seconds: seconds,
 		name:    name,
 		owner:   owner,
@@ -182,15 +182,15 @@ func (rs *RedisStore) Lock(name, owner string, seconds int64) Lock {
 }
 
 // Lpush runs the Redis lpush command (used via reflection, do not delete)
-func (rs *RedisStore) Lpush(segment string, key string) {
-	rs.client.LPush(segment, key)
+func (s *RedisStore) Lpush(segment string, key string) {
+	s.client.LPush(segment, key)
 }
 
 // Lrange runs the Redis lrange command (used via reflection, do not delete)
-func (rs *RedisStore) Lrange(key string, start int64, stop int64) []string {
-	return rs.client.LRange(key, start, stop).Val()
+func (s *RedisStore) Lrange(key string, start int64, stop int64) []string {
+	return s.client.LRange(key, start, stop).Val()
 }
 
-func (rs *RedisStore) get(key string) *redis.StringCmd {
-	return rs.client.Get(rs.GetPrefix() + key)
+func (s *RedisStore) get(key string) *redis.StringCmd {
+	return s.client.Get(s.GetPrefix() + key)
 }
