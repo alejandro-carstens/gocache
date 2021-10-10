@@ -1,6 +1,7 @@
 package gocache
 
 import (
+	"errors"
 	"time"
 
 	"github.com/go-redis/redis"
@@ -35,7 +36,7 @@ func (rl *redisLock) ForceRelease() error {
 // GetCurrentOwner implementation of the Lock interface
 func (rl *redisLock) GetCurrentOwner() (string, error) {
 	res, err := rl.client.Get(rl.name).Result()
-	if err != nil && err.Error() == redisNilErrorResponse {
+	if err != nil && errors.Is(err, redis.Nil) {
 		return "", nil
 	}
 

@@ -8,8 +8,6 @@ import (
 	"github.com/patrickmn/go-cache"
 )
 
-const localNilErrorResponse = "local: cache miss"
-
 // LocalStore is the representation of a map caching store
 type LocalStore struct {
 	c                 *cache.Cache
@@ -22,7 +20,7 @@ type LocalStore struct {
 func (s *LocalStore) GetString(key string) (string, error) {
 	value, valid := s.c.Get(s.GetPrefix() + key)
 	if !valid {
-		return "", errors.New(localNilErrorResponse)
+		return "", errLocalCacheMiss
 	}
 
 	return simpleDecode(fmt.Sprint(value))
@@ -32,7 +30,7 @@ func (s *LocalStore) GetString(key string) (string, error) {
 func (s *LocalStore) GetFloat64(key string) (float64, error) {
 	value, valid := s.c.Get(s.GetPrefix() + key)
 	if !valid {
-		return 0, errors.New(localNilErrorResponse)
+		return 0, errLocalCacheMiss
 	}
 	if !isStringNumeric(value.(string)) {
 		return 0, errors.New("invalid numeric value")
@@ -45,7 +43,7 @@ func (s *LocalStore) GetFloat64(key string) (float64, error) {
 func (s *LocalStore) GetInt64(key string) (int64, error) {
 	value, valid := s.c.Get(s.GetPrefix() + key)
 	if !valid {
-		return 0, errors.New(localNilErrorResponse)
+		return 0, errLocalCacheMiss
 	}
 	if !isStringNumeric(value.(string)) {
 		return 0, errors.New("invalid numeric value")
@@ -148,7 +146,7 @@ func (s *LocalStore) Many(keys []string) (map[string]string, error) {
 func (s *LocalStore) Get(key string, entity interface{}) error {
 	value, valid := s.c.Get(s.GetPrefix() + key)
 	if !valid {
-		return errors.New(localNilErrorResponse)
+		return errLocalCacheMiss
 	}
 
 	_, err := decode(fmt.Sprint(value), entity)

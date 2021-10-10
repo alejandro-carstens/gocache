@@ -3,7 +3,11 @@ package gocache
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"strconv"
+
+	"github.com/bradfitz/gomemcache/memcache"
+	"github.com/go-redis/redis"
 )
 
 func encode(item interface{}) (string, error) {
@@ -74,14 +78,14 @@ func stringToFloat64(value string) (float64, error) {
 }
 
 func isCacheMissedError(err error) bool {
-	return inStringSlice(err.Error(), []string{localNilErrorResponse, memcacheNilErrorResponse, redisNilErrorResponse})
-}
-
-func inStringSlice(needle string, haystack []string) bool {
-	for _, value := range haystack {
-		if needle == value {
-			return true
-		}
+	if errors.Is(err, redis.Nil) {
+		return true
+	}
+	if errors.Is(err, memcache.ErrCacheMiss) {
+		return true
+	}
+	if errors.Is(err, errLocalCacheMiss) {
+		return true
 	}
 
 	return false

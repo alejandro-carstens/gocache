@@ -71,7 +71,7 @@ func (s *MemcacheStore) GetString(key string) (string, error) {
 func (s *MemcacheStore) Increment(key string, value int64) (int64, error) {
 	newValue, err := s.client.Increment(s.GetPrefix()+key, uint64(value))
 	if err != nil {
-		if err.Error() != memcacheNilErrorResponse {
+		if !errors.Is(err, memcache.ErrCacheMiss) {
 			return value, err
 		}
 		if err = s.Put(key, value, 0); err != nil {
@@ -88,7 +88,7 @@ func (s *MemcacheStore) Increment(key string, value int64) (int64, error) {
 func (s *MemcacheStore) Decrement(key string, value int64) (int64, error) {
 	newValue, err := s.client.Decrement(s.GetPrefix()+key, uint64(value))
 	if err != nil {
-		if err.Error() != memcacheNilErrorResponse {
+		if !errors.Is(err, memcache.ErrCacheMiss) {
 			return value, err
 		}
 		if err = s.Put(key, 0, 0); err != nil {

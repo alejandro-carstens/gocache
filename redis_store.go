@@ -6,7 +6,7 @@ import (
 	"github.com/go-redis/redis"
 )
 
-const redisNilErrorResponse string = "redis: nil"
+var _ Cache = (*RedisStore)()
 
 // RedisStore is the representation of the redis caching store
 type RedisStore struct {
