@@ -7,6 +7,8 @@ import (
 	"github.com/go-redis/redis"
 )
 
+var _ Lock = &redisLock{}
+
 type redisLock struct {
 	client  *redis.Client
 	seconds int64

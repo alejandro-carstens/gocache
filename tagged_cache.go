@@ -5,6 +5,8 @@ import (
 	"encoding/hex"
 )
 
+var _ TaggedCache = &taggedCache{}
+
 // taggedCache is the representation of a tagged caching store
 type taggedCache struct {
 	store store

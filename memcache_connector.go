@@ -6,6 +6,8 @@ import (
 	"github.com/bradfitz/gomemcache/memcache"
 )
 
+var _ cacheConnector = &memcacheConnector{}
+
 type memcacheConnector struct{}
 
 func (mc *memcacheConnector) connect(config *Config) (Cache, error) {

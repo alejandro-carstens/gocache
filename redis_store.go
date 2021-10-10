@@ -6,7 +6,7 @@ import (
 	"github.com/go-redis/redis"
 )
 
-var _ Cache = (*RedisStore)()
+var _ Cache = &RedisStore{}
 
 // RedisStore is the representation of the redis caching store
 type RedisStore struct {

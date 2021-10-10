@@ -8,6 +8,8 @@ import (
 	"github.com/patrickmn/go-cache"
 )
 
+var _ Cache = &LocalStore{}
+
 // LocalStore is the representation of a map caching store
 type LocalStore struct {
 	c                 *cache.Cache

@@ -6,7 +6,7 @@ import (
 	"github.com/bradfitz/gomemcache/memcache"
 )
 
-const memcacheNilErrorResponse = "memcache: cache miss"
+var _ Cache = &MemcacheStore{}
 
 // MemcacheStore is the representation of the memcache caching store
 type MemcacheStore struct {

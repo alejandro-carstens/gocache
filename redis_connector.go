@@ -6,6 +6,8 @@ import (
 	"github.com/go-redis/redis"
 )
 
+var _ cacheConnector = &redisConnector{}
+
 // redisConnector is the representation of the redis store connector
 type redisConnector struct{}
 

@@ -4,6 +4,8 @@ import (
 	"github.com/bradfitz/gomemcache/memcache"
 )
 
+var _ Lock = &memcacheLock{}
+
 type memcacheLock struct {
 	client  *memcache.Client
 	name    string

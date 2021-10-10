@@ -7,6 +7,8 @@ import (
 	"strings"
 )
 
+var _ TaggedCache = &redisTaggedCache{}
+
 // redisTaggedCache is the representation of the redis tagged cache store
 type redisTaggedCache struct {
 	taggedCache

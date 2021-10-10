@@ -8,6 +8,8 @@ import (
 	"github.com/patrickmn/go-cache"
 )
 
+var _ Lock = &localLock{}
+
 type localLock struct {
 	c       *cache.Cache
 	name    string

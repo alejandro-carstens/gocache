@@ -2,6 +2,8 @@ package gocache
 
 import "github.com/patrickmn/go-cache"
 
+var _ cacheConnector = &localConnector{}
+
 type localConnector struct{}
 
 func (c *localConnector) connect(config *Config) (Cache, error) {
