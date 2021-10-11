@@ -54,7 +54,7 @@ func (ts *tagSet) tagIds() ([]string, error) {
 
 func (ts *tagSet) tagId(name string) (string, error) {
 	value, err := ts.store.GetString(ts.tagKey(name))
-	if err != nil && !isCacheMissedError(err) {
+	if err != nil && !isErrNotFound(err) {
 		return "", err
 	}
 	if len(value) == 0 {

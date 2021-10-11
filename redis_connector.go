@@ -6,6 +6,8 @@ import (
 	"github.com/go-redis/redis"
 )
 
+var _ cacheConnector = &redisConnector{}
+
 // redisConnector is the representation of the redis store connector
 type redisConnector struct{}
 
@@ -13,10 +15,10 @@ type redisConnector struct{}
 func (rc *redisConnector) connect(config *Config) (Cache, error) {
 	return &RedisStore{
 		client: redis.NewClient(&redis.Options{
-			Network:            "",
+			Network:            config.Redis.Network,
 			Addr:               config.Redis.Addr,
-			Dialer:             nil,
-			OnConnect:          nil,
+			Dialer:             config.Redis.Dialer,
+			OnConnect:          config.Redis.OnConnect,
 			Password:           config.Redis.Password,
 			DB:                 config.Redis.DB,
 			MaxRetries:         config.Redis.MaxRetries,
@@ -33,7 +35,7 @@ func (rc *redisConnector) connect(config *Config) (Cache, error) {
 			IdleCheckFrequency: config.Redis.IdleCheckFrequency,
 			TLSConfig:          config.Redis.TLSConfig,
 		}),
-		prefix: config.Redis.Prefix,
+		prefix: prefix{val: config.Redis.Prefix},
 	}, nil
 }
 

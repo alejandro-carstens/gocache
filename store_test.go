@@ -1,9 +1,11 @@
 package gocache
 
 import (
-	"github.com/stretchr/testify/require"
+	"os"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 const (
@@ -53,10 +55,12 @@ func TestPutGetString(t *testing.T) {
 
 func TestPutGetFloat64(t *testing.T) {
 	for _, driver := range drivers {
-		cache := createStore(driver)
-
-		expected := 9.99
+		var (
+			cache    = createStore(driver)
+			expected = 9.99
+		)
 		require.NoError(t, cache.Put("key", expected, 1))
+
 		got, err := cache.GetFloat64("key")
 		require.NoError(t, err)
 		require.Equal(t, expected, got)
@@ -68,9 +72,10 @@ func TestPutGetFloat64(t *testing.T) {
 
 func TestForever(t *testing.T) {
 	for _, driver := range drivers {
-		cache := createStore(driver)
-
-		expected := "value"
+		var (
+			cache    = createStore(driver)
+			expected = "value"
+		)
 		require.NoError(t, cache.Forever("key", expected))
 
 		got, err := cache.GetString("key")
@@ -84,26 +89,30 @@ func TestForever(t *testing.T) {
 
 func TestPutGetMany(t *testing.T) {
 	for _, driver := range drivers {
-		cache := createStore(driver)
-
-		keys := map[string]string{
-			"key_1": "value",
-			"key_2": "100",
-			"key_3": "9.99",
-		}
+		var (
+			cache = createStore(driver)
+			keys  = map[string]string{
+				"key_1": "value",
+				"key_2": "100",
+				"key_3": "9.99",
+			}
+		)
 		require.NoError(t, cache.PutMany(keys, 10))
 
-		resultKeys := []string{
-			"key_1",
-			"key_2",
-			"key_3",
-		}
-		results, err := cache.Many(resultKeys)
+		var (
+			resultKeys = []string{
+				"key_1",
+				"key_2",
+				"key_3",
+			}
+			results, err = cache.Many(resultKeys)
+		)
 		require.NoError(t, err)
 
 		for i, result := range results {
 			require.Equal(t, result, keys[i])
 		}
+
 		_, err = cache.Flush()
 		require.NoError(t, err)
 	}
@@ -111,9 +120,10 @@ func TestPutGetMany(t *testing.T) {
 
 func TestPutGet(t *testing.T) {
 	for _, driver := range drivers {
-		cache := createStore(driver)
-
-		var firstExample example
+		var (
+			cache        = createStore(driver)
+			firstExample example
+		)
 		firstExample.Name = "Alejandro"
 		firstExample.Description = "Whatever"
 		require.NoError(t, cache.Put("key", firstExample, 10))
@@ -129,9 +139,10 @@ func TestPutGet(t *testing.T) {
 
 func TestIncrement(t *testing.T) {
 	for _, driver := range drivers {
-		cache := createStore(driver)
-
-		_, err := cache.Increment("increment_key", 1)
+		var (
+			cache  = createStore(driver)
+			_, err = cache.Increment("increment_key", 1)
+		)
 		require.NoError(t, err)
 
 		_, err = cache.Increment("increment_key", 1)
@@ -150,10 +161,12 @@ func TestIncrement(t *testing.T) {
 
 func TestDecrement(t *testing.T) {
 	for _, driver := range drivers {
-		cache := createStore(driver)
-
-		_, err := cache.Increment("decrement_key", 2)
+		var (
+			cache  = createStore(driver)
+			_, err = cache.Increment("decrement_key", 2)
+		)
 		require.NoError(t, err)
+
 		_, err = cache.Decrement("decrement_key", 1)
 		require.NoError(t, err)
 
@@ -170,9 +183,10 @@ func TestDecrement(t *testing.T) {
 
 func TestIncrementDecrement(t *testing.T) {
 	for _, driver := range drivers {
-		cache := createStore(driver)
-
-		got, err := cache.Increment("key", 2)
+		var (
+			cache    = createStore(driver)
+			got, err = cache.Increment("key", 2)
+		)
 		require.NoError(t, err)
 		require.Equal(t, int64(2), got)
 
@@ -208,11 +222,25 @@ func createStore(store string) Cache {
 	)
 	switch strings.ToLower(store) {
 	case redisDriver:
-		cache, err = New(redisStore())
+		cache, err = New(&Config{
+			Redis: &RedisConfig{
+				Prefix: "golavel:",
+				Addr:   os.Getenv("REDIS_ADDR"),
+			},
+		})
 	case memcacheDriver:
-		cache, err = New(memcacheStore())
+		cache, err = New(&Config{
+			Memcache: &MemcacheConfig{
+				Prefix:  "golavel:",
+				Servers: []string{os.Getenv("MEMCACHE_SERVER")},
+			},
+		})
 	case mapDriver:
-		cache, err = New(mapStore())
+		cache, err = New(&Config{
+			Local: &LocalConfig{
+				Prefix: "golavel:",
+			},
+		})
 	}
 	if err != nil {
 		panic(err)

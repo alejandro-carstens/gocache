@@ -6,6 +6,8 @@ import (
 	"github.com/bradfitz/gomemcache/memcache"
 )
 
+var _ cacheConnector = &memcacheConnector{}
+
 type memcacheConnector struct{}
 
 func (mc *memcacheConnector) connect(config *Config) (Cache, error) {
@@ -13,11 +15,12 @@ func (mc *memcacheConnector) connect(config *Config) (Cache, error) {
 	if config.Memcache.MaxIdleConns > 0 {
 		client.MaxIdleConns = config.Memcache.MaxIdleConns
 	}
+
 	client.Timeout = config.Memcache.Timeout
 
 	return &MemcacheStore{
 		client: client,
-		prefix: config.Memcache.Prefix,
+		prefix: prefix{val: config.Memcache.Prefix},
 	}, nil
 }
 

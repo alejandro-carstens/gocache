@@ -1,10 +1,13 @@
 package gocache
 
 import (
+	"errors"
 	"time"
 
 	"github.com/go-redis/redis"
 )
+
+var _ Lock = &redisLock{}
 
 type redisLock struct {
 	client  *redis.Client
@@ -27,15 +30,17 @@ func (rl *redisLock) Release() (bool, error) {
 
 // ForceRelease implementation of the Lock interface
 func (rl *redisLock) ForceRelease() error {
-	_, err := rl.client.Del(rl.name).Result()
+	if _, err := rl.client.Del(rl.name).Result(); err != nil {
+		return checkErrNotFound(err)
+	}
 
-	return err
+	return nil
 }
 
 // GetCurrentOwner implementation of the Lock interface
 func (rl *redisLock) GetCurrentOwner() (string, error) {
 	res, err := rl.client.Get(rl.name).Result()
-	if err != nil && err.Error() == redisNilErrorResponse {
+	if err != nil && errors.Is(err, redis.Nil) {
 		return "", nil
 	}
 
