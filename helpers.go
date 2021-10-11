@@ -39,7 +39,7 @@ func isNumeric(s interface{}) bool {
 	}
 }
 
-func getTaggedManyKey(prefix string, key string) string {
+func getTaggedManyKey(prefix, key string) string {
 	var (
 		sub   string
 		subs  []string
