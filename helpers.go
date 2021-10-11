@@ -3,11 +3,7 @@ package gocache
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"strconv"
-
-	"github.com/bradfitz/gomemcache/memcache"
-	"github.com/go-redis/redis"
 )
 
 func encode(item interface{}) (string, error) {
@@ -75,18 +71,4 @@ func isStringNumeric(value string) bool {
 
 func stringToFloat64(value string) (float64, error) {
 	return strconv.ParseFloat(value, 64)
-}
-
-func isCacheMissedError(err error) bool {
-	if errors.Is(err, redis.Nil) {
-		return true
-	}
-	if errors.Is(err, memcache.ErrCacheMiss) {
-		return true
-	}
-	if errors.Is(err, errLocalCacheMiss) {
-		return true
-	}
-
-	return false
 }

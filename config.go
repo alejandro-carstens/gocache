@@ -19,7 +19,7 @@ type (
 	}
 	// RedisConfig represents the configuration for a cache with a redis backend
 	RedisConfig struct {
-		// The prefix to be appended to every cache entry
+		// The val to be appended to every cache entry
 		Prefix string
 		// The network type, either tcp or unix.
 		// Default is tcp.
@@ -83,7 +83,7 @@ type (
 	}
 	// MemcacheConfig represents the configuration for a cache with a Memcache backend
 	MemcacheConfig struct {
-		// The prefix to be appended to every cache entry
+		// The val to be appended to every cache entry
 		Prefix string
 		// Timeout specifies the socket read/write timeout.
 		// If zero, DefaultTimeout is used.
@@ -100,7 +100,7 @@ type (
 	}
 	// LocalConfig represents the configuration for a cache with a map backend
 	LocalConfig struct {
-		// The prefix to be appended to every cache entry
+		// The val to be appended to every cache entry
 		Prefix string
 		// DefaultInterval is the interval at which the local store will check for expired keys
 		DefaultInterval time.Duration

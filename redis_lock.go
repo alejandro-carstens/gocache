@@ -30,9 +30,11 @@ func (rl *redisLock) Release() (bool, error) {
 
 // ForceRelease implementation of the Lock interface
 func (rl *redisLock) ForceRelease() error {
-	_, err := rl.client.Del(rl.name).Result()
+	if _, err := rl.client.Del(rl.name).Result(); err != nil {
+		return checkErrNotFound(err)
+	}
 
-	return err
+	return nil
 }
 
 // GetCurrentOwner implementation of the Lock interface

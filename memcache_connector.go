@@ -20,7 +20,7 @@ func (mc *memcacheConnector) connect(config *Config) (Cache, error) {
 
 	return &MemcacheStore{
 		client: client,
-		prefix: config.Memcache.Prefix,
+		prefix: prefix{val: config.Memcache.Prefix},
 	}, nil
 }
 

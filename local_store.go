@@ -12,17 +12,17 @@ var _ Cache = &LocalStore{}
 
 // LocalStore is the representation of a map caching store
 type LocalStore struct {
+	prefix
 	c                 *cache.Cache
 	defaultExpiration time.Duration
 	defaultInterval   time.Duration
-	prefix            string
 }
 
 // GetString gets a string value from the store
 func (s *LocalStore) GetString(key string) (string, error) {
-	value, valid := s.c.Get(s.GetPrefix() + key)
+	value, valid := s.c.Get(s.k(key))
 	if !valid {
-		return "", errLocalCacheMiss
+		return "", ErrNotFound
 	}
 
 	return simpleDecode(fmt.Sprint(value))
@@ -30,9 +30,9 @@ func (s *LocalStore) GetString(key string) (string, error) {
 
 // GetFloat64 gets a float value from the store
 func (s *LocalStore) GetFloat64(key string) (float64, error) {
-	value, valid := s.c.Get(s.GetPrefix() + key)
+	value, valid := s.c.Get(s.k(key))
 	if !valid {
-		return 0, errLocalCacheMiss
+		return 0, ErrNotFound
 	}
 	if !isStringNumeric(value.(string)) {
 		return 0, errors.New("invalid numeric value")
@@ -43,9 +43,9 @@ func (s *LocalStore) GetFloat64(key string) (float64, error) {
 
 // GetInt64 gets an int value from the store
 func (s *LocalStore) GetInt64(key string) (int64, error) {
-	value, valid := s.c.Get(s.GetPrefix() + key)
+	value, valid := s.c.Get(s.k(key))
 	if !valid {
-		return 0, errLocalCacheMiss
+		return 0, ErrNotFound
 	}
 	if !isStringNumeric(value.(string)) {
 		return 0, errors.New("invalid numeric value")
@@ -58,7 +58,7 @@ func (s *LocalStore) GetInt64(key string) (int64, error) {
 
 // Increment increments an integer counter by a given value
 func (s *LocalStore) Increment(key string, value int64) (int64, error) {
-	val, valid := s.c.Get(s.GetPrefix() + key)
+	val, valid := s.c.Get(s.k(key))
 	if valid && isStringNumeric(val.(string)) {
 		floatVal, err := stringToFloat64(val.(string))
 		if err != nil {
@@ -104,18 +104,13 @@ func (s *LocalStore) Flush() (bool, error) {
 
 // Forget forgets/evicts a given key-value pair from the store
 func (s *LocalStore) Forget(key string) (bool, error) {
-	if _, valid := s.c.Get(s.prefix + key); !valid {
+	if _, valid := s.c.Get(s.k(key)); !valid {
 		return false, nil
 	}
 
-	s.c.Delete(s.prefix + key)
+	s.c.Delete(s.k(key))
 
 	return true, nil
-}
-
-// GetPrefix gets the cache key prefix
-func (s *LocalStore) GetPrefix() string {
-	return s.prefix
 }
 
 // PutMany puts many values in the given store until they are forgotten/evicted
@@ -148,7 +143,7 @@ func (s *LocalStore) Many(keys []string) (map[string]string, error) {
 func (s *LocalStore) Get(key string, entity interface{}) error {
 	value, valid := s.c.Get(s.GetPrefix() + key)
 	if !valid {
-		return errLocalCacheMiss
+		return ErrNotFound
 	}
 
 	_, err := decode(fmt.Sprint(value), entity)

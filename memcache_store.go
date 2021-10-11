@@ -10,8 +10,8 @@ var _ Cache = &MemcacheStore{}
 
 // MemcacheStore is the representation of the memcache caching store
 type MemcacheStore struct {
+	prefix
 	client *memcache.Client
-	prefix string
 }
 
 // Put puts a value in the given store for a predetermined amount of time in seconds
@@ -69,7 +69,7 @@ func (s *MemcacheStore) GetString(key string) (string, error) {
 
 // Increment increments an integer counter by a given value
 func (s *MemcacheStore) Increment(key string, value int64) (int64, error) {
-	newValue, err := s.client.Increment(s.GetPrefix()+key, uint64(value))
+	newValue, err := s.client.Increment(s.k(key), uint64(value))
 	if err != nil {
 		if !errors.Is(err, memcache.ErrCacheMiss) {
 			return value, err
@@ -86,7 +86,7 @@ func (s *MemcacheStore) Increment(key string, value int64) (int64, error) {
 
 // Decrement decrements an integer counter by a given value
 func (s *MemcacheStore) Decrement(key string, value int64) (int64, error) {
-	newValue, err := s.client.Decrement(s.GetPrefix()+key, uint64(value))
+	newValue, err := s.client.Decrement(s.k(key), uint64(value))
 	if err != nil {
 		if !errors.Is(err, memcache.ErrCacheMiss) {
 			return value, err
@@ -99,11 +99,6 @@ func (s *MemcacheStore) Decrement(key string, value int64) (int64, error) {
 	}
 
 	return int64(newValue), nil
-}
-
-// GetPrefix gets the cache key prefix
-func (s *MemcacheStore) GetPrefix() string {
-	return s.prefix
 }
 
 // PutMany puts many values in the given store until they are forgotten/evicted
@@ -134,7 +129,7 @@ func (s *MemcacheStore) Many(keys []string) (map[string]string, error) {
 
 // Forget forgets/evicts a given key-value pair from the store
 func (s *MemcacheStore) Forget(key string) (bool, error) {
-	if err := s.client.Delete(s.GetPrefix() + key); err != nil {
+	if err := s.client.Delete(s.k(key)); err != nil {
 		return false, err
 	}
 
@@ -188,9 +183,9 @@ func (s *MemcacheStore) Lock(name, owner string, seconds int64) Lock {
 }
 
 func (s *MemcacheStore) get(key string) (string, error) {
-	item, err := s.client.Get(s.GetPrefix() + key)
+	item, err := s.client.Get(s.k(key))
 	if err != nil {
-		return "", err
+		return "", checkErrNotFound(err)
 	}
 
 	return s.getItemValue(item.Value), nil
@@ -212,7 +207,7 @@ func (s *MemcacheStore) item(key string, value interface{}, seconds int) (*memca
 	}
 
 	return &memcache.Item{
-		Key:        s.GetPrefix() + key,
+		Key:        s.k(key),
 		Value:      []byte(val),
 		Expiration: int32(seconds),
 	}, nil

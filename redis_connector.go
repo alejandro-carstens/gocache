@@ -35,7 +35,7 @@ func (rc *redisConnector) connect(config *Config) (Cache, error) {
 			IdleCheckFrequency: config.Redis.IdleCheckFrequency,
 			TLSConfig:          config.Redis.TLSConfig,
 		}),
-		prefix: config.Redis.Prefix,
+		prefix: prefix{val: config.Redis.Prefix},
 	}, nil
 }
 

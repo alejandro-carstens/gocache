@@ -10,25 +10,29 @@ var _ Cache = &RedisStore{}
 
 // RedisStore is the representation of the redis caching store
 type RedisStore struct {
+	prefix
 	client *redis.Client
-	prefix string
 }
 
 // GetFloat64 gets a float value from the store
 func (s *RedisStore) GetFloat64(key string) (float64, error) {
-	return s.get(key).Float64()
+	res, err := s.get(key).Float64()
+
+	return res, checkErrNotFound(err)
 }
 
 // GetInt64 gets an int value from the store
 func (s *RedisStore) GetInt64(key string) (int64, error) {
-	return s.get(key).Int64()
+	res, err := s.get(key).Int64()
+
+	return res, checkErrNotFound(err)
 }
 
 // GetString gets a string value from the store
 func (s *RedisStore) GetString(key string) (string, error) {
 	value, err := s.get(key).Result()
 	if err != nil {
-		return "", err
+		return "", checkErrNotFound(err)
 	}
 
 	return simpleDecode(value)
@@ -36,12 +40,12 @@ func (s *RedisStore) GetString(key string) (string, error) {
 
 // Increment increments an integer counter by a given value
 func (s *RedisStore) Increment(key string, value int64) (int64, error) {
-	return s.client.IncrBy(s.prefix+key, value).Result()
+	return s.client.IncrBy(s.k(key), value).Result()
 }
 
 // Decrement decrements an integer counter by a given value
 func (s *RedisStore) Decrement(key string, value int64) (int64, error) {
-	return s.client.DecrBy(s.prefix+key, value).Result()
+	return s.client.DecrBy(s.k(key), value).Result()
 }
 
 // Put puts a value in the given store for a predetermined amount of time in seconds
@@ -56,28 +60,28 @@ func (s *RedisStore) Put(key string, value interface{}, seconds int) error {
 		return err
 	}
 
-	return s.client.Set(s.GetPrefix()+key, val, duration).Err()
+	return s.client.Set(s.k(key), val, duration).Err()
 }
 
 // Forever puts a value in the given store until it is forgotten/evicted
 func (s *RedisStore) Forever(key string, value interface{}) error {
 	if isNumeric(value) {
-		if err := s.client.Set(s.GetPrefix()+key, value, 0).Err(); err != nil {
+		if err := s.client.Set(s.k(key), value, 0).Err(); err != nil {
 			return err
 		}
 
-		return s.client.Persist(s.GetPrefix() + key).Err()
+		return s.client.Persist(s.k(key)).Err()
 	}
 
 	val, err := encode(value)
 	if err != nil {
 		return err
 	}
-	if err = s.client.Set(s.GetPrefix()+key, val, 0).Err(); err != nil {
+	if err = s.client.Set(s.k(key), val, 0).Err(); err != nil {
 		return err
 	}
 
-	return s.client.Persist(s.GetPrefix() + key).Err()
+	return s.client.Persist(s.k(key)).Err()
 }
 
 // Flush flushes the store
@@ -91,16 +95,11 @@ func (s *RedisStore) Flush() (bool, error) {
 
 // Forget forgets/evicts a given key-value pair from the store
 func (s *RedisStore) Forget(key string) (bool, error) {
-	if err := s.client.Del(s.prefix + key).Err(); err != nil {
-		return false, err
+	if err := s.client.Del(s.k(key)).Err(); err != nil {
+		return false, checkErrNotFound(err)
 	}
 
 	return true, nil
-}
-
-// GetPrefix gets the cache key prefix
-func (s *RedisStore) GetPrefix() string {
-	return s.prefix
 }
 
 // PutMany puts many values in the given store until they are forgotten/evicted
@@ -183,14 +182,14 @@ func (s *RedisStore) Lock(name, owner string, seconds int64) Lock {
 
 // Lpush runs the Redis lpush command (used via reflection, do not delete)
 func (s *RedisStore) Lpush(segment string, key string) {
-	s.client.LPush(segment, key)
+	s.client.LPush(segment, s.k(key))
 }
 
 // Lrange runs the Redis lrange command (used via reflection, do not delete)
 func (s *RedisStore) Lrange(key string, start int64, stop int64) []string {
-	return s.client.LRange(key, start, stop).Val()
+	return s.client.LRange(s.k(key), start, stop).Val()
 }
 
 func (s *RedisStore) get(key string) *redis.StringCmd {
-	return s.client.Get(s.GetPrefix() + key)
+	return s.client.Get(s.k(key))
 }

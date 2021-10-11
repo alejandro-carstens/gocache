@@ -53,7 +53,7 @@ type (
 		GetInt64(key string) (int64, error)
 		// GetFloat64 gets a float value from the store
 		GetFloat64(key string) (float64, error)
-		// GetPrefix gets the cache key prefix
+		// GetPrefix gets the cache key val
 		GetPrefix() string
 		// Many gets many values from the store
 		Many(keys []string) (map[string]string, error)

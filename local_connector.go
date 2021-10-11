@@ -11,7 +11,7 @@ func (c *localConnector) connect(config *Config) (Cache, error) {
 		c:                 cache.New(config.Local.DefaultExpiration, config.Local.DefaultInterval),
 		defaultExpiration: config.Local.DefaultExpiration,
 		defaultInterval:   config.Local.DefaultInterval,
-		prefix:            config.Local.Prefix,
+		prefix:            prefix{val: config.Local.Prefix},
 	}, nil
 }
 

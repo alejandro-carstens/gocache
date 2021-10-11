@@ -110,7 +110,7 @@ func (tc *taggedCache) PutMany(values map[string]string, seconds int) error {
 	return tc.store.PutMany(taggedMap, seconds)
 }
 
-// GetPrefix gets the cache key prefix
+// GetPrefix gets the cache key val
 func (tc *taggedCache) GetPrefix() string {
 	return tc.store.GetPrefix()
 }
