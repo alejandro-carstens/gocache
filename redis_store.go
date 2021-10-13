@@ -52,7 +52,7 @@ func (s *RedisStore) Decrement(key string, value int64) (int64, error) {
 func (s *RedisStore) Put(key string, value interface{}, seconds int) error {
 	duration := time.Duration(int64(seconds)) * time.Second
 	if isNumeric(value) {
-		return s.client.Set(s.GetPrefix()+key, value, duration).Err()
+		return s.client.Set(s.k(key), value, duration).Err()
 	}
 
 	val, err := encode(value)
