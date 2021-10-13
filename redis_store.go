@@ -163,8 +163,9 @@ func (s *RedisStore) Close() error {
 func (s *RedisStore) Get(key string, entity interface{}) error {
 	value, err := s.get(key).Result()
 	if err != nil {
-		return err
+		return checkErrNotFound(err)
 	}
+
 	_, err = decode(value, entity)
 
 	return err
