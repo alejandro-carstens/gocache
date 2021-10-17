@@ -34,11 +34,24 @@ func (s *LocalStore) GetFloat64(key string) (float64, error) {
 	if !valid {
 		return 0, ErrNotFound
 	}
-	if !isStringNumeric(value.(string)) {
+	if !isInterfaceNumericString(value) && !isNumeric(value) {
 		return 0, errors.New("invalid numeric value")
 	}
 
-	return stringToFloat64(value.(string))
+	return interfaceToFloat64(value)
+}
+
+// GetFloat32 gets a float32 value from the store
+func (s *LocalStore) GetFloat32(key string) (float32, error) {
+	value, valid := s.c.Get(s.k(key))
+	if !valid {
+		return 0, ErrNotFound
+	}
+	if !isInterfaceNumericString(value) && !isNumeric(value) {
+		return 0, errors.New("invalid numeric value")
+	}
+
+	return interfaceToFloat32(value)
 }
 
 // GetInt64 gets an int value from the store
@@ -47,45 +60,85 @@ func (s *LocalStore) GetInt64(key string) (int64, error) {
 	if !valid {
 		return 0, ErrNotFound
 	}
-	if !isStringNumeric(value.(string)) {
+	if !isInterfaceNumericString(value) && !isNumeric(value) {
 		return 0, errors.New("invalid numeric value")
 	}
 
-	val, err := stringToFloat64(value.(string))
+	return interfaceToInt64(value)
+}
 
-	return int64(val), err
+// GetInt gets an int value from the store
+func (s *LocalStore) GetInt(key string) (int, error) {
+	value, valid := s.c.Get(s.k(key))
+	if !valid {
+		return 0, ErrNotFound
+	}
+	if !isInterfaceNumericString(value) && !isNumeric(value) {
+		return 0, errors.New("invalid numeric value")
+	}
+
+	return interfaceToInt(value)
+}
+
+// GetUint64 gets an uint64 value from the store
+func (s *LocalStore) GetUint64(key string) (uint64, error) {
+	value, valid := s.c.Get(s.k(key))
+	if !valid {
+		return 0, ErrNotFound
+	}
+	if !isInterfaceNumericString(value) && !isNumeric(value) {
+		return 0, errors.New("invalid numeric value")
+	}
+
+	return interfaceToUint64(value)
 }
 
 // Increment increments an integer counter by a given value
 func (s *LocalStore) Increment(key string, value int64) (int64, error) {
-	val, valid := s.c.Get(s.k(key))
-	if valid && isStringNumeric(val.(string)) {
-		floatVal, err := stringToFloat64(val.(string))
-		if err != nil {
+	if _, valid := s.c.Get(s.k(key)); !valid {
+		if err := s.Forever(key, value); err != nil {
 			return 0, err
 		}
 
-		result := value + int64(floatVal)
-
-		return result, s.Put(key, result, -1)
+		return value, nil
+	}
+	if err := s.c.Increment(s.k(key), value); err != nil {
+		return 0, err
 	}
 
-	return value, s.Put(key, value, -1)
+	return s.GetInt64(key)
 }
 
 // Decrement decrements an integer counter by a given value
 func (s *LocalStore) Decrement(key string, value int64) (int64, error) {
-	return s.Increment(key, -value)
+	if _, valid := s.c.Get(s.k(key)); !valid {
+		if err := s.Forever(key, -1*value); err != nil {
+			return 0, err
+		}
+
+		return value, nil
+	}
+	if err := s.c.Decrement(s.k(key), value); err != nil {
+		return 0, err
+	}
+
+	return s.GetInt64(key)
 }
 
 // Put puts a value in the given store for a predetermined amount of time in seconds.
 func (s *LocalStore) Put(key string, value interface{}, seconds int) error {
+	if isNumeric(value) {
+		s.c.Set(s.k(key), value, time.Duration(seconds)*time.Second)
+
+		return nil
+	}
+
 	val, err := encode(value)
 	if err != nil {
 		return err
 	}
 
-	s.c.Set(s.GetPrefix()+key, val, time.Duration(seconds)*time.Second)
+	s.c.Set(s.k(key), val, time.Duration(seconds)*time.Second)
 
 	return nil
 }

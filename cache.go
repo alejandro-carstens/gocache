@@ -49,10 +49,16 @@ type (
 		Forever(key string, value interface{}) error
 		// Flush flushes the store
 		Flush() (bool, error)
-		// GetInt64 gets an int value from the store
+		// GetInt64 gets an int64 value from the store
 		GetInt64(key string) (int64, error)
-		// GetFloat64 gets a float value from the store
+		// GetInt gets an int value from the store
+		GetInt(key string) (int, error)
+		// GetFloat64 gets a float64 value from the store
 		GetFloat64(key string) (float64, error)
+		// GetFloat32 gets a float32 value from the store
+		GetFloat32(key string) (float32, error)
+		// GetUint64 gets a uint64 value from the store
+		GetUint64(key string) (uint64, error)
 		// GetPrefix gets the cache key val
 		GetPrefix() string
 		// Many gets many values from the store

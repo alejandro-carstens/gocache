@@ -11,13 +11,13 @@ import (
 const (
 	redisDriver    string = "redis"
 	memcacheDriver string = "memcache"
-	mapDriver      string = "map"
+	localDriver    string = "local"
 )
 
 var drivers = []string{
-	"map",
-	"memcache",
-	"redis",
+	redisDriver,
+	memcacheDriver,
+	localDriver,
 }
 
 type example struct {
@@ -27,191 +27,209 @@ type example struct {
 
 func TestPutGetInt64(t *testing.T) {
 	for _, driver := range drivers {
-		cache := createStore(driver)
-		require.NoError(t, cache.Put("key", 100, 1))
+		t.Run(driver, func(t *testing.T) {
+			cache := createStore(driver)
+			require.NoError(t, cache.Put("key", 100, 1))
 
-		got, err := cache.GetInt64("key")
-		require.NoError(t, err)
-		require.Equal(t, int64(100), got)
+			got, err := cache.GetInt64("key")
+			require.NoError(t, err)
+			require.Equal(t, int64(100), got)
 
-		_, err = cache.Forget("key")
-		require.NoError(t, err)
+			_, err = cache.Forget("key")
+			require.NoError(t, err)
+		})
 	}
 }
 
 func TestPutGetString(t *testing.T) {
 	for _, driver := range drivers {
-		cache := createStore(driver)
-		require.NoError(t, cache.Put("key", "value", 1))
+		t.Run(driver, func(t *testing.T) {
+			cache := createStore(driver)
+			require.NoError(t, cache.Put("key", "value", 1))
 
-		got, err := cache.GetString("key")
-		require.NoError(t, err)
-		require.Equal(t, "value", got)
+			got, err := cache.GetString("key")
+			require.NoError(t, err)
+			require.Equal(t, "value", got)
 
-		_, err = cache.Forget("key")
-		require.NoError(t, err)
+			_, err = cache.Forget("key")
+			require.NoError(t, err)
+		})
 	}
 }
 
 func TestPutGetFloat64(t *testing.T) {
 	for _, driver := range drivers {
-		var (
-			cache    = createStore(driver)
-			expected = 9.99
-		)
-		require.NoError(t, cache.Put("key", expected, 1))
+		t.Run(driver, func(t *testing.T) {
+			var (
+				cache    = createStore(driver)
+				expected = 9.99
+			)
+			require.NoError(t, cache.Put("key", expected, 1))
 
-		got, err := cache.GetFloat64("key")
-		require.NoError(t, err)
-		require.Equal(t, expected, got)
+			got, err := cache.GetFloat64("key")
+			require.NoError(t, err)
+			require.Equal(t, expected, got)
 
-		_, err = cache.Forget("key")
-		require.NoError(t, err)
+			_, err = cache.Forget("key")
+			require.NoError(t, err)
+		})
 	}
 }
 
 func TestForever(t *testing.T) {
 	for _, driver := range drivers {
-		var (
-			cache    = createStore(driver)
-			expected = "value"
-		)
-		require.NoError(t, cache.Forever("key", expected))
+		t.Run(driver, func(t *testing.T) {
+			var (
+				cache    = createStore(driver)
+				expected = "value"
+			)
+			require.NoError(t, cache.Forever("key", expected))
 
-		got, err := cache.GetString("key")
-		require.NoError(t, err)
-		require.Equal(t, expected, got)
+			got, err := cache.GetString("key")
+			require.NoError(t, err)
+			require.Equal(t, expected, got)
 
-		_, err = cache.Forget("key")
-		require.NoError(t, err)
+			_, err = cache.Forget("key")
+			require.NoError(t, err)
+		})
 	}
 }
 
 func TestPutGetMany(t *testing.T) {
 	for _, driver := range drivers {
-		var (
-			cache = createStore(driver)
-			keys  = map[string]string{
-				"key_1": "value",
-				"key_2": "100",
-				"key_3": "9.99",
+		t.Run(driver, func(t *testing.T) {
+			var (
+				cache = createStore(driver)
+				keys  = map[string]string{
+					"key_1": "value",
+					"key_2": "100",
+					"key_3": "9.99",
+				}
+			)
+			require.NoError(t, cache.PutMany(keys, 10))
+
+			var (
+				resultKeys = []string{
+					"key_1",
+					"key_2",
+					"key_3",
+				}
+				results, err = cache.Many(resultKeys)
+			)
+			require.NoError(t, err)
+
+			for i, result := range results {
+				require.Equal(t, result, keys[i])
 			}
-		)
-		require.NoError(t, cache.PutMany(keys, 10))
 
-		var (
-			resultKeys = []string{
-				"key_1",
-				"key_2",
-				"key_3",
-			}
-			results, err = cache.Many(resultKeys)
-		)
-		require.NoError(t, err)
-
-		for i, result := range results {
-			require.Equal(t, result, keys[i])
-		}
-
-		_, err = cache.Flush()
-		require.NoError(t, err)
+			_, err = cache.Flush()
+			require.NoError(t, err)
+		})
 	}
 }
 
 func TestPutGet(t *testing.T) {
 	for _, driver := range drivers {
-		var (
-			cache        = createStore(driver)
-			firstExample example
-		)
-		firstExample.Name = "Alejandro"
-		firstExample.Description = "Whatever"
-		require.NoError(t, cache.Put("key", firstExample, 10))
+		t.Run(driver, func(t *testing.T) {
+			var (
+				cache        = createStore(driver)
+				firstExample example
+			)
+			firstExample.Name = "Alejandro"
+			firstExample.Description = "Whatever"
+			require.NoError(t, cache.Put("key", firstExample, 10))
 
-		var newExample example
-		require.NoError(t, cache.Get("key", &newExample))
-		require.Equal(t, firstExample, newExample)
+			var newExample example
+			require.NoError(t, cache.Get("key", &newExample))
+			require.Equal(t, firstExample, newExample)
 
-		_, err := cache.Forget("key")
-		require.NoError(t, err)
+			_, err := cache.Forget("key")
+			require.NoError(t, err)
+		})
 	}
 }
 
 func TestIncrement(t *testing.T) {
 	for _, driver := range drivers {
-		var (
-			cache  = createStore(driver)
+		t.Run(driver, func(t *testing.T) {
+			var (
+				cache  = createStore(driver)
+				_, err = cache.Increment("increment_key", 1)
+			)
+			require.NoError(t, err)
+
 			_, err = cache.Increment("increment_key", 1)
-		)
-		require.NoError(t, err)
+			require.NoError(t, err)
 
-		_, err = cache.Increment("increment_key", 1)
-		require.NoError(t, err)
+			got, err := cache.GetInt64("increment_key")
+			require.NoError(t, err)
 
-		got, err := cache.GetInt64("increment_key")
-		require.NoError(t, err)
+			var expected int64 = 2
+			require.Equal(t, expected, got)
 
-		var expected int64 = 2
-		require.Equal(t, expected, got)
-
-		_, err = cache.Forget("increment_key")
-		require.NoError(t, err)
+			_, err = cache.Forget("increment_key")
+			require.NoError(t, err)
+		})
 	}
 }
 
 func TestDecrement(t *testing.T) {
 	for _, driver := range drivers {
-		var (
-			cache  = createStore(driver)
-			_, err = cache.Increment("decrement_key", 2)
-		)
-		require.NoError(t, err)
+		t.Run(driver, func(t *testing.T) {
+			var (
+				cache  = createStore(driver)
+				_, err = cache.Increment("decrement_key", 2)
+			)
+			require.NoError(t, err)
 
-		_, err = cache.Decrement("decrement_key", 1)
-		require.NoError(t, err)
+			_, err = cache.Decrement("decrement_key", 1)
+			require.NoError(t, err)
 
-		got, err := cache.GetInt64("decrement_key")
-		require.NoError(t, err)
+			got, err := cache.GetInt64("decrement_key")
+			require.NoError(t, err)
 
-		var expected int64 = 1
-		require.Equal(t, expected, got)
+			var expected int64 = 1
+			require.Equal(t, expected, got)
 
-		_, err = cache.Forget("decrement_key")
-		require.NoError(t, err)
+			_, err = cache.Forget("decrement_key")
+			require.NoError(t, err)
+		})
 	}
 }
 
 func TestIncrementDecrement(t *testing.T) {
 	for _, driver := range drivers {
-		var (
-			cache    = createStore(driver)
-			got, err = cache.Increment("key", 2)
-		)
-		require.NoError(t, err)
-		require.Equal(t, int64(2), got)
+		t.Run(driver, func(t *testing.T) {
+			var (
+				cache    = createStore(driver)
+				got, err = cache.Increment("key", 2)
+			)
+			require.NoError(t, err)
+			require.Equal(t, int64(2), got)
 
-		got, err = cache.Increment("key", 8)
-		require.NoError(t, err)
-		require.Equal(t, int64(10), got)
+			got, err = cache.Increment("key", 8)
+			require.NoError(t, err)
+			require.Equal(t, int64(10), got)
 
-		got, err = cache.Decrement("key", 10)
-		require.NoError(t, err)
-		require.Equal(t, int64(0), got)
+			got, err = cache.Decrement("key", 10)
+			require.NoError(t, err)
+			require.Equal(t, int64(0), got)
 
-		got, err = cache.Decrement("key1", 0)
-		require.NoError(t, err)
-		require.Equal(t, int64(0), got)
+			got, err = cache.Decrement("key1", 0)
+			require.NoError(t, err)
+			require.Equal(t, int64(0), got)
 
-		got, err = cache.Increment("key1", 10)
-		require.NoError(t, err)
-		require.Equal(t, int64(10), got)
+			got, err = cache.Increment("key1", 10)
+			require.NoError(t, err)
+			require.Equal(t, int64(10), got)
 
-		got, err = cache.Decrement("key1", 10)
-		require.NoError(t, err)
-		require.Equal(t, int64(0), got)
+			got, err = cache.Decrement("key1", 10)
+			require.NoError(t, err)
+			require.Equal(t, int64(0), got)
 
-		_, err = cache.Flush()
-		require.NoError(t, err)
+			_, err = cache.Flush()
+			require.NoError(t, err)
+		})
 	}
 }
 
@@ -235,7 +253,7 @@ func createStore(store string) Cache {
 				Servers: []string{os.Getenv("MEMCACHE_SERVER")},
 			},
 		})
-	case mapDriver:
+	case localDriver:
 		cache, err = New(&Config{
 			Local: &LocalConfig{
 				Prefix: "golavel:",

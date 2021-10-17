@@ -29,7 +29,7 @@ func (s *MemcacheStore) Forever(key string, value interface{}) error {
 	return s.Put(key, value, 0)
 }
 
-// GetFloat64 gets a float value from the store
+// GetFloat64 gets a float64 value from the store
 func (s *MemcacheStore) GetFloat64(key string) (float64, error) {
 	value, err := s.get(key)
 	if err != nil {
@@ -42,7 +42,20 @@ func (s *MemcacheStore) GetFloat64(key string) (float64, error) {
 	return stringToFloat64(value)
 }
 
-// GetInt64 gets an int value from the store
+// GetFloat32 gets a float32 value from the store
+func (s *MemcacheStore) GetFloat32(key string) (float32, error) {
+	value, err := s.get(key)
+	if err != nil {
+		return 0.0, err
+	}
+	if !isStringNumeric(value) {
+		return 0.0, errors.New("invalid numeric value")
+	}
+
+	return stringToFloat32(value)
+}
+
+// GetInt64 gets an int64 value from the store
 func (s *MemcacheStore) GetInt64(key string) (int64, error) {
 	value, err := s.get(key)
 	if err != nil {
@@ -52,9 +65,33 @@ func (s *MemcacheStore) GetInt64(key string) (int64, error) {
 		return 0, errors.New("invalid numeric value")
 	}
 
-	val, err := stringToFloat64(value)
+	return stringToInt64(value)
+}
 
-	return int64(val), err
+// GetInt gets an int value from the store
+func (s *MemcacheStore) GetInt(key string) (int, error) {
+	value, err := s.get(key)
+	if err != nil {
+		return 0, err
+	}
+	if !isStringNumeric(value) {
+		return 0, errors.New("invalid numeric value")
+	}
+
+	return stringToInt(value)
+}
+
+// GetUint64 gets an uint64 value from the store
+func (s *MemcacheStore) GetUint64(key string) (uint64, error) {
+	value, err := s.get(key)
+	if err != nil {
+		return 0, err
+	}
+	if !isStringNumeric(value) {
+		return 0, errors.New("invalid numeric value")
+	}
+
+	return stringToUint64(value)
 }
 
 // GetString gets a string value from the store

@@ -14,16 +14,37 @@ type RedisStore struct {
 	client *redis.Client
 }
 
-// GetFloat64 gets a float value from the store
+// GetFloat64 gets a float64 value from the store
 func (s *RedisStore) GetFloat64(key string) (float64, error) {
 	res, err := s.get(key).Float64()
 
 	return res, checkErrNotFound(err)
 }
 
-// GetInt64 gets an int value from the store
+// GetFloat32 gets a float32 value from the store
+func (s *RedisStore) GetFloat32(key string) (float32, error) {
+	res, err := s.get(key).Float32()
+
+	return res, checkErrNotFound(err)
+}
+
+// GetInt64 gets an int64 value from the store
 func (s *RedisStore) GetInt64(key string) (int64, error) {
 	res, err := s.get(key).Int64()
+
+	return res, checkErrNotFound(err)
+}
+
+// GetInt gets an int value from the store
+func (s *RedisStore) GetInt(key string) (int, error) {
+	res, err := s.get(key).Int()
+
+	return res, checkErrNotFound(err)
+}
+
+// GetUint64 gets an uint64 value from the store
+func (s *RedisStore) GetUint64(key string) (uint64, error) {
+	res, err := s.get(key).Uint64()
 
 	return res, checkErrNotFound(err)
 }
