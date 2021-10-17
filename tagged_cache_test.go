@@ -7,10 +7,10 @@ import (
 )
 
 func TestPutGetInt64WithTags(t *testing.T) {
-	for _, driver := range drivers {
-		t.Run(driver, func(t *testing.T) {
+	for _, d := range drivers {
+		t.Run(d.string(), func(t *testing.T) {
 			var (
-				cache = createStore(driver)
+				cache = createStore(t, d)
 				ts    = tag()
 			)
 			require.NoError(t, cache.Tags(ts).Put("key", 100, 1))
@@ -25,11 +25,30 @@ func TestPutGetInt64WithTags(t *testing.T) {
 	}
 }
 
-func TestPutGetFloat64WithTags(t *testing.T) {
-	for _, driver := range drivers {
-		t.Run(driver, func(t *testing.T) {
+func TestPutGetIntWithTags(t *testing.T) {
+	for _, d := range drivers {
+		t.Run(d.string(), func(t *testing.T) {
 			var (
-				cache    = createStore(driver)
+				cache = createStore(t, d)
+				ts    = tag()
+			)
+			require.NoError(t, cache.Tags(ts).Put("key", 100, 1))
+
+			got, err := cache.Tags(ts).GetInt("key")
+			require.NoError(t, err)
+			require.Equal(t, 100, got)
+
+			_, err = cache.Tags(ts).Forget("key")
+			require.NoError(t, err)
+		})
+	}
+}
+
+func TestPutGetFloat64WithTags(t *testing.T) {
+	for _, d := range drivers {
+		t.Run(d.string(), func(t *testing.T) {
+			var (
+				cache    = createStore(t, d)
 				expected = 9.99
 				ts       = tag()
 			)
@@ -45,11 +64,50 @@ func TestPutGetFloat64WithTags(t *testing.T) {
 	}
 }
 
-func TestIncrementWithTags(t *testing.T) {
-	for _, driver := range drivers {
-		t.Run(driver, func(t *testing.T) {
+func TestPutGetFloat32WithTags(t *testing.T) {
+	for _, d := range drivers {
+		t.Run(d.string(), func(t *testing.T) {
 			var (
-				cache  = createStore(driver)
+				cache    = createStore(t, d)
+				expected = 9.99
+				ts       = tag()
+			)
+			require.NoError(t, cache.Tags(ts).Put("key", expected, 1))
+
+			got, err := cache.Tags(ts).GetFloat32("key")
+			require.NoError(t, err)
+			require.Equal(t, float32(expected), got)
+
+			_, err = cache.Tags(ts).Forget("key")
+			require.NoError(t, err)
+		})
+	}
+}
+
+func TestPutGetUint64WithTags(t *testing.T) {
+	for _, d := range drivers {
+		t.Run(d.string(), func(t *testing.T) {
+			var (
+				cache = createStore(t, d)
+				ts    = tag()
+			)
+			require.NoError(t, cache.Tags(ts).Put("key", 100, 1))
+
+			got, err := cache.Tags(ts).GetUint64("key")
+			require.NoError(t, err)
+			require.Equal(t, uint64(100), got)
+
+			_, err = cache.Tags(ts).Forget("key")
+			require.NoError(t, err)
+		})
+	}
+}
+
+func TestIncrementWithTags(t *testing.T) {
+	for _, d := range drivers {
+		t.Run(d.string(), func(t *testing.T) {
+			var (
+				cache  = createStore(t, d)
 				ts     = tag()
 				_, err = cache.Tags(ts).Increment("increment_key", 1)
 			)
@@ -71,10 +129,10 @@ func TestIncrementWithTags(t *testing.T) {
 }
 
 func TestDecrementWithTags(t *testing.T) {
-	for _, driver := range drivers {
-		t.Run(driver, func(t *testing.T) {
+	for _, d := range drivers {
+		t.Run(d.string(), func(t *testing.T) {
 			var (
-				cache  = createStore(driver)
+				cache  = createStore(t, d)
 				ts     = tag()
 				_, err = cache.Tags(ts).Increment("decrement_key", 2)
 			)
@@ -94,10 +152,10 @@ func TestDecrementWithTags(t *testing.T) {
 }
 
 func TestForeverWithTags(t *testing.T) {
-	for _, driver := range drivers {
-		t.Run(driver, func(t *testing.T) {
+	for _, d := range drivers {
+		t.Run(d.string(), func(t *testing.T) {
 			var (
-				cache    = createStore(driver)
+				cache    = createStore(t, d)
 				expected = "value"
 				ts       = tag()
 			)
@@ -114,10 +172,10 @@ func TestForeverWithTags(t *testing.T) {
 }
 
 func TestPutGetManyWithTags(t *testing.T) {
-	for _, driver := range drivers {
-		t.Run(driver, func(t *testing.T) {
+	for _, d := range drivers {
+		t.Run(d.string(), func(t *testing.T) {
 			var (
-				cache = createStore(driver)
+				cache = createStore(t, d)
 				keys  = map[string]string{
 					"key_1": "value",
 					"key_2": "100",
@@ -148,10 +206,10 @@ func TestPutGetManyWithTags(t *testing.T) {
 }
 
 func TestPutGetWithTags(t *testing.T) {
-	for _, driver := range drivers {
-		t.Run(driver, func(t *testing.T) {
+	for _, d := range drivers {
+		t.Run(d.string(), func(t *testing.T) {
 			var (
-				cache = createStore(driver)
+				cache = createStore(t, d)
 				ts    = []string{
 					"tag1",
 					"tag2",
@@ -175,10 +233,10 @@ func TestPutGetWithTags(t *testing.T) {
 }
 
 func TestTagSet(t *testing.T) {
-	for _, driver := range drivers {
-		t.Run(driver, func(t *testing.T) {
+	for _, d := range drivers {
+		t.Run(d.string(), func(t *testing.T) {
 			var (
-				cache          = createStore(driver)
+				cache          = createStore(t, d)
 				ts             = cache.Tags("Alejandro").GetTags()
 				namespace, err = ts.getNamespace()
 			)

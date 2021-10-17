@@ -12,38 +12,45 @@ var _ cacheConnector = &redisConnector{}
 type redisConnector struct{}
 
 // connect is responsible for connecting with the caching store
-func (rc *redisConnector) connect(config *Config) (Cache, error) {
+func (rc *redisConnector) connect(config config) (Cache, error) {
+	cnf, valid := config.(*RedisConfig)
+	if !valid {
+		return nil, errors.New("config is not of type *RedisConfig")
+	}
 	return &RedisStore{
 		client: redis.NewClient(&redis.Options{
-			Network:            config.Redis.Network,
-			Addr:               config.Redis.Addr,
-			Dialer:             config.Redis.Dialer,
-			OnConnect:          config.Redis.OnConnect,
-			Password:           config.Redis.Password,
-			DB:                 config.Redis.DB,
-			MaxRetries:         config.Redis.MaxRetries,
-			MinRetryBackoff:    config.Redis.MinRetryBackoff,
-			MaxRetryBackoff:    config.Redis.MaxRetryBackoff,
-			DialTimeout:        config.Redis.DialTimeout,
-			ReadTimeout:        config.Redis.ReadTimeout,
-			WriteTimeout:       config.Redis.WriteTimeout,
-			PoolSize:           config.Redis.PoolSize,
-			MinIdleConns:       config.Redis.MinIdleConns,
-			MaxConnAge:         config.Redis.MaxConnAge,
-			PoolTimeout:        config.Redis.PoolTimeout,
-			IdleTimeout:        config.Redis.IdleTimeout,
-			IdleCheckFrequency: config.Redis.IdleCheckFrequency,
-			TLSConfig:          config.Redis.TLSConfig,
+			Network:            cnf.Network,
+			Addr:               cnf.Addr,
+			Dialer:             cnf.Dialer,
+			OnConnect:          cnf.OnConnect,
+			Password:           cnf.Password,
+			DB:                 cnf.DB,
+			MaxRetries:         cnf.MaxRetries,
+			MinRetryBackoff:    cnf.MinRetryBackoff,
+			MaxRetryBackoff:    cnf.MaxRetryBackoff,
+			DialTimeout:        cnf.DialTimeout,
+			ReadTimeout:        cnf.ReadTimeout,
+			WriteTimeout:       cnf.WriteTimeout,
+			PoolSize:           cnf.PoolSize,
+			MinIdleConns:       cnf.MinIdleConns,
+			MaxConnAge:         cnf.MaxConnAge,
+			PoolTimeout:        cnf.PoolTimeout,
+			IdleTimeout:        cnf.IdleTimeout,
+			IdleCheckFrequency: cnf.IdleCheckFrequency,
+			TLSConfig:          cnf.TLSConfig,
 		}),
-		prefix: prefix{val: config.Redis.Prefix},
+		prefix: prefix{
+			val: cnf.Prefix,
+		},
 	}, nil
 }
 
-func (rc *redisConnector) validate(config *Config) error {
-	if config.Redis == nil {
-		return errors.New("a redis config needs to be specified")
+func (rc *redisConnector) validate(config config) error {
+	cnf, valid := config.(*RedisConfig)
+	if !valid {
+		return errors.New("config is not of type *RedisConfig")
 	}
-	if len(config.Redis.Addr) == 0 {
+	if len(cnf.Addr) == 0 {
 		return errors.New("a redis address needs to be specified")
 	}
 

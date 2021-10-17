@@ -8,11 +8,9 @@ import (
 )
 
 func TestMemcacheConnector(t *testing.T) {
-	s, err := New(&Config{
-		Memcache: &MemcacheConfig{
-			Prefix:  "golavel:",
-			Servers: []string{os.Getenv("MEMCACHE_SERVER")},
-		},
+	s, err := New(&MemcacheConfig{
+		Prefix:  "golavel:",
+		Servers: []string{os.Getenv("MEMCACHE_SERVER")},
 	})
 	require.NoError(t, err)
 
@@ -21,11 +19,9 @@ func TestMemcacheConnector(t *testing.T) {
 }
 
 func TestRedisConnector(t *testing.T) {
-	s, err := New(&Config{
-		Redis: &RedisConfig{
-			Prefix: "golavel:",
-			Addr:   os.Getenv("REDIS_ADDR"),
-		},
+	s, err := New(&RedisConfig{
+		Prefix: "golavel:",
+		Addr:   os.Getenv("REDIS_ADDR"),
 	})
 	require.NoError(t, err)
 
@@ -34,10 +30,8 @@ func TestRedisConnector(t *testing.T) {
 }
 
 func TestLocalConnector(t *testing.T) {
-	s, err := New(&Config{
-		Local: &LocalConfig{
-			Prefix: "golavel:",
-		},
+	s, err := New(&LocalConfig{
+		Prefix: "golavel:",
 	})
 	require.NoError(t, err)
 

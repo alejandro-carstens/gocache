@@ -7,10 +7,10 @@ import (
 )
 
 func TestLock(t *testing.T) {
-	for _, driver := range drivers {
-		t.Run(driver, func(t *testing.T) {
+	for _, d := range drivers {
+		t.Run(d.string(), func(t *testing.T) {
 			var (
-				cache    = createStore(driver)
+				cache    = createStore(t, d)
 				got, err = cache.Lock("test", "test", 10).Acquire()
 			)
 			require.NoError(t, err)

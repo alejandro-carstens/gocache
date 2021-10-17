@@ -2,19 +2,12 @@ package gocache
 
 import (
 	"os"
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
 
-const (
-	redisDriver    string = "redis"
-	memcacheDriver string = "memcache"
-	localDriver    string = "local"
-)
-
-var drivers = []string{
+var drivers = []driver{
 	redisDriver,
 	memcacheDriver,
 	localDriver,
@@ -26,9 +19,9 @@ type example struct {
 }
 
 func TestPutGetInt64(t *testing.T) {
-	for _, driver := range drivers {
-		t.Run(driver, func(t *testing.T) {
-			cache := createStore(driver)
+	for _, d := range drivers {
+		t.Run(d.string(), func(t *testing.T) {
+			cache := createStore(t, d)
 			require.NoError(t, cache.Put("key", 100, 1))
 
 			got, err := cache.GetInt64("key")
@@ -41,10 +34,26 @@ func TestPutGetInt64(t *testing.T) {
 	}
 }
 
+func TestPutGetInt(t *testing.T) {
+	for _, d := range drivers {
+		t.Run(d.string(), func(t *testing.T) {
+			cache := createStore(t, d)
+			require.NoError(t, cache.Put("key", 100, 1))
+
+			got, err := cache.GetInt("key")
+			require.NoError(t, err)
+			require.Equal(t, 100, got)
+
+			_, err = cache.Forget("key")
+			require.NoError(t, err)
+		})
+	}
+}
+
 func TestPutGetString(t *testing.T) {
-	for _, driver := range drivers {
-		t.Run(driver, func(t *testing.T) {
-			cache := createStore(driver)
+	for _, d := range drivers {
+		t.Run(d.string(), func(t *testing.T) {
+			cache := createStore(t, d)
 			require.NoError(t, cache.Put("key", "value", 1))
 
 			got, err := cache.GetString("key")
@@ -58,10 +67,10 @@ func TestPutGetString(t *testing.T) {
 }
 
 func TestPutGetFloat64(t *testing.T) {
-	for _, driver := range drivers {
-		t.Run(driver, func(t *testing.T) {
+	for _, d := range drivers {
+		t.Run(d.string(), func(t *testing.T) {
 			var (
-				cache    = createStore(driver)
+				cache    = createStore(t, d)
 				expected = 9.99
 			)
 			require.NoError(t, cache.Put("key", expected, 1))
@@ -76,11 +85,46 @@ func TestPutGetFloat64(t *testing.T) {
 	}
 }
 
-func TestForever(t *testing.T) {
-	for _, driver := range drivers {
-		t.Run(driver, func(t *testing.T) {
+func TestPutGetFloat32(t *testing.T) {
+	for _, d := range drivers {
+		t.Run(d.string(), func(t *testing.T) {
 			var (
-				cache    = createStore(driver)
+				cache    = createStore(t, d)
+				expected = 9.99
+			)
+			require.NoError(t, cache.Put("key", expected, 1))
+
+			got, err := cache.GetFloat32("key")
+			require.NoError(t, err)
+			require.Equal(t, float32(expected), got)
+
+			_, err = cache.Forget("key")
+			require.NoError(t, err)
+		})
+	}
+}
+
+func TestPutGetUint64(t *testing.T) {
+	for _, d := range drivers {
+		t.Run(d.string(), func(t *testing.T) {
+			cache := createStore(t, d)
+			require.NoError(t, cache.Put("key", 100, 1))
+
+			got, err := cache.GetUint64("key")
+			require.NoError(t, err)
+			require.Equal(t, uint64(100), got)
+
+			_, err = cache.Forget("key")
+			require.NoError(t, err)
+		})
+	}
+}
+
+func TestForever(t *testing.T) {
+	for _, d := range drivers {
+		t.Run(d.string(), func(t *testing.T) {
+			var (
+				cache    = createStore(t, d)
 				expected = "value"
 			)
 			require.NoError(t, cache.Forever("key", expected))
@@ -96,10 +140,10 @@ func TestForever(t *testing.T) {
 }
 
 func TestPutGetMany(t *testing.T) {
-	for _, driver := range drivers {
-		t.Run(driver, func(t *testing.T) {
+	for _, d := range drivers {
+		t.Run(d.string(), func(t *testing.T) {
 			var (
-				cache = createStore(driver)
+				cache = createStore(t, d)
 				keys  = map[string]string{
 					"key_1": "value",
 					"key_2": "100",
@@ -129,10 +173,10 @@ func TestPutGetMany(t *testing.T) {
 }
 
 func TestPutGet(t *testing.T) {
-	for _, driver := range drivers {
-		t.Run(driver, func(t *testing.T) {
+	for _, d := range drivers {
+		t.Run(d.string(), func(t *testing.T) {
 			var (
-				cache        = createStore(driver)
+				cache        = createStore(t, d)
 				firstExample example
 			)
 			firstExample.Name = "Alejandro"
@@ -150,10 +194,10 @@ func TestPutGet(t *testing.T) {
 }
 
 func TestIncrement(t *testing.T) {
-	for _, driver := range drivers {
-		t.Run(driver, func(t *testing.T) {
+	for _, d := range drivers {
+		t.Run(d.string(), func(t *testing.T) {
 			var (
-				cache  = createStore(driver)
+				cache  = createStore(t, d)
 				_, err = cache.Increment("increment_key", 1)
 			)
 			require.NoError(t, err)
@@ -174,10 +218,10 @@ func TestIncrement(t *testing.T) {
 }
 
 func TestDecrement(t *testing.T) {
-	for _, driver := range drivers {
-		t.Run(driver, func(t *testing.T) {
+	for _, d := range drivers {
+		t.Run(d.string(), func(t *testing.T) {
 			var (
-				cache  = createStore(driver)
+				cache  = createStore(t, d)
 				_, err = cache.Increment("decrement_key", 2)
 			)
 			require.NoError(t, err)
@@ -198,10 +242,10 @@ func TestDecrement(t *testing.T) {
 }
 
 func TestIncrementDecrement(t *testing.T) {
-	for _, driver := range drivers {
-		t.Run(driver, func(t *testing.T) {
+	for _, d := range drivers {
+		t.Run(d.string(), func(t *testing.T) {
 			var (
-				cache    = createStore(driver)
+				cache    = createStore(t, d)
 				got, err = cache.Increment("key", 2)
 			)
 			require.NoError(t, err)
@@ -233,39 +277,30 @@ func TestIncrementDecrement(t *testing.T) {
 	}
 }
 
-func createStore(store string) Cache {
+func createStore(t *testing.T, d driver) Cache {
 	var (
-		cache Cache
-		err   error
+		cnf config
+		err error
 	)
-	switch strings.ToLower(store) {
+	switch d {
 	case redisDriver:
-		cache, err = New(&Config{
-			Redis: &RedisConfig{
-				Prefix: "golavel:",
-				Addr:   os.Getenv("REDIS_ADDR"),
-			},
-		})
+		cnf = &RedisConfig{
+			Prefix: "golavel:",
+			Addr:   os.Getenv("REDIS_ADDR"),
+		}
 	case memcacheDriver:
-		cache, err = New(&Config{
-			Memcache: &MemcacheConfig{
-				Prefix:  "golavel:",
-				Servers: []string{os.Getenv("MEMCACHE_SERVER")},
-			},
-		})
+		cnf = &MemcacheConfig{
+			Prefix:  "golavel:",
+			Servers: []string{os.Getenv("MEMCACHE_SERVER")},
+		}
 	case localDriver:
-		cache, err = New(&Config{
-			Local: &LocalConfig{
-				Prefix: "golavel:",
-			},
-		})
+		cnf = &LocalConfig{
+			Prefix: "golavel:",
+		}
 	}
-	if err != nil {
-		panic(err)
-	}
-	if cache == nil {
-		panic("No valid driver provided.")
-	}
+
+	cache, err := New(cnf)
+	require.NoError(t, err)
 
 	return cache
 }

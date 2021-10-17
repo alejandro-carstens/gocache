@@ -9,13 +9,12 @@ import (
 )
 
 type (
+	driver string
 	// Config represents the cache configuration to be used depending on the specified backend.
 	// Only one backend should be specified per cache meaning that the backend config
 	// should not be nil
-	Config struct {
-		Redis    *RedisConfig
-		Memcache *MemcacheConfig
-		Local    *LocalConfig
+	config interface {
+		driver() driver
 	}
 	// RedisConfig represents the configuration for a cache with a redis backend
 	RedisConfig struct {
@@ -108,3 +107,25 @@ type (
 		DefaultExpiration time.Duration
 	}
 )
+
+const (
+	redisDriver    driver = "redis"
+	memcacheDriver driver = "memcache"
+	localDriver    driver = "local"
+)
+
+func (d driver) string() string {
+	return string(d)
+}
+
+func (*LocalConfig) driver() driver {
+	return localDriver
+}
+
+func (*RedisConfig) driver() driver {
+	return redisDriver
+}
+
+func (*MemcacheConfig) driver() driver {
+	return memcacheDriver
+}

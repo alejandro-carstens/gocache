@@ -3,18 +3,16 @@ package gocache
 import "errors"
 
 // New new-ups an instance of Store
-func New(config *Config) (Cache, error) {
+func New(config config) (Cache, error) {
 	var connector cacheConnector
-	if config.Local != nil {
+	switch config.driver() {
+	case localDriver:
 		connector = new(localConnector)
-	}
-	if config.Memcache != nil {
-		connector = new(memcacheConnector)
-	}
-	if config.Redis != nil {
+	case redisDriver:
 		connector = new(redisConnector)
-	}
-	if connector == nil {
+	case memcacheDriver:
+		connector = new(memcacheConnector)
+	default:
 		return nil, errors.New("invalid or empty config specified")
 	}
 	if err := connector.validate(config); err != nil {
@@ -28,10 +26,10 @@ type (
 	// cacheConnector represents the connector methods to be implemented
 	cacheConnector interface {
 		// Connect is responsible for connecting with the caching store
-		connect(config *Config) (Cache, error)
+		connect(config config) (Cache, error)
 		// validate verifies that the given params
 		// are valid for establishing a connection
-		validate(config *Config) error
+		validate(config config) error
 	}
 	// store represents the caching methods to be implemented
 	store interface {
