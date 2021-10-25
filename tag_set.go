@@ -39,7 +39,6 @@ func (ts *tagSet) getNamespace() (string, error) {
 
 func (ts *tagSet) tagIds() ([]string, error) {
 	tagIds := make([]string, len(ts.names))
-
 	for i, name := range ts.names {
 		val, err := ts.tagId(name)
 		if err != nil {

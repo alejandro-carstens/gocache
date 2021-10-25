@@ -43,7 +43,7 @@ type (
 		Decrement(key string, value int64) (int64, error)
 		// Forget forgets/evicts a given key-value pair from the store
 		Forget(key string) (bool, error)
-		// Forever puts a value in the given store until it is forgotten/evicted
+		// Forever puts a value in the given store until it is forgotten/evicted manually
 		Forever(key string, value interface{}) error
 		// Flush flushes the store
 		Flush() (bool, error)
@@ -57,8 +57,8 @@ type (
 		GetFloat32(key string) (float32, error)
 		// GetUint64 gets a uint64 value from the store
 		GetUint64(key string) (uint64, error)
-		// GetPrefix gets the cache key val
-		GetPrefix() string
+		// Prefix gets the cache key prefix
+		Prefix() string
 		// Many gets many values from the store
 		Many(keys []string) (map[string]string, error)
 		// PutMany puts many values in the given store until they are forgotten/evicted

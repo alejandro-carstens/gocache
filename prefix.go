@@ -8,7 +8,7 @@ func (c *prefix) k(key string) string {
 	return c.val + key
 }
 
-// GetPrefix gets the cache key val
-func (c *prefix) GetPrefix() string {
+// Prefix gets the cache key val
+func (c *prefix) Prefix() string {
 	return c.val
 }

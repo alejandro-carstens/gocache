@@ -26,7 +26,7 @@ func (tc *redisTaggedCache) Forever(key string, value interface{}) error {
 	h := sha1.New()
 	h.Write([]byte(namespace))
 
-	return tc.store.Forever(tc.GetPrefix()+hex.EncodeToString(h.Sum(nil))+":"+key, value)
+	return tc.store.Forever(tc.Prefix()+hex.EncodeToString(h.Sum(nil))+":"+key, value)
 }
 
 // TagFlush flushes the tags of the TaggedCache
@@ -38,7 +38,7 @@ func (tc *redisTaggedCache) pushForever(namespace string, key string) {
 	h := sha1.New()
 	h.Write([]byte(namespace))
 
-	fullKey := tc.GetPrefix() + hex.EncodeToString(h.Sum(nil)) + ":" + key
+	fullKey := tc.Prefix() + hex.EncodeToString(h.Sum(nil)) + ":" + key
 	for _, segment := range strings.Split(namespace, "|") {
 		inputs := []reflect.Value{
 			reflect.ValueOf(tc.foreverKey(segment)),
@@ -93,5 +93,5 @@ func (tc *redisTaggedCache) deleteForeverValues(key string) error {
 }
 
 func (tc *redisTaggedCache) foreverKey(segment string) string {
-	return tc.GetPrefix() + segment + ":forever"
+	return tc.Prefix() + segment + ":forever"
 }

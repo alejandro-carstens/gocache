@@ -194,7 +194,7 @@ func (s *LocalStore) Many(keys []string) (map[string]string, error) {
 
 // Get gets the struct representation of a value from the store
 func (s *LocalStore) Get(key string, entity interface{}) error {
-	value, valid := s.c.Get(s.GetPrefix() + key)
+	value, valid := s.c.Get(s.Prefix() + key)
 	if !valid {
 		return ErrNotFound
 	}
