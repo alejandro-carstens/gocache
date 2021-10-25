@@ -3,6 +3,7 @@ package gocache
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"strconv"
 )
 
@@ -28,7 +29,25 @@ func isNumeric(s interface{}) bool {
 	switch s.(type) {
 	case int:
 		return true
+	case int8:
+		return true
+	case int16:
+		return true
 	case int32:
+		return true
+	case int64:
+		return true
+	case uint:
+		return true
+	case uintptr:
+		return true
+	case uint8:
+		return true
+	case uint16:
+		return true
+	case uint32:
+		return true
+	case uint64:
 		return true
 	case float32:
 		return true
@@ -71,4 +90,59 @@ func isStringNumeric(value string) bool {
 
 func stringToFloat64(value string) (float64, error) {
 	return strconv.ParseFloat(value, 64)
+}
+
+func interfaceToFloat64(value interface{}) (float64, error) {
+	return stringToFloat64(fmt.Sprint(value))
+}
+
+func stringToFloat32(value string) (float32, error) {
+	n, err := strconv.ParseFloat(value, 32)
+	if err != nil {
+		return 0, err
+	}
+
+	return float32(n), nil
+}
+
+func interfaceToFloat32(value interface{}) (float32, error) {
+	return stringToFloat32(fmt.Sprint(value))
+}
+
+func stringToInt64(value string) (int64, error) {
+	return strconv.ParseInt(value, 10, 64)
+}
+
+func interfaceToInt64(value interface{}) (int64, error) {
+	return stringToInt64(fmt.Sprint(value))
+}
+
+func stringToInt(value string) (int, error) {
+	n, err := strconv.ParseInt(value, 10, 64)
+	if err != nil {
+		return 0, err
+	}
+
+	return int(n), nil
+}
+
+func interfaceToInt(value interface{}) (int, error) {
+	return stringToInt(fmt.Sprint(value))
+}
+
+func stringToUint64(value string) (uint64, error) {
+	return strconv.ParseUint(value, 10, 64)
+}
+
+func interfaceToUint64(value interface{}) (uint64, error) {
+	return stringToUint64(fmt.Sprint(value))
+}
+
+func isInterfaceNumericString(value interface{}) bool {
+	str, valid := value.(string)
+	if !valid {
+		return false
+	}
+
+	return isStringNumeric(str)
 }

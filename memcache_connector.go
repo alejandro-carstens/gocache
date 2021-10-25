@@ -10,25 +10,33 @@ var _ cacheConnector = &memcacheConnector{}
 
 type memcacheConnector struct{}
 
-func (mc *memcacheConnector) connect(config *Config) (Cache, error) {
-	client := memcache.New(config.Memcache.Servers...)
-	if config.Memcache.MaxIdleConns > 0 {
-		client.MaxIdleConns = config.Memcache.MaxIdleConns
+func (mc *memcacheConnector) connect(config config) (Cache, error) {
+	cnf, valid := config.(*MemcacheConfig)
+	if !valid {
+		return nil, errors.New("config is not of type *RedisConfig")
 	}
 
-	client.Timeout = config.Memcache.Timeout
+	client := memcache.New(cnf.Servers...)
+	if cnf.MaxIdleConns > 0 {
+		client.MaxIdleConns = cnf.MaxIdleConns
+	}
+
+	client.Timeout = cnf.Timeout
 
 	return &MemcacheStore{
 		client: client,
-		prefix: prefix{val: config.Memcache.Prefix},
+		prefix: prefix{
+			val: cnf.Prefix,
+		},
 	}, nil
 }
 
-func (mc *memcacheConnector) validate(config *Config) error {
-	if config.Memcache == nil {
-		return errors.New("memcache config not specified")
+func (mc *memcacheConnector) validate(config config) error {
+	cnf, valid := config.(*MemcacheConfig)
+	if !valid {
+		return errors.New("config is not of type *RedisConfig")
 	}
-	if len(config.Memcache.Servers) == 0 {
+	if len(cnf.Servers) == 0 {
 		return errors.New("memcache.servers cannot be empty")
 	}
 

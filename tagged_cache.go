@@ -89,7 +89,7 @@ func (tc *taggedCache) Many(keys []string) (map[string]string, error) {
 	}
 
 	for i, result := range results {
-		values[getTaggedManyKey(tc.GetPrefix(), i)] = result
+		values[getTaggedManyKey(tc.Prefix(), i)] = result
 	}
 
 	return values, nil
@@ -110,12 +110,12 @@ func (tc *taggedCache) PutMany(values map[string]string, seconds int) error {
 	return tc.store.PutMany(taggedMap, seconds)
 }
 
-// GetPrefix gets the cache key val
-func (tc *taggedCache) GetPrefix() string {
-	return tc.store.GetPrefix()
+// Prefix gets the cache key val
+func (tc *taggedCache) Prefix() string {
+	return tc.store.Prefix()
 }
 
-// GetInt64 gets an int value from the store
+// GetInt64 gets an int64 value from the store
 func (tc *taggedCache) GetInt64(key string) (int64, error) {
 	tagKey, err := tc.taggedItemKey(key)
 	if err != nil {
@@ -123,6 +123,26 @@ func (tc *taggedCache) GetInt64(key string) (int64, error) {
 	}
 
 	return tc.store.GetInt64(tagKey)
+}
+
+// GetInt gets an int value from the store
+func (tc *taggedCache) GetInt(key string) (int, error) {
+	tagKey, err := tc.taggedItemKey(key)
+	if err != nil {
+		return 0, err
+	}
+
+	return tc.store.GetInt(tagKey)
+}
+
+// GetUint64 gets an uint64 value from the store
+func (tc *taggedCache) GetUint64(key string) (uint64, error) {
+	tagKey, err := tc.taggedItemKey(key)
+	if err != nil {
+		return 0, err
+	}
+
+	return tc.store.GetUint64(tagKey)
 }
 
 // GetFloat64 gets a float value from the store
@@ -133,6 +153,16 @@ func (tc *taggedCache) GetFloat64(key string) (float64, error) {
 	}
 
 	return tc.store.GetFloat64(tagKey)
+}
+
+// GetFloat32 gets an int value from the store
+func (tc *taggedCache) GetFloat32(key string) (float32, error) {
+	tagKey, err := tc.taggedItemKey(key)
+	if err != nil {
+		return 0, err
+	}
+
+	return tc.store.GetFloat32(tagKey)
 }
 
 // Get gets the struct representation of a value from the store
@@ -177,5 +207,5 @@ func (tc *taggedCache) taggedItemKey(key string) (string, error) {
 	h := sha1.New()
 	h.Write([]byte(namespace))
 
-	return tc.GetPrefix() + hex.EncodeToString(h.Sum(nil)) + ":" + key, nil
+	return tc.Prefix() + hex.EncodeToString(h.Sum(nil)) + ":" + key, nil
 }
