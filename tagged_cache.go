@@ -3,6 +3,7 @@ package gocache
 import (
 	"crypto/sha1"
 	"encoding/hex"
+	"time"
 )
 
 var _ TaggedCache = &taggedCache{}
@@ -14,13 +15,13 @@ type taggedCache struct {
 }
 
 // Put puts a value in the given store for a predetermined amount of time in seconds
-func (tc *taggedCache) Put(key string, value interface{}, seconds int) error {
+func (tc *taggedCache) Put(key string, value interface{}, duration time.Duration) error {
 	tagKey, err := tc.taggedItemKey(key)
 	if err != nil {
 		return err
 	}
 
-	return tc.store.Put(tagKey, value, seconds)
+	return tc.store.Put(tagKey, value, duration)
 }
 
 // Increment increments an integer counter by a given value
@@ -96,7 +97,7 @@ func (tc *taggedCache) Many(keys []string) (map[string]string, error) {
 }
 
 // PutMany puts many values in the given store until they are forgotten/evicted
-func (tc *taggedCache) PutMany(values map[string]string, seconds int) error {
+func (tc *taggedCache) PutMany(values map[string]string, duration time.Duration) error {
 	taggedMap := make(map[string]string)
 	for key, value := range values {
 		tagKey, err := tc.taggedItemKey(key)
@@ -107,7 +108,7 @@ func (tc *taggedCache) PutMany(values map[string]string, seconds int) error {
 		taggedMap[tagKey] = value
 	}
 
-	return tc.store.PutMany(taggedMap, seconds)
+	return tc.store.PutMany(taggedMap, duration)
 }
 
 // Prefix gets the cache key val

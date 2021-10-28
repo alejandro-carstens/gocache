@@ -126,9 +126,9 @@ func (s *LocalStore) Decrement(key string, value int64) (int64, error) {
 }
 
 // Put puts a value in the given store for a predetermined amount of time in seconds.
-func (s *LocalStore) Put(key string, value interface{}, seconds int) error {
+func (s *LocalStore) Put(key string, value interface{}, duration time.Duration) error {
 	if isNumeric(value) {
-		s.c.Set(s.k(key), value, time.Duration(seconds)*time.Second)
+		s.c.Set(s.k(key), value, duration)
 
 		return nil
 	}
@@ -138,7 +138,7 @@ func (s *LocalStore) Put(key string, value interface{}, seconds int) error {
 		return err
 	}
 
-	s.c.Set(s.k(key), val, time.Duration(seconds)*time.Second)
+	s.c.Set(s.k(key), val, duration)
 
 	return nil
 }
@@ -167,9 +167,9 @@ func (s *LocalStore) Forget(key string) (bool, error) {
 }
 
 // PutMany puts many values in the given store until they are forgotten/evicted
-func (s *LocalStore) PutMany(values map[string]string, minutes int) error {
+func (s *LocalStore) PutMany(values map[string]string, duration time.Duration) error {
 	for key, value := range values {
-		if err := s.Put(key, value, minutes); err != nil {
+		if err := s.Put(key, value, duration); err != nil {
 			return err
 		}
 	}
@@ -221,11 +221,11 @@ func (s *LocalStore) Tags(names ...string) TaggedCache {
 }
 
 // Lock returns a map implementation of the Lock interface
-func (s *LocalStore) Lock(name, owner string, seconds int64) Lock {
+func (s *LocalStore) Lock(name, owner string, duration time.Duration) Lock {
 	return &localLock{
-		c:       s.c,
-		name:    name,
-		owner:   owner,
-		seconds: seconds,
+		c:        s.c,
+		name:     name,
+		owner:    owner,
+		duration: duration,
 	}
 }

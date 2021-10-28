@@ -11,15 +11,15 @@ import (
 var _ Lock = &localLock{}
 
 type localLock struct {
-	c       *cache.Cache
-	name    string
-	owner   string
-	seconds int64
+	c        *cache.Cache
+	name     string
+	owner    string
+	duration time.Duration
 }
 
 // Acquire implementation of the Lock interface
 func (l *localLock) Acquire() (bool, error) {
-	err := l.c.Add(l.name, l.owner, time.Duration(l.seconds)*time.Second)
+	err := l.c.Add(l.name, l.owner, l.duration)
 	if err != nil && err.Error() == fmt.Sprintf("Item %s already exists", l.name) {
 		return false, nil
 	}

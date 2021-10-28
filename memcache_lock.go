@@ -1,16 +1,18 @@
 package gocache
 
 import (
+	"time"
+
 	"github.com/bradfitz/gomemcache/memcache"
 )
 
 var _ Lock = &memcacheLock{}
 
 type memcacheLock struct {
-	client  *memcache.Client
-	name    string
-	owner   string
-	seconds int64
+	client   *memcache.Client
+	name     string
+	owner    string
+	duration time.Duration
 }
 
 // Acquire implementation of the Lock interface
@@ -18,7 +20,7 @@ func (ml *memcacheLock) Acquire() (bool, error) {
 	err := ml.client.Add(&memcache.Item{
 		Key:        ml.name,
 		Value:      []byte(ml.owner),
-		Expiration: int32(ml.seconds),
+		Expiration: int32(ml.duration.Seconds()),
 	})
 	if err == memcache.ErrNotStored {
 		return false, nil

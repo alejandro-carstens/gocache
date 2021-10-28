@@ -3,6 +3,7 @@ package gocache
 import (
 	"os"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 )
@@ -22,7 +23,7 @@ func TestPutGetInt64(t *testing.T) {
 	for _, d := range drivers {
 		t.Run(d.string(), func(t *testing.T) {
 			cache := createStore(t, d)
-			require.NoError(t, cache.Put("key", 100, 1))
+			require.NoError(t, cache.Put("key", 100, time.Second))
 
 			got, err := cache.GetInt64("key")
 			require.NoError(t, err)
@@ -38,7 +39,7 @@ func TestPutGetInt(t *testing.T) {
 	for _, d := range drivers {
 		t.Run(d.string(), func(t *testing.T) {
 			cache := createStore(t, d)
-			require.NoError(t, cache.Put("key", 100, 1))
+			require.NoError(t, cache.Put("key", 100, time.Second))
 
 			got, err := cache.GetInt("key")
 			require.NoError(t, err)
@@ -54,7 +55,7 @@ func TestPutGetString(t *testing.T) {
 	for _, d := range drivers {
 		t.Run(d.string(), func(t *testing.T) {
 			cache := createStore(t, d)
-			require.NoError(t, cache.Put("key", "value", 1))
+			require.NoError(t, cache.Put("key", "value", time.Second))
 
 			got, err := cache.GetString("key")
 			require.NoError(t, err)
@@ -73,7 +74,7 @@ func TestPutGetFloat64(t *testing.T) {
 				cache    = createStore(t, d)
 				expected = 9.99
 			)
-			require.NoError(t, cache.Put("key", expected, 1))
+			require.NoError(t, cache.Put("key", expected, time.Second))
 
 			got, err := cache.GetFloat64("key")
 			require.NoError(t, err)
@@ -92,7 +93,7 @@ func TestPutGetFloat32(t *testing.T) {
 				cache    = createStore(t, d)
 				expected = 9.99
 			)
-			require.NoError(t, cache.Put("key", expected, 1))
+			require.NoError(t, cache.Put("key", expected, time.Second))
 
 			got, err := cache.GetFloat32("key")
 			require.NoError(t, err)
@@ -108,7 +109,7 @@ func TestPutGetUint64(t *testing.T) {
 	for _, d := range drivers {
 		t.Run(d.string(), func(t *testing.T) {
 			cache := createStore(t, d)
-			require.NoError(t, cache.Put("key", 100, 1))
+			require.NoError(t, cache.Put("key", 100, time.Second))
 
 			got, err := cache.GetUint64("key")
 			require.NoError(t, err)
@@ -150,7 +151,7 @@ func TestPutGetMany(t *testing.T) {
 					"key_3": "9.99",
 				}
 			)
-			require.NoError(t, cache.PutMany(keys, 10))
+			require.NoError(t, cache.PutMany(keys, 10*time.Second))
 
 			var (
 				resultKeys = []string{
@@ -181,7 +182,7 @@ func TestPutGet(t *testing.T) {
 			)
 			firstExample.Name = "Alejandro"
 			firstExample.Description = "Whatever"
-			require.NoError(t, cache.Put("key", firstExample, 10))
+			require.NoError(t, cache.Put("key", firstExample, 10*time.Second))
 
 			var newExample example
 			require.NoError(t, cache.Get("key", &newExample))

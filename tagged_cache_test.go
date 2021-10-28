@@ -2,6 +2,7 @@ package gocache
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 )
@@ -13,7 +14,7 @@ func TestPutGetInt64WithTags(t *testing.T) {
 				cache = createStore(t, d)
 				ts    = tag()
 			)
-			require.NoError(t, cache.Tags(ts).Put("key", 100, 1))
+			require.NoError(t, cache.Tags(ts).Put("key", 100, time.Second))
 
 			got, err := cache.Tags(ts).GetInt64("key")
 			require.NoError(t, err)
@@ -32,7 +33,7 @@ func TestPutGetIntWithTags(t *testing.T) {
 				cache = createStore(t, d)
 				ts    = tag()
 			)
-			require.NoError(t, cache.Tags(ts).Put("key", 100, 1))
+			require.NoError(t, cache.Tags(ts).Put("key", 100, time.Second))
 
 			got, err := cache.Tags(ts).GetInt("key")
 			require.NoError(t, err)
@@ -52,7 +53,7 @@ func TestPutGetFloat64WithTags(t *testing.T) {
 				expected = 9.99
 				ts       = tag()
 			)
-			require.NoError(t, cache.Tags(ts).Put("key", expected, 1))
+			require.NoError(t, cache.Tags(ts).Put("key", expected, time.Second))
 
 			got, err := cache.Tags(ts).GetFloat64("key")
 			require.NoError(t, err)
@@ -72,7 +73,7 @@ func TestPutGetFloat32WithTags(t *testing.T) {
 				expected = 9.99
 				ts       = tag()
 			)
-			require.NoError(t, cache.Tags(ts).Put("key", expected, 1))
+			require.NoError(t, cache.Tags(ts).Put("key", expected, time.Second))
 
 			got, err := cache.Tags(ts).GetFloat32("key")
 			require.NoError(t, err)
@@ -91,7 +92,7 @@ func TestPutGetUint64WithTags(t *testing.T) {
 				cache = createStore(t, d)
 				ts    = tag()
 			)
-			require.NoError(t, cache.Tags(ts).Put("key", 100, 1))
+			require.NoError(t, cache.Tags(ts).Put("key", 100, time.Second))
 
 			got, err := cache.Tags(ts).GetUint64("key")
 			require.NoError(t, err)
@@ -183,7 +184,7 @@ func TestPutGetManyWithTags(t *testing.T) {
 				}
 				ts = tag()
 			)
-			require.NoError(t, cache.Tags(ts).PutMany(keys, 10))
+			require.NoError(t, cache.Tags(ts).PutMany(keys, 10*time.Second))
 
 			var (
 				resultKeys = []string{
@@ -220,7 +221,7 @@ func TestPutGetWithTags(t *testing.T) {
 					Description: "Whatever",
 				}
 			)
-			require.NoError(t, cache.Tags(ts...).Put("key", firstExample, 10))
+			require.NoError(t, cache.Tags(ts...).Put("key", firstExample, 10*time.Second))
 
 			var newExample example
 			require.NoError(t, cache.Tags(ts...).Get("key", &newExample))

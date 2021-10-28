@@ -70,8 +70,7 @@ func (s *RedisStore) Decrement(key string, value int64) (int64, error) {
 }
 
 // Put puts a value in the given store for a predetermined amount of time in seconds
-func (s *RedisStore) Put(key string, value interface{}, seconds int) error {
-	duration := time.Duration(int64(seconds)) * time.Second
+func (s *RedisStore) Put(key string, value interface{}, duration time.Duration) error {
 	if isNumeric(value) {
 		return s.client.Set(s.k(key), value, duration).Err()
 	}
@@ -124,11 +123,11 @@ func (s *RedisStore) Forget(key string) (bool, error) {
 }
 
 // PutMany puts many values in the given store until they are forgotten/evicted
-func (s *RedisStore) PutMany(values map[string]string, seconds int) error {
+func (s *RedisStore) PutMany(values map[string]string, duration time.Duration) error {
 	pipe := s.client.TxPipeline()
 
 	for key, value := range values {
-		if err := s.Put(key, value, seconds); err != nil {
+		if err := s.Put(key, value, duration); err != nil {
 			return err
 		}
 	}
@@ -193,12 +192,12 @@ func (s *RedisStore) Get(key string, entity interface{}) error {
 }
 
 // Lock returns a redis implementation of the Lock interface
-func (s *RedisStore) Lock(name, owner string, seconds int64) Lock {
+func (s *RedisStore) Lock(name, owner string, duration time.Duration) Lock {
 	return &redisLock{
-		client:  s.client,
-		seconds: seconds,
-		name:    name,
-		owner:   owner,
+		client:   s.client,
+		name:     name,
+		owner:    owner,
+		duration: duration,
 	}
 }
 
