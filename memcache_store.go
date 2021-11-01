@@ -140,9 +140,9 @@ func (s *MemcacheStore) Decrement(key string, value int64) (int64, error) {
 }
 
 // PutMany puts many values in the given store until they are forgotten/evicted
-func (s *MemcacheStore) PutMany(values map[string]string, duration time.Duration) error {
-	for key, value := range values {
-		if err := s.Put(key, value, duration); err != nil {
+func (s *MemcacheStore) PutMany(entries ...Entry) error {
+	for _, entry := range entries {
+		if err := s.Put(entry.Key, entry.Value, entry.Duration); err != nil {
 			return err
 		}
 	}
@@ -151,15 +151,18 @@ func (s *MemcacheStore) PutMany(values map[string]string, duration time.Duration
 }
 
 // Many gets many values from the store
-func (s *MemcacheStore) Many(keys []string) (map[string]string, error) {
-	items := make(map[string]string)
+func (s *MemcacheStore) Many(keys ...string) (Items, error) {
+	items := Items{}
 	for _, key := range keys {
-		val, err := s.GetString(key)
+		val, err := s.get(key)
 		if err != nil {
-			return items, err
+			return nil, err
 		}
 
-		items[key] = val
+		items[key] = Item{
+			key:   key,
+			value: val,
+		}
 	}
 
 	return items, nil

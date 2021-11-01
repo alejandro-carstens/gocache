@@ -144,27 +144,96 @@ func TestPutGetMany(t *testing.T) {
 	for _, d := range drivers {
 		t.Run(d.string(), func(t *testing.T) {
 			var (
-				cache = createStore(t, d)
-				keys  = map[string]string{
-					"key_1": "value",
-					"key_2": "100",
-					"key_3": "9.99",
+				cache   = createStore(t, d)
+				entries = []Entry{
+					{
+						Key:      "string",
+						Value:    "string",
+						Duration: 10 * time.Second,
+					},
+					{
+						Key:      "uint64",
+						Value:    uint64(100),
+						Duration: 10 * time.Second,
+					},
+					{
+						Key:      "int",
+						Value:    100,
+						Duration: 10 * time.Second,
+					},
+					{
+						Key:      "int64",
+						Value:    int64(100),
+						Duration: 10 * time.Second,
+					},
+					{
+						Key:      "float64",
+						Value:    float64(100),
+						Duration: 10 * time.Second,
+					},
+					{
+						Key:      "float32",
+						Value:    float32(100),
+						Duration: 10 * time.Second,
+					},
+					{
+						Key: "struct",
+						Value: example{
+							Name:        "hello",
+							Description: "world",
+						},
+						Duration: 10 * time.Second,
+					},
 				}
 			)
-			require.NoError(t, cache.PutMany(keys, 10*time.Second))
+			require.NoError(t, cache.PutMany(entries...))
 
 			var (
-				resultKeys = []string{
-					"key_1",
-					"key_2",
-					"key_3",
+				expectedResults = map[string]interface{}{
+					"string":  "string",
+					"uint64":  uint64(100),
+					"int":     100,
+					"int64":   int64(100),
+					"float64": float64(100),
+					"float32": float32(100),
+					"struct": example{
+						Name:        "hello",
+						Description: "world",
+					},
 				}
-				results, err = cache.Many(resultKeys)
+				results, err = cache.Many("string", "uint64", "int", "int64", "float64", "float32", "struct")
 			)
 			require.NoError(t, err)
 
-			for i, result := range results {
-				require.Equal(t, result, keys[i])
+			for _, result := range results {
+				switch result.Key() {
+				case "string":
+					require.Equal(t, expectedResults[result.Key()], result.String())
+				case "uint64":
+					res, err := result.Uint64()
+					require.NoError(t, err)
+					require.Equal(t, expectedResults[result.Key()], res)
+				case "int":
+					res, err := result.Int()
+					require.NoError(t, err)
+					require.Equal(t, expectedResults[result.Key()], res)
+				case "int64":
+					res, err := result.Int64()
+					require.NoError(t, err)
+					require.Equal(t, expectedResults[result.Key()], res)
+				case "float64":
+					res, err := result.Float64()
+					require.NoError(t, err)
+					require.Equal(t, expectedResults[result.Key()], res)
+				case "float32":
+					res, err := result.Float32()
+					require.NoError(t, err)
+					require.Equal(t, expectedResults[result.Key()], res)
+				case "struct":
+					var res example
+					require.NoError(t, result.Unmarshal(&res))
+					require.Equal(t, expectedResults[result.Key()], res)
+				}
 			}
 
 			_, err = cache.Flush()

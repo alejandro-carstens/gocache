@@ -167,9 +167,9 @@ func (s *LocalStore) Forget(key string) (bool, error) {
 }
 
 // PutMany puts many values in the given store until they are forgotten/evicted
-func (s *LocalStore) PutMany(values map[string]string, duration time.Duration) error {
-	for key, value := range values {
-		if err := s.Put(key, value, duration); err != nil {
+func (s *LocalStore) PutMany(entries ...Entry) error {
+	for _, entry := range entries {
+		if err := s.Put(entry.Key, entry.Value, entry.Duration); err != nil {
 			return err
 		}
 	}
@@ -178,15 +178,18 @@ func (s *LocalStore) PutMany(values map[string]string, duration time.Duration) e
 }
 
 // Many gets many values from the store
-func (s *LocalStore) Many(keys []string) (map[string]string, error) {
-	items := make(map[string]string)
+func (s *LocalStore) Many(keys ...string) (Items, error) {
+	items := Items{}
 	for _, key := range keys {
-		val, err := s.GetString(key)
-		if err != nil {
-			return items, err
+		value, valid := s.c.Get(s.k(key))
+		if !valid {
+			return nil, ErrNotFound
 		}
 
-		items[key] = val
+		items[key] = Item{
+			key:   key,
+			value: fmt.Sprint(value),
+		}
 	}
 
 	return items, nil

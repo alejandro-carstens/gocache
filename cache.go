@@ -63,9 +63,9 @@ type (
 		// Prefix gets the cache key prefix
 		Prefix() string
 		// Many gets many values from the store
-		Many(keys []string) (map[string]string, error)
+		Many(keys ...string) (Items, error)
 		// PutMany puts many values in the given store until they are forgotten/evicted
-		PutMany(values map[string]string, duration time.Duration) error
+		PutMany(entries ...Entry) error
 		// Get gets the struct representation of a value from the store
 		Get(key string, entity interface{}) error
 		// Close closes the c releasing all open resources

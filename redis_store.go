@@ -123,11 +123,10 @@ func (s *RedisStore) Forget(key string) (bool, error) {
 }
 
 // PutMany puts many values in the given store until they are forgotten/evicted
-func (s *RedisStore) PutMany(values map[string]string, duration time.Duration) error {
+func (s *RedisStore) PutMany(entries ...Entry) error {
 	pipe := s.client.TxPipeline()
-
-	for key, value := range values {
-		if err := s.Put(key, value, duration); err != nil {
+	for _, entry := range entries {
+		if err := s.Put(entry.Key, entry.Value, entry.Duration); err != nil {
 			return err
 		}
 	}
@@ -138,25 +137,29 @@ func (s *RedisStore) PutMany(values map[string]string, duration time.Duration) e
 }
 
 // Many gets many values from the store
-func (s *RedisStore) Many(keys []string) (map[string]string, error) {
-	pipe := s.client.TxPipeline()
-
-	values := map[string]string{}
+func (s *RedisStore) Many(keys ...string) (Items, error) {
+	var (
+		items = Items{}
+		pipe  = s.client.TxPipeline()
+	)
 	for _, key := range keys {
-		val, err := s.GetString(key)
+		val, err := s.get(key).Result()
 		if err != nil {
-			return values, err
+			return nil, err
 		}
 
-		values[key] = val
+		items[key] = Item{
+			key:   key,
+			value: val,
+		}
 	}
 
 	_, err := pipe.Exec()
 
-	return values, err
+	return items, err
 }
 
-// Connection returns the the store's c
+// Connection returns the store's connection
 func (s *RedisStore) Connection() interface{} {
 	return s.client
 }
