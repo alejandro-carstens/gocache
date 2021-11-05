@@ -361,6 +361,8 @@ func TestIncrementDecrement(t *testing.T) {
 }
 
 func createStore(t *testing.T, d driver) Cache {
+	t.Helper()
+
 	var (
 		cnf config
 		err error
