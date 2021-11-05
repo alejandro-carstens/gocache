@@ -2,19 +2,25 @@ package gocache
 
 import (
 	"crypto/tls"
+	"errors"
 	"net"
 	"time"
 
 	"github.com/go-redis/redis"
 )
 
+var (
+	_ config = &RedisConfig{}
+	_ config = &MemcacheConfig{}
+	_ config = &LocalConfig{}
+)
+
 type (
-	driver string
 	// Config represents the cache configuration to be used depending on the specified backend.
 	// Only one backend should be specified per cache meaning that the backend config
 	// should not be nil
 	config interface {
-		driver() driver
+		validate() error
 	}
 	// RedisConfig represents the configuration for a cache with a redis backend
 	RedisConfig struct {
@@ -108,24 +114,22 @@ type (
 	}
 )
 
-const (
-	redisDriver    driver = "redis"
-	memcacheDriver driver = "memcache"
-	localDriver    driver = "local"
-)
-
-func (d driver) string() string {
-	return string(d)
+func (*LocalConfig) validate() error {
+	return nil
 }
 
-func (*LocalConfig) driver() driver {
-	return localDriver
+func (c *RedisConfig) validate() error {
+	if len(c.Addr) == 0 {
+		return errors.New("a redis address needs to be specified")
+	}
+
+	return nil
 }
 
-func (*RedisConfig) driver() driver {
-	return redisDriver
-}
+func (c *MemcacheConfig) validate() error {
+	if len(c.Servers) == 0 {
+		return errors.New("memcache.servers cannot be empty")
+	}
 
-func (*MemcacheConfig) driver() driver {
-	return memcacheDriver
+	return nil
 }

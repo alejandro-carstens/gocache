@@ -10,6 +10,22 @@ import (
 
 var _ Cache = &LocalStore{}
 
+// NewLocalStore validates the passed in config and creates a Cache implementation of type *LocalStore
+func NewLocalStore(cnf *LocalConfig) (*LocalStore, error) {
+	if err := cnf.validate(); err != nil {
+		return nil, nil
+	}
+
+	return &LocalStore{
+		c:                 cache.New(cnf.DefaultExpiration, cnf.DefaultInterval),
+		defaultExpiration: cnf.DefaultExpiration,
+		defaultInterval:   cnf.DefaultInterval,
+		prefix: prefix{
+			val: cnf.Prefix,
+		},
+	}, nil
+}
+
 // LocalStore is the representation of a map caching store
 type LocalStore struct {
 	prefix

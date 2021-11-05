@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestMemcacheConnector(t *testing.T) {
+func TestNewMemcacheStore(t *testing.T) {
 	s, err := New(&MemcacheConfig{
 		Prefix:  "golavel:",
 		Servers: []string{os.Getenv("MEMCACHE_SERVER")},
@@ -18,7 +18,7 @@ func TestMemcacheConnector(t *testing.T) {
 	require.True(t, ok)
 }
 
-func TestRedisConnector(t *testing.T) {
+func TestNewRedisStore(t *testing.T) {
 	s, err := New(&RedisConfig{
 		Prefix: "golavel:",
 		Addr:   os.Getenv("REDIS_ADDR"),
@@ -29,7 +29,7 @@ func TestRedisConnector(t *testing.T) {
 	require.True(t, ok)
 }
 
-func TestLocalConnector(t *testing.T) {
+func TestNewLocalStore(t *testing.T) {
 	s, err := New(&LocalConfig{
 		Prefix: "golavel:",
 	})

@@ -7,22 +7,19 @@ import (
 
 // New new-ups an instance of Store
 func New(config config) (Cache, error) {
-	var connector cacheConnector
-	switch config.driver() {
-	case localDriver:
-		connector = new(localConnector)
-	case redisDriver:
-		connector = new(redisConnector)
-	case memcacheDriver:
-		connector = new(memcacheConnector)
-	default:
-		return nil, errors.New("invalid or empty config specified")
-	}
-	if err := connector.validate(config); err != nil {
+	if err := config.validate(); err != nil {
 		return nil, err
 	}
+	switch config.(type) {
+	case *LocalConfig:
+		return NewLocalStore(config.(*LocalConfig))
+	case *RedisConfig:
+		return NewRedisStore(config.(*RedisConfig))
+	case *MemcacheConfig:
+		return NewMemcacheStore(config.(*MemcacheConfig))
+	}
 
-	return connector.connect(config)
+	return nil, errors.New("invalid or empty config specified")
 }
 
 type (

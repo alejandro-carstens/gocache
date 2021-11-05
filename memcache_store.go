@@ -9,6 +9,27 @@ import (
 
 var _ Cache = &MemcacheStore{}
 
+// NewMemcacheStore validates the passed in config and creates a Cache implementation of type *MemcacheStore
+func NewMemcacheStore(cnf *MemcacheConfig) (*MemcacheStore, error) {
+	if err := cnf.validate(); err != nil {
+		return nil, err
+	}
+
+	client := memcache.New(cnf.Servers...)
+	if cnf.MaxIdleConns > 0 {
+		client.MaxIdleConns = cnf.MaxIdleConns
+	}
+
+	client.Timeout = cnf.Timeout
+
+	return &MemcacheStore{
+		client: client,
+		prefix: prefix{
+			val: cnf.Prefix,
+		},
+	}, nil
+}
+
 // MemcacheStore is the representation of the memcache caching store
 type MemcacheStore struct {
 	prefix

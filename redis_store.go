@@ -8,6 +8,39 @@ import (
 
 var _ Cache = &RedisStore{}
 
+// NewRedisStore validates the passed in config and creates a Cache implementation of type *RedisStore
+func NewRedisStore(cnf *RedisConfig) (*RedisStore, error) {
+	if err := cnf.validate(); err != nil {
+		return nil, err
+	}
+	return &RedisStore{
+		client: redis.NewClient(&redis.Options{
+			Network:            cnf.Network,
+			Addr:               cnf.Addr,
+			Dialer:             cnf.Dialer,
+			OnConnect:          cnf.OnConnect,
+			Password:           cnf.Password,
+			DB:                 cnf.DB,
+			MaxRetries:         cnf.MaxRetries,
+			MinRetryBackoff:    cnf.MinRetryBackoff,
+			MaxRetryBackoff:    cnf.MaxRetryBackoff,
+			DialTimeout:        cnf.DialTimeout,
+			ReadTimeout:        cnf.ReadTimeout,
+			WriteTimeout:       cnf.WriteTimeout,
+			PoolSize:           cnf.PoolSize,
+			MinIdleConns:       cnf.MinIdleConns,
+			MaxConnAge:         cnf.MaxConnAge,
+			PoolTimeout:        cnf.PoolTimeout,
+			IdleTimeout:        cnf.IdleTimeout,
+			IdleCheckFrequency: cnf.IdleCheckFrequency,
+			TLSConfig:          cnf.TLSConfig,
+		}),
+		prefix: prefix{
+			val: cnf.Prefix,
+		},
+	}, nil
+}
+
 // RedisStore is the representation of the redis caching store
 type RedisStore struct {
 	prefix

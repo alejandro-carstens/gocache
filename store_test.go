@@ -8,15 +8,28 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+type (
+	driver  string
+	example struct {
+		Name        string
+		Description string
+	}
+)
+
+func (d driver) string() string {
+	return string(d)
+}
+
+const (
+	redisDriver    driver = "redis"
+	memcacheDriver driver = "memcache"
+	localDriver    driver = "local"
+)
+
 var drivers = []driver{
 	redisDriver,
 	memcacheDriver,
 	localDriver,
-}
-
-type example struct {
-	Name        string
-	Description string
 }
 
 func TestPutGetInt64(t *testing.T) {
