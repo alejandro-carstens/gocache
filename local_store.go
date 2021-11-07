@@ -10,6 +10,22 @@ import (
 
 var _ Cache = &LocalStore{}
 
+// NewLocalStore validates the passed in config and creates a Cache implementation of type *LocalStore
+func NewLocalStore(cnf *LocalConfig) (*LocalStore, error) {
+	if err := cnf.validate(); err != nil {
+		return nil, nil
+	}
+
+	return &LocalStore{
+		c:                 cache.New(cnf.DefaultExpiration, cnf.DefaultInterval),
+		defaultExpiration: cnf.DefaultExpiration,
+		defaultInterval:   cnf.DefaultInterval,
+		prefix: prefix{
+			val: cnf.Prefix,
+		},
+	}, nil
+}
+
 // LocalStore is the representation of a map caching store
 type LocalStore struct {
 	prefix
@@ -126,9 +142,9 @@ func (s *LocalStore) Decrement(key string, value int64) (int64, error) {
 }
 
 // Put puts a value in the given store for a predetermined amount of time in seconds.
-func (s *LocalStore) Put(key string, value interface{}, seconds int) error {
+func (s *LocalStore) Put(key string, value interface{}, duration time.Duration) error {
 	if isNumeric(value) {
-		s.c.Set(s.k(key), value, time.Duration(seconds)*time.Second)
+		s.c.Set(s.k(key), value, duration)
 
 		return nil
 	}
@@ -138,7 +154,7 @@ func (s *LocalStore) Put(key string, value interface{}, seconds int) error {
 		return err
 	}
 
-	s.c.Set(s.k(key), val, time.Duration(seconds)*time.Second)
+	s.c.Set(s.k(key), val, duration)
 
 	return nil
 }
@@ -167,9 +183,9 @@ func (s *LocalStore) Forget(key string) (bool, error) {
 }
 
 // PutMany puts many values in the given store until they are forgotten/evicted
-func (s *LocalStore) PutMany(values map[string]string, minutes int) error {
-	for key, value := range values {
-		if err := s.Put(key, value, minutes); err != nil {
+func (s *LocalStore) PutMany(entries ...Entry) error {
+	for _, entry := range entries {
+		if err := s.Put(entry.Key, entry.Value, entry.Duration); err != nil {
 			return err
 		}
 	}
@@ -178,15 +194,18 @@ func (s *LocalStore) PutMany(values map[string]string, minutes int) error {
 }
 
 // Many gets many values from the store
-func (s *LocalStore) Many(keys []string) (map[string]string, error) {
-	items := make(map[string]string)
+func (s *LocalStore) Many(keys ...string) (Items, error) {
+	items := Items{}
 	for _, key := range keys {
-		val, err := s.GetString(key)
-		if err != nil {
-			return items, err
+		value, valid := s.c.Get(s.k(key))
+		if !valid {
+			return nil, ErrNotFound
 		}
 
-		items[key] = val
+		items[key] = Item{
+			key:   key,
+			value: fmt.Sprint(value),
+		}
 	}
 
 	return items, nil
@@ -221,11 +240,11 @@ func (s *LocalStore) Tags(names ...string) TaggedCache {
 }
 
 // Lock returns a map implementation of the Lock interface
-func (s *LocalStore) Lock(name, owner string, seconds int64) Lock {
+func (s *LocalStore) Lock(name, owner string, duration time.Duration) Lock {
 	return &localLock{
-		c:       s.c,
-		name:    name,
-		owner:   owner,
-		seconds: seconds,
+		c:        s.c,
+		name:     name,
+		owner:    owner,
+		duration: duration,
 	}
 }

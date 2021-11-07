@@ -3,6 +3,8 @@ package gocache
 import (
 	"crypto/sha1"
 	"encoding/hex"
+	"errors"
+	"time"
 )
 
 var _ TaggedCache = &taggedCache{}
@@ -14,13 +16,13 @@ type taggedCache struct {
 }
 
 // Put puts a value in the given store for a predetermined amount of time in seconds
-func (tc *taggedCache) Put(key string, value interface{}, seconds int) error {
+func (tc *taggedCache) Put(key string, value interface{}, duration time.Duration) error {
 	tagKey, err := tc.taggedItemKey(key)
 	if err != nil {
 		return err
 	}
 
-	return tc.store.Put(tagKey, value, seconds)
+	return tc.store.Put(tagKey, value, duration)
 }
 
 // Increment increments an integer counter by a given value
@@ -69,45 +71,54 @@ func (tc *taggedCache) Flush() (bool, error) {
 }
 
 // Many gets many values from the store
-func (tc *taggedCache) Many(keys []string) (map[string]string, error) {
+func (tc *taggedCache) Many(keys ...string) (Items, error) {
 	var (
 		taggedKeys = make([]string, len(keys))
-		values     = map[string]string{}
+		tagKeyMap  = map[string]string{}
 	)
 	for i, key := range keys {
 		tagKey, err := tc.taggedItemKey(key)
 		if err != nil {
-			return values, err
+			return nil, err
 		}
 
 		taggedKeys[i] = tagKey
+		tagKeyMap[tagKey] = key
 	}
 
-	results, err := tc.store.Many(taggedKeys)
+	results, err := tc.store.Many(taggedKeys...)
 	if err != nil {
-		return results, err
+		return nil, err
 	}
 
-	for i, result := range results {
-		values[getTaggedManyKey(tc.Prefix(), i)] = result
+	items := Items{}
+	for _, result := range results {
+		key, valid := tagKeyMap[result.Key()]
+		if !valid {
+			return nil, errors.New("tag key not found")
+		}
+
+		result.tagKey = result.Key()
+		result.key = key
+		items[result.Key()] = result
 	}
 
-	return values, nil
+	return items, nil
 }
 
 // PutMany puts many values in the given store until they are forgotten/evicted
-func (tc *taggedCache) PutMany(values map[string]string, seconds int) error {
-	taggedMap := make(map[string]string)
-	for key, value := range values {
-		tagKey, err := tc.taggedItemKey(key)
+func (tc *taggedCache) PutMany(entries ...Entry) error {
+	for i, entry := range entries {
+		key, err := tc.taggedItemKey(entry.Key)
 		if err != nil {
 			return err
 		}
 
-		taggedMap[tagKey] = value
+		entry.Key = key
+		entries[i] = entry
 	}
 
-	return tc.store.PutMany(taggedMap, seconds)
+	return tc.store.PutMany(entries...)
 }
 
 // Prefix gets the cache key val

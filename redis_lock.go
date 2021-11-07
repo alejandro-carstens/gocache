@@ -10,15 +10,15 @@ import (
 var _ Lock = &redisLock{}
 
 type redisLock struct {
-	client  *redis.Client
-	seconds int64
-	name    string
-	owner   string
+	client   *redis.Client
+	name     string
+	owner    string
+	duration time.Duration
 }
 
 // Acquire implementation of the Lock interface
 func (rl *redisLock) Acquire() (bool, error) {
-	return rl.client.SetNX(rl.name, rl.owner, time.Duration(rl.seconds)*time.Second).Result()
+	return rl.client.SetNX(rl.name, rl.owner, rl.duration).Result()
 }
 
 // Release implementation of the Lock interface

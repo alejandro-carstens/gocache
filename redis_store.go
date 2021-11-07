@@ -8,6 +8,39 @@ import (
 
 var _ Cache = &RedisStore{}
 
+// NewRedisStore validates the passed in config and creates a Cache implementation of type *RedisStore
+func NewRedisStore(cnf *RedisConfig) (*RedisStore, error) {
+	if err := cnf.validate(); err != nil {
+		return nil, err
+	}
+	return &RedisStore{
+		client: redis.NewClient(&redis.Options{
+			Network:            cnf.Network,
+			Addr:               cnf.Addr,
+			Dialer:             cnf.Dialer,
+			OnConnect:          cnf.OnConnect,
+			Password:           cnf.Password,
+			DB:                 cnf.DB,
+			MaxRetries:         cnf.MaxRetries,
+			MinRetryBackoff:    cnf.MinRetryBackoff,
+			MaxRetryBackoff:    cnf.MaxRetryBackoff,
+			DialTimeout:        cnf.DialTimeout,
+			ReadTimeout:        cnf.ReadTimeout,
+			WriteTimeout:       cnf.WriteTimeout,
+			PoolSize:           cnf.PoolSize,
+			MinIdleConns:       cnf.MinIdleConns,
+			MaxConnAge:         cnf.MaxConnAge,
+			PoolTimeout:        cnf.PoolTimeout,
+			IdleTimeout:        cnf.IdleTimeout,
+			IdleCheckFrequency: cnf.IdleCheckFrequency,
+			TLSConfig:          cnf.TLSConfig,
+		}),
+		prefix: prefix{
+			val: cnf.Prefix,
+		},
+	}, nil
+}
+
 // RedisStore is the representation of the redis caching store
 type RedisStore struct {
 	prefix
@@ -70,8 +103,7 @@ func (s *RedisStore) Decrement(key string, value int64) (int64, error) {
 }
 
 // Put puts a value in the given store for a predetermined amount of time in seconds
-func (s *RedisStore) Put(key string, value interface{}, seconds int) error {
-	duration := time.Duration(int64(seconds)) * time.Second
+func (s *RedisStore) Put(key string, value interface{}, duration time.Duration) error {
 	if isNumeric(value) {
 		return s.client.Set(s.k(key), value, duration).Err()
 	}
@@ -124,11 +156,10 @@ func (s *RedisStore) Forget(key string) (bool, error) {
 }
 
 // PutMany puts many values in the given store until they are forgotten/evicted
-func (s *RedisStore) PutMany(values map[string]string, seconds int) error {
+func (s *RedisStore) PutMany(entries ...Entry) error {
 	pipe := s.client.TxPipeline()
-
-	for key, value := range values {
-		if err := s.Put(key, value, seconds); err != nil {
+	for _, entry := range entries {
+		if err := s.Put(entry.Key, entry.Value, entry.Duration); err != nil {
 			return err
 		}
 	}
@@ -139,25 +170,29 @@ func (s *RedisStore) PutMany(values map[string]string, seconds int) error {
 }
 
 // Many gets many values from the store
-func (s *RedisStore) Many(keys []string) (map[string]string, error) {
-	pipe := s.client.TxPipeline()
-
-	values := map[string]string{}
+func (s *RedisStore) Many(keys ...string) (Items, error) {
+	var (
+		items = Items{}
+		pipe  = s.client.TxPipeline()
+	)
 	for _, key := range keys {
-		val, err := s.GetString(key)
+		val, err := s.get(key).Result()
 		if err != nil {
-			return values, err
+			return nil, err
 		}
 
-		values[key] = val
+		items[key] = Item{
+			key:   key,
+			value: val,
+		}
 	}
 
 	_, err := pipe.Exec()
 
-	return values, err
+	return items, err
 }
 
-// Connection returns the the store's c
+// Connection returns the store's connection
 func (s *RedisStore) Connection() interface{} {
 	return s.client
 }
@@ -193,12 +228,12 @@ func (s *RedisStore) Get(key string, entity interface{}) error {
 }
 
 // Lock returns a redis implementation of the Lock interface
-func (s *RedisStore) Lock(name, owner string, seconds int64) Lock {
+func (s *RedisStore) Lock(name, owner string, duration time.Duration) Lock {
 	return &redisLock{
-		client:  s.client,
-		seconds: seconds,
-		name:    name,
-		owner:   owner,
+		client:   s.client,
+		name:     name,
+		owner:    owner,
+		duration: duration,
 	}
 }
 

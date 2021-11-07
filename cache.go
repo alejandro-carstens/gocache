@@ -1,25 +1,25 @@
 package gocache
 
-import "errors"
+import (
+	"errors"
+	"time"
+)
 
 // New new-ups an instance of Store
 func New(config config) (Cache, error) {
-	var connector cacheConnector
-	switch config.driver() {
-	case localDriver:
-		connector = new(localConnector)
-	case redisDriver:
-		connector = new(redisConnector)
-	case memcacheDriver:
-		connector = new(memcacheConnector)
-	default:
-		return nil, errors.New("invalid or empty config specified")
-	}
-	if err := connector.validate(config); err != nil {
+	if err := config.validate(); err != nil {
 		return nil, err
 	}
+	switch config.(type) {
+	case *LocalConfig:
+		return NewLocalStore(config.(*LocalConfig))
+	case *RedisConfig:
+		return NewRedisStore(config.(*RedisConfig))
+	case *MemcacheConfig:
+		return NewMemcacheStore(config.(*MemcacheConfig))
+	}
 
-	return connector.connect(config)
+	return nil, errors.New("invalid or empty config specified")
 }
 
 type (
@@ -36,7 +36,7 @@ type (
 		// GetString gets a string value from the store
 		GetString(key string) (string, error)
 		// Put puts a value in the given store for a predetermined amount of time in seconds
-		Put(key string, value interface{}, seconds int) error
+		Put(key string, value interface{}, duration time.Duration) error
 		// Increment increments an integer counter by a given value
 		Increment(key string, value int64) (int64, error)
 		// Decrement decrements an integer counter by a given value
@@ -60,9 +60,9 @@ type (
 		// Prefix gets the cache key prefix
 		Prefix() string
 		// Many gets many values from the store
-		Many(keys []string) (map[string]string, error)
+		Many(keys ...string) (Items, error)
 		// PutMany puts many values in the given store until they are forgotten/evicted
-		PutMany(values map[string]string, seconds int) error
+		PutMany(entries ...Entry) error
 		// Get gets the struct representation of a value from the store
 		Get(key string, entity interface{}) error
 		// Close closes the c releasing all open resources
@@ -78,7 +78,7 @@ type (
 		store
 		tags
 		// Lock returns an implementation of the Lock interface
-		Lock(name, owner string, seconds int64) Lock
+		Lock(name, owner string, duration time.Duration) Lock
 	}
 	// TaggedCache represents the methods a tagged-caching store needs to implement
 	TaggedCache interface {

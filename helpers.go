@@ -1,7 +1,6 @@
 package gocache
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"strconv"
@@ -56,30 +55,6 @@ func isNumeric(s interface{}) bool {
 	default:
 		return false
 	}
-}
-
-func getTaggedManyKey(prefix, key string) string {
-	var (
-		sub   string
-		subs  []string
-		runs  = bytes.Runes([]byte(key))
-		count = len(prefix) + 41
-	)
-	for i, run := range runs {
-		sub = sub + string(run)
-		if (i+1)%count == 0 {
-			subs = append(subs, sub)
-			sub = ""
-		} else if (i + 1) == len(runs) {
-			subs = append(subs, sub)
-		}
-	}
-
-	if len(subs) == 0 {
-		return ""
-	}
-
-	return subs[1]
 }
 
 func isStringNumeric(value string) bool {
