@@ -195,7 +195,7 @@ err := cache.Tags("accountant", "person").Put("Jane", "Doe", time.Minute)
 // handle err
 ```
 ### Accessing Cache Tagged Items
-To retrieve a tagged cache item, pass the same ordered list of tags to the tags method and then call the any of the methods shown in the [Retrieving Items From The Cache section](https://github.com/alejandro-carstens/gocache#retrieving-items-from-the-cache) above:
+To retrieve a tagged cache item, pass the same ordered list of tags to the tags method and then call the any of the methods shown in the [Retrieving Items From The Cache](#retrieving-items-from-the-cache) section above:
 ```go
 v, err := cache.Tags("person", "artist").GetString("John")
 // handle err
