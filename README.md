@@ -5,57 +5,196 @@
 [![GoDoc](https://godoc.org/github.com/alejandro-carstens/golavel-cache?status.svg)](https://godoc.org/github.com/alejandro-carstens/gocache)
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/alejandro-carstens/golavel-cache/blob/master/LICENSE)
 
-This package allows you to implement a store agnostic caching system via a common interface by providing an abstraction layer between different store clients and your application. The latter allows for each store to be used interchangeably without any code changes other than the programmatic configuration of the desired store(s). For a more detailed documentation please refer to the [godoc](https://godoc.org/github.com/alejandro-carstens/gocache).
+Some data retrieval performed by your application could be CPU intensive or take several seconds to complete. For these cases, it is common to cache the retrieved data for a period of time so that it can be retrieved quickly on subsequent requests for the same data. The cached data is usually stored in a very fast data store such as Memcached or Redis.
 
+This package allows you to implement a store agnostic caching system via an expressive and unified interface by providing an abstraction layer between different data store clients and your application. This allows for each store to be used interchangeably without any code changes other than the programmatic configuration of the desired store(s).
+
+## Installation
+To start using this package in your application simply run:`go get github.com/alejandro-carstens/gocache`
+
+## Configuration
+
+This package supports 3 backends out of the box: Redis, Memcache and Local (via go-cache). Each store has a specific configuration whose parameters can be easily referenced in the following GoDoc sections:
+- [RedisConfig](https://pkg.go.dev/github.com/alejandro-carstens/gocache#RedisConfig)
+- [MemcacheConfig](https://pkg.go.dev/github.com/alejandro-carstens/gocache#MemcacheConfig)
+- [LocalConfig](https://pkg.go.dev/github.com/alejandro-carstens/gocache#LocalConfig)
+
+## Usage
+
+### Obtaining A Cache Instance
+In order to new up a cache implementation just simply call ```gocache.New``` with the desired configuration: 
+```go
+// Redis
+cache, err := gocache.New(&RedisConfig{
+    Prefix: "gocache:",
+    Addr:   "localhost:6379",
+})
+// handle err
+
+// Memcache
+cache, err := gocache.New(&MemcacheConfig{
+    Prefix:  "gocache:",
+    Servers: []string{"127.0.0.1:11211"},
+})
+// handle err
+
+// Local
+cache, err := gocache.New(&LocalConfig{
+    Prefix:          "gocache:",
+    DefaultInterval: time.Second,
+})
+// handle err
+```
+
+### Retrieving Items From The Cache
+
+All methods including the prefix `Get` are used to retrieve items from the cache. In an item does not exist in the cache for the given key an error of type ```gocache.ErrNotFound``` will be raised. Please see the following examples:
+
+```go
+
+v, err := cache.GetFloat32("temperature")
+// handle err
+
+v, err := cache.GetFloat64("height")
+// handle err
+
+v, err := cache.GetInt("score")
+// handle err
+
+v, err := cache.GetInt64("counter")
+// handle err
+
+v, err := cache.GetString("username")
+// handle err
+
+v, err := cache.GetUint64("id")
+// handle err
+
+// Get any type e.g. Movie{Name string, Views int64}
+var m Movie
+err := cache.Get("e.t.", &m)
+// handle err
+
+// Handle missed entry for key
+v, err := cache.GetString("entry-not-found-key")
+if errors.Is(gocache.ErrNotFound, err) {
+    // handle err
+}
+```
+The method ```Many``` is also exposed in order to retrieve multiple cache records with one call. The results of the ```Many``` invocation will be returned in a slice of [gocache.Item](https://pkg.go.dev/github.com/alejandro-carstens/gocache#Item) instances. Please see the example below:
+
+```go
+items, err := cache.Many("string", "uint64", "int", "int64", "float64", "float32", "any")
+// handle err
+
+for _, item := range items {
+    switch item.Key():
+    case "string":
+        v, err := item.String()
+        // handle err
+    case "uint64":
+        v, err := item.Uint64()
+        // handle err
+    case "int":
+        v, err := item.GetInt()
+        // handle err
+    case "int64":
+        v, err := item.GetInt64()
+        // handle err
+    case "float64":
+        v, err := item.GetFloat64()
+        // handle err
+    case "float32":
+        v, err := item.GetFloat32()
+        // handle err
+    case "any":
+        var m Movie
+        err := item.Get(&m)
+        // handle err
+    }
+}
+
+```
+### Storing Items In The Cache
+You can use the ```Put``` method to store items in the cache with a specified time to live:
+```go
+err := cache.Put("key", "value", 10 * time.Second)
+// handle err
+
+// You can store any value
+err := cache.Put("most_watched_movie", &Movie{
+    Name:  "Avatar",
+    Views: 100,
+}, 60 * time.Minute)
+// handle err
+```
+
+To store a value indefinitely (without expiration) simply use the method ```Forever```:
+```go
+err := cache.Forever("key", "value")
+// handle err
+```
+
+To store many values at once you can use ```PutMany```:
+```go
+var entries = []gocache.Entry{
+    {
+        Key:   "string",
+        Value: "whatever",
+        Duration: time.Minute,
+    },
+    {
+        Key:   "any",
+        Value: Movie{
+          Name:  "Star Wars",
+          Views: 10,
+        },
+        Duration: time.Minute,
+    },
+}
+err := cache.PutMany(entries...)
+// handle err
+```
+To increment and decrement values (for now you can only increment using ```int64``` values) simply use ```Increment``` & ```Decrement```. Please note that if there is not entroy for the key being incremented the initial value will be 0 and the entry will set to not expire:
+```go
+val, err := cache.Increment("a", 1) // a = 1
+// handle err
+
+val, err := cache.Increment("a", 10) // a = 11
+// handle err
+
+val, err := cache.Decrement("a", 2) // a = 9
+// handle err
+
+val, err := cache.Decrement("b", 5) // b = -5
+// handle err
+```
+
+### Removing Items From The Cache
+You may remove items from the cache using the ```Forget``` method:
+```go
+// Note that res will be true if the cache entry was removed and false if no entry was for the given key
+res, err := cache.Forget("key") 
+// handle err
+```
+If you want to clear all entries from the cache you can use the ```Flush``` method:
+```go
+err := cache.Flush()
+// handle err
+```
+## Cache Tags
+Cache tags allow you to tag related items in the cache and then flush all cached values that have been assigned a given tag. You may access a tagged cache by passing in an ordered sliced of tag names. For example, let's access a tagged cache and put a value into the cache:
+```go
+err := cache.Tags("artist", "person").Put("John", "Doe", time.Minute)
+// handle err
+
+err := cache.Tags("accountant", "person").Put("Jane", "Doe", time.Minute)
+// handle err
+```
 
 ## Contributing
 
 Find an area you can help with and do it. Open source is about collaboration and open participation. Try to make your code look like what already exists or hopefully better and submit a pull request. Also, if you have any ideas on how to make the code better or on improving its scope and functionality please raise an issue and I will do my best to address it in a timely manner.
-
-## Usage
-
-To start using this package in your application simply run:`go get github.com/alejandro-carstens/gocache`
-
-Wrapping docs soon.
-
-Set the params for the store you want:
-
-```go
-```
-Start using it:
-
-```go
-```
-
-Use it with structs:
-
-```go
-```
-
-Use it with tags:
-
-```go
-```
-
-For more examples please refer to the tests.
-
-## Supported Stores
-
-- Redis
-- Memcache
-- Map
-
-## Future Stores 
-
-- Go-Cache 
-- Propose a store you would like to see implemented (Ex: BlockDB, LMDB, Mongo, MySQL, etc.)
-- Build the implementation for the store you want and submit a PR (preferred) 
-
-## Testing
-
-Run ```go test -v```
-
-It is important to note that one must install the required stores or comment out the ones you do not want to test. Since this is an abstraction layer, <b>WHEN CONTRIBUTING YOU SHOULD NOT ADD OR MODIFY TESTS</b> just make your implementation conform to what is already there. However if you can make the tests better please do modify them.
 
 ## Liscense
 
