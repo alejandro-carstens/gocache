@@ -234,7 +234,8 @@ if err != nil {
 }
 if acquired {
     defer func() {
-        released, err := lock.Release() // released will be true if the lock was released before expiration
+        // released will be true if the lock was released before expiration
+        released, err := lock.Release()
         // handle err
     }
     // do something here
