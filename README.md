@@ -220,6 +220,26 @@ In addition you can also call ```Forget```:
 res, err := cache.Tags("person", "accountant").Forget("Jane")
 // handle err
 ```
+
+## Atomic Locks
+
+Atomic locks allow for the manipulation of distributed locks without worrying about race conditions. An example of this would be that you only want one process to work on one object at a time, such as the same file should only be uploaded one at a time (we do not want the same file to be uploaded more than once at any given time). You may create and manage locks using the via the ```Lock``` method:
+```go
+lock := cache.Lock("merchant_1", "pid_1", 30 * time.Second)
+
+acquired, err := lock.Acquire()
+if err != nil {
+    // handle err
+}
+if acquired {
+    defer func() {
+        released, err := lock.Release() // release will be true if the lock was released before expiration
+        // handle err
+    }
+    // do something here
+}
+```
+
 ## Contributing
 
 Find an area you can help with and do it. Open source is about collaboration and open participation. Try to make your code look like what already exists or hopefully better and submit a pull request. Also, if you have any ideas on how to make the code better or on improving its scope and functionality please raise an issue and I will do my best to address it in a timely manner.
