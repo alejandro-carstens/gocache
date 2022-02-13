@@ -173,7 +173,8 @@ val, err := cache.Decrement("b", 5) // b = -5
 ### Removing Items From The Cache
 You may remove items from the cache using the ```Forget``` method:
 ```go
-// Note that res will be true if the cache entry was removed and false if no entry was for the given key
+// Note that res will be true if the cache entry was removed and false 
+// if no entry was for the given key
 res, err := cache.Forget("key") 
 // handle err
 ```
@@ -183,6 +184,8 @@ err := cache.Flush()
 // handle err
 ```
 ## Cache Tags
+
+### Storing Cache Tagged Items
 Cache tags allow you to tag related items in the cache and then flush all cached values that have been assigned a given tag. You may access a tagged cache by passing in an ordered sliced of tag names. For example, let's access a tagged cache and put a value into the cache:
 ```go
 err := cache.Tags("artist", "person").Put("John", "Doe", time.Minute)
@@ -191,7 +194,32 @@ err := cache.Tags("artist", "person").Put("John", "Doe", time.Minute)
 err := cache.Tags("accountant", "person").Put("Jane", "Doe", time.Minute)
 // handle err
 ```
+### Accessing Cache Tagged Items
+To retrieve a tagged cache item, pass the same ordered list of tags to the tags method and then call the any of the methods shown in the [Retrieving Items From The Cache section] above:
+```go
+v, err := cache.Tags("person", "artist").GetString("John")
+// handle err
 
+v, err := cache.Tags("person", "accountant").GetString("Jane")
+// handle err
+```
+### Removing Tagged Cache Items
+You may flush all items that are assigned a tag or list of tags. For example, this statement would remove all caches tagged with either people, authors, or both. So, both Jane and John would be removed from the cache:
+```go
+err := cache.Tags("person", "accountant").Flush()
+// handle err
+```
+In contrast, this statement would remove only cached values tagged with authors, so Anne would be removed, but not John:
+```go
+err := cache.Tags("accountant").Flush()
+// handle err
+```
+
+In addition you can also call ```Forget```:
+```go
+res, err := cache.Tags("person", "accountant").Forget("Jane")
+// handle err
+```
 ## Contributing
 
 Find an area you can help with and do it. Open source is about collaboration and open participation. Try to make your code look like what already exists or hopefully better and submit a pull request. Also, if you have any ideas on how to make the code better or on improving its scope and functionality please raise an issue and I will do my best to address it in a timely manner.
