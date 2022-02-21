@@ -6,6 +6,12 @@ import (
 	"errors"
 	"reflect"
 	"strings"
+	"time"
+)
+
+const (
+	referenceKeyForever  = ":forever"
+	referenceKeyStandard = ":standard"
 )
 
 var _ TaggedCache = &redisTaggedCache{}
@@ -15,20 +21,66 @@ type redisTaggedCache struct {
 	taggedCache
 }
 
-// Forever puts a value in the given store until it is forgotten/evicted
+// Put implementation of the TaggedCache interface
+func (tc *redisTaggedCache) Put(key string, value interface{}, duration time.Duration) error {
+	if duration == 0 {
+		return tc.Forever(key, value)
+	}
+	if err := tc.pushKeys(key, referenceKeyStandard); err != nil {
+		return err
+	}
+
+	return tc.taggedCache.Put(key, value, duration)
+}
+
+// PutMany implementation of the TaggedCache interface
+func (tc *redisTaggedCache) PutMany(entries ...Entry) error {
+	for i, entry := range entries {
+		reference := referenceKeyStandard
+		if entry.Duration == 0 {
+			reference = referenceKeyForever
+		}
+		if err := tc.pushKeys(entry.Key, reference); err != nil {
+			return err
+		}
+
+		key, err := tc.taggedItemKey(entry.Key)
+		if err != nil {
+			return err
+		}
+
+		entry.Key = key
+		entries[i] = entry
+	}
+
+	return tc.store.PutMany(entries...)
+}
+
+// Forever implementation of the TaggedCache interface
 func (tc *redisTaggedCache) Forever(key string, value interface{}) error {
-	namespace, err := tc.tags.getNamespace()
-	if err != nil {
-		return err
-	}
-	if err = tc.pushForever(namespace, key); err != nil {
+	if err := tc.pushKeys(key, referenceKeyForever); err != nil {
 		return err
 	}
 
-	h := sha1.New()
-	h.Write([]byte(namespace))
+	return tc.taggedCache.Forever(key, value)
+}
 
-	return tc.store.Forever(tc.Prefix()+hex.EncodeToString(h.Sum(nil))+":"+key, value)
+// Increment implementation of the TaggedCache interface
+func (tc *redisTaggedCache) Increment(key string, value int64) (int64, error) {
+	if err := tc.pushKeys(key, referenceKeyForever); err != nil {
+		return 0, err
+	}
+
+	return tc.taggedCache.Increment(key, value)
+}
+
+// Decrement implementation of the TaggedCache interface
+func (tc *redisTaggedCache) Decrement(key string, value int64) (int64, error) {
+	if err := tc.pushKeys(key, referenceKeyForever); err != nil {
+		return 0, err
+	}
+
+	return tc.taggedCache.Decrement(key, value)
 }
 
 // Flush flushes all the given tags' associated records. Note that for Redis all forever keys associated with
@@ -37,17 +89,25 @@ func (tc *redisTaggedCache) Flush() (bool, error) {
 	if err := tc.deleteForeverKeys(); err != nil {
 		return false, err
 	}
+	if err := tc.deleteStandardKeys(); err != nil {
+		return false, err
+	}
 
 	return tc.taggedCache.Flush()
 }
 
-func (tc *redisTaggedCache) pushForever(namespace, key string) error {
+func (tc *redisTaggedCache) pushKeys(key, reference string) error {
+	namespace, err := tc.tags.getNamespace()
+	if err != nil {
+		return err
+	}
+
 	h := sha1.New()
 	h.Write([]byte(namespace))
 
 	fullKey := tc.Prefix() + hex.EncodeToString(h.Sum(nil)) + ":" + key
 	for _, segment := range strings.Split(namespace, "|") {
-		inputs := []reflect.Value{reflect.ValueOf(tc.foreverKey(segment)), reflect.ValueOf(fullKey)}
+		inputs := []reflect.Value{reflect.ValueOf(tc.referenceKey(segment, reference)), reflect.ValueOf(fullKey)}
 
 		res := reflect.ValueOf(tc.store).MethodByName("Lpush").Call(inputs)
 		for _, r := range res {
@@ -60,15 +120,23 @@ func (tc *redisTaggedCache) pushForever(namespace, key string) error {
 	return nil
 }
 
+func (tc *redisTaggedCache) deleteStandardKeys() error {
+	return tc.deleteKeysByReference(referenceKeyStandard)
+}
+
 func (tc *redisTaggedCache) deleteForeverKeys() error {
+	return tc.deleteKeysByReference(referenceKeyForever)
+}
+
+func (tc *redisTaggedCache) deleteKeysByReference(reference string) error {
 	namespace, err := tc.tags.getNamespace()
 	if err != nil {
 		return err
 	}
 
 	for _, segment := range strings.Split(namespace, "|") {
-		key := tc.foreverKey(segment)
-		if err = tc.deleteForeverValues(key); err != nil {
+		key := tc.referenceKey(segment, reference)
+		if err = tc.deleteValues(key); err != nil {
 			return err
 		}
 		if _, err = tc.store.Forget(segment); err != nil {
@@ -79,7 +147,7 @@ func (tc *redisTaggedCache) deleteForeverKeys() error {
 	return nil
 }
 
-func (tc *redisTaggedCache) deleteForeverValues(key string) error {
+func (tc *redisTaggedCache) deleteValues(key string) error {
 	var (
 		inputs = []reflect.Value{reflect.ValueOf(key), reflect.ValueOf(int64(0)), reflect.ValueOf(int64(-1))}
 		keys   = reflect.ValueOf(tc.store).MethodByName("Lrange").Call(inputs)
@@ -109,6 +177,6 @@ func (tc *redisTaggedCache) deleteForeverValues(key string) error {
 	return nil
 }
 
-func (tc *redisTaggedCache) foreverKey(segment string) string {
-	return tc.Prefix() + segment + ":forever"
+func (tc *redisTaggedCache) referenceKey(segment, suffix string) string {
+	return tc.Prefix() + segment + suffix
 }

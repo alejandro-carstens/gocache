@@ -328,12 +328,23 @@ func TestFlushWithTags(t *testing.T) {
 				ts1   = []string{"person", "dev"}
 				ts2   = []string{"bot", "dev", "ai"}
 				ts3   = []string{"person", "painter"}
-				ts4   = []string{"person", "driver"}
+				ts4   = []string{"person", "driver", "current"}
+				ts5   = []string{"person", "driver", "legend"}
 			)
-			require.NoError(t, cache.Tags(ts1...).Put("joe", "doe", time.Second))
+			require.NoError(t, cache.Tags(ts1...).Put("joe", "doe", 0))
 			require.NoError(t, cache.Tags(ts2...).Put("bot", "doe", time.Second))
 			require.NoError(t, cache.Tags(ts3...).Forever("jane", "doe"))
-			require.NoError(t, cache.Tags(ts4...).Put("ayrton", "senna", time.Second))
+
+			require.NoError(t, cache.Tags(ts4...).PutMany(Entry{
+				Key:      "checo",
+				Value:    "perez",
+				Duration: 0,
+			}, Entry{
+				Key:      "lewis",
+				Value:    "hamilton",
+				Duration: time.Second,
+			}))
+			require.NoError(t, cache.Tags(ts5...).Put("ayrton", "senna", time.Second))
 
 			val, err := cache.Tags(ts1...).GetString("joe")
 			require.NoError(t, err)
@@ -363,8 +374,18 @@ func TestFlushWithTags(t *testing.T) {
 			_, err = cache.Tags(ts3...).GetString("jane")
 			require.True(t, errors.Is(err, ErrNotFound))
 
-			// We should still be able to access ayrton
-			val, err = cache.Tags(ts4...).GetString("ayrton")
+			// We flush all the current drivers so checo and lewis should not be available
+			_, err = cache.Tags("current").Flush()
+			require.NoError(t, err)
+
+			_, err = cache.Tags(ts4...).GetString("checo")
+			require.True(t, errors.Is(err, ErrNotFound))
+
+			_, err = cache.Tags(ts4...).GetString("lewis")
+			require.True(t, errors.Is(err, ErrNotFound))
+
+			// We should still be able to access ayrton since he is a legend driver
+			val, err = cache.Tags(ts5...).GetString("ayrton")
 			require.NoError(t, err)
 			require.Equal(t, "senna", val)
 
