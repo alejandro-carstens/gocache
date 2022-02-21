@@ -3,6 +3,7 @@ package gocache
 import (
 	"crypto/sha1"
 	"encoding/hex"
+	"errors"
 	"reflect"
 	"strings"
 )
@@ -20,8 +21,9 @@ func (tc *redisTaggedCache) Forever(key string, value interface{}) error {
 	if err != nil {
 		return err
 	}
-
-	tc.pushForever(namespace, key)
+	if err = tc.pushForever(namespace, key); err != nil {
+		return err
+	}
 
 	h := sha1.New()
 	h.Write([]byte(namespace))
@@ -29,24 +31,33 @@ func (tc *redisTaggedCache) Forever(key string, value interface{}) error {
 	return tc.store.Forever(tc.Prefix()+hex.EncodeToString(h.Sum(nil))+":"+key, value)
 }
 
-// TagFlush flushes the tags of the TaggedCache
-func (tc *redisTaggedCache) TagFlush() error {
-	return tc.deleteForeverKeys()
+// Flush flushes all the given tags' associated records. Note that for Redis all forever keys associated with
+// the tags will also be deleted. Standard or expiring keys will be left alone until they expire
+func (tc *redisTaggedCache) Flush() (bool, error) {
+	if err := tc.deleteForeverKeys(); err != nil {
+		return false, err
+	}
+
+	return tc.taggedCache.Flush()
 }
 
-func (tc *redisTaggedCache) pushForever(namespace string, key string) {
+func (tc *redisTaggedCache) pushForever(namespace, key string) error {
 	h := sha1.New()
 	h.Write([]byte(namespace))
 
 	fullKey := tc.Prefix() + hex.EncodeToString(h.Sum(nil)) + ":" + key
 	for _, segment := range strings.Split(namespace, "|") {
-		inputs := []reflect.Value{
-			reflect.ValueOf(tc.foreverKey(segment)),
-			reflect.ValueOf(fullKey),
-		}
+		inputs := []reflect.Value{reflect.ValueOf(tc.foreverKey(segment)), reflect.ValueOf(fullKey)}
 
-		reflect.ValueOf(tc.store).MethodByName("Lpush").Call(inputs)
+		res := reflect.ValueOf(tc.store).MethodByName("Lpush").Call(inputs)
+		for _, r := range res {
+			if !r.IsNil() {
+				return errors.New(r.String())
+			}
+		}
 	}
+
+	return nil
 }
 
 func (tc *redisTaggedCache) deleteForeverKeys() error {
@@ -82,10 +93,16 @@ func (tc *redisTaggedCache) deleteForeverValues(key string) error {
 			continue
 		}
 
+		delKeys := make([]string, k.Len())
 		for i := 0; i < k.Len(); i++ {
-			if _, err := tc.store.Forget(k.Index(i).String()); err != nil {
-				return err
-			}
+			delKeys[i] = k.Index(i).String()
+		}
+
+		if len(delKeys) == 0 {
+			continue
+		}
+		if _, err := tc.store.Forget(delKeys...); err != nil {
+			return err
 		}
 	}
 

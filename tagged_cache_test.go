@@ -1,6 +1,7 @@
 package gocache
 
 import (
+	"errors"
 	"testing"
 	"time"
 
@@ -271,7 +272,7 @@ func TestPutGetManyWithTags(t *testing.T) {
 				}
 			}
 
-			_, err = cache.Tags(ts).Flush()
+			_, err = cache.Flush()
 			require.NoError(t, err)
 		})
 	}
@@ -315,6 +316,60 @@ func TestTagSet(t *testing.T) {
 			require.NoError(t, err)
 			require.Equal(t, 20, len([]rune(namespace)))
 			require.Nil(t, ts.reset())
+		})
+	}
+}
+
+func TestFlushWithTags(t *testing.T) {
+	for _, d := range drivers {
+		t.Run(d.string(), func(t *testing.T) {
+			var (
+				cache = createStore(t, d)
+				ts1   = []string{"person", "dev"}
+				ts2   = []string{"bot", "dev", "ai"}
+				ts3   = []string{"person", "painter"}
+				ts4   = []string{"person", "driver"}
+			)
+			require.NoError(t, cache.Tags(ts1...).Put("joe", "doe", time.Second))
+			require.NoError(t, cache.Tags(ts2...).Put("bot", "doe", time.Second))
+			require.NoError(t, cache.Tags(ts3...).Forever("jane", "doe"))
+			require.NoError(t, cache.Tags(ts4...).Put("ayrton", "senna", time.Second))
+
+			val, err := cache.Tags(ts1...).GetString("joe")
+			require.NoError(t, err)
+			require.Equal(t, "doe", val)
+
+			val, err = cache.Tags(ts2...).GetString("bot")
+			require.NoError(t, err)
+			require.Equal(t, "doe", val)
+			// We flush dev, so we won't be able to access joe or bot anymore
+			_, err = cache.Tags("dev").Flush()
+			require.NoError(t, err)
+
+			_, err = cache.Tags(ts1...).GetString("joe")
+			require.True(t, errors.Is(err, ErrNotFound))
+
+			_, err = cache.Tags(ts2...).GetString("bot")
+			require.True(t, errors.Is(err, ErrNotFound))
+
+			// We flush painter so jane should not be available
+			val, err = cache.Tags(ts3...).GetString("jane")
+			require.NoError(t, err)
+			require.Equal(t, "doe", val)
+
+			_, err = cache.Tags("painter").Flush()
+			require.NoError(t, err)
+
+			_, err = cache.Tags(ts3...).GetString("jane")
+			require.True(t, errors.Is(err, ErrNotFound))
+
+			// We should still be able to access ayrton
+			val, err = cache.Tags(ts4...).GetString("ayrton")
+			require.NoError(t, err)
+			require.Equal(t, "senna", val)
+
+			_, err = cache.Flush()
+			require.NoError(t, err)
 		})
 	}
 }
