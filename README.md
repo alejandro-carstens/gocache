@@ -9,6 +9,22 @@ Some data retrieval performed by your application could be CPU intensive or take
 
 This package allows you to implement a store agnostic caching system via an expressive and unified interface by providing an abstraction layer between different data store drivers and your application. This allows for each store to be used interchangeably without any code changes other than the programmatic configuration of the desired store(s).
 
+## Table Of Contents
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [Usage](#usage)
+    - [Obtaining A Cache Instance](#obtaining-a-cache-instance)
+    - [Retrieving Items From The Cache](#retrieving-items-from-the-cache)
+    - [Storing Items In The Cache](#storing-items-in-the-cache)
+    - [Removing Items From The Cache](#removing-items-from-the-cache)
+- [Cache Tags](#cache-tags)
+    - [Storing Cache Tagged Items](#storing-cache-tagged-items)
+    - [Accessing Cache Tagged Items](#accessing-cache-tagged-items)
+    - [Removing Tagged Cache Items](#removing-tagged-cache-items)
+- [Atomic Locks](#atomic-locks)
+- [Contributing](#contributing)
+- [Liscense](#liscense)
+
 ## Installation
 To start using this package in your application simply run:`go get github.com/alejandro-carstens/gocache`
 
