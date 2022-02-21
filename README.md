@@ -81,7 +81,7 @@ if errors.Is(gocache.ErrNotFound, err) {
     // handle err
 }
 ```
-The method ```Many``` is also exposed in order to retrieve multiple cache records with one call. The results of the ```Many``` invocation will be returned in a map of [gocache.Item](https://pkg.go.dev/github.com/alejandro-carstens/gocache#Item) instances keyed by string. Please see the example below:
+The method ```Many``` is also exposed in order to retrieve multiple cache records with one call. The results of the ```Many``` invocation will be returned in a map of [gocache.Item](https://pkg.go.dev/github.com/alejandro-carstens/gocache#Item) instances keyed by the retrieved cached entries keys. Please see the example below:
 
 ```go
 items, err := cache.Many("string", "uint64", "int", "int64", "float64", "float32", "any")
@@ -221,7 +221,7 @@ res, err := cache.Tags("person", "accountant").Forget("Jane")
 // handle err
 ```
 
-<b>Note:</b> when calling `Flush` with tags, the underlying entries won't be deleted so please make sure to set expiration values when using tags and flushing. When using Redis entries that were set using the `Forever` method will be removed from the Cache when calling `Flush` expiring Redis entries will not be deleted but will be left to expire.
+<b>Important Note:</b> with the exception of the [Redis](https://redis.io) driver, when calling `Flush` with tags, the underlying entries won't be deleted so please make sure to set expiration values when using tags and flushing.
 
 ## Atomic Locks
 
