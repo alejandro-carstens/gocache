@@ -46,13 +46,18 @@ func (tc *taggedCache) Decrement(key string, value int64) (int64, error) {
 }
 
 // Forget forgets/evicts a given key-value pair from the store
-func (tc *taggedCache) Forget(key string) (bool, error) {
-	tagKey, err := tc.taggedItemKey(key)
-	if err != nil {
-		return false, err
+func (tc *taggedCache) Forget(keys ...string) (bool, error) {
+	var tagKeys = make([]string, len(keys))
+	for i, key := range keys {
+		tagKey, err := tc.taggedItemKey(key)
+		if err != nil {
+			return false, err
+		}
+
+		tagKeys[i] = tagKey
 	}
 
-	return tc.store.Forget(tagKey)
+	return tc.store.Forget(tagKeys...)
 }
 
 // Forever puts a value in the given store until it is forgotten/evicted
@@ -63,11 +68,6 @@ func (tc *taggedCache) Forever(key string, value interface{}) error {
 	}
 
 	return tc.store.Forever(tagKey, value)
-}
-
-// Flush flushes the store
-func (tc *taggedCache) Flush() (bool, error) {
-	return tc.store.Flush()
 }
 
 // Many gets many values from the store
@@ -199,9 +199,13 @@ func (tc *taggedCache) GetString(key string) (string, error) {
 	return tc.store.GetString(tagKey)
 }
 
-// TagFlush flushes the tags of the taggedCache
-func (tc *taggedCache) TagFlush() error {
-	return tc.tags.reset()
+// Flush flushes all the given tags' associated records
+func (tc *taggedCache) Flush() (bool, error) {
+	if err := tc.tags.reset(); err != nil {
+		return false, err
+	}
+
+	return true, nil
 }
 
 // GetTags returns the taggedCache Tags

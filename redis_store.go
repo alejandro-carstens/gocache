@@ -6,6 +6,8 @@ import (
 	"github.com/go-redis/redis"
 )
 
+const deleteLimit = 1000
+
 var _ Cache = &RedisStore{}
 
 // NewRedisStore validates the passed in config and creates a Cache implementation of type *RedisStore
@@ -147,8 +149,26 @@ func (s *RedisStore) Flush() (bool, error) {
 }
 
 // Forget forgets/evicts a given key-value pair from the store
-func (s *RedisStore) Forget(key string) (bool, error) {
-	if err := s.client.Del(s.k(key)).Err(); err != nil {
+func (s *RedisStore) Forget(keys ...string) (bool, error) {
+	if len(keys) == 0 {
+		return true, nil
+	}
+
+	var delKeys []string
+	for _, key := range keys {
+		delKeys = append(delKeys, s.k(key))
+		if len(delKeys) < deleteLimit {
+			continue
+		}
+		if err := s.client.Del(delKeys...).Err(); err != nil {
+			return false, checkErrNotFound(err)
+		}
+	}
+	if len(delKeys) == 0 {
+		return true, nil
+	}
+
+	if err := s.client.Del(delKeys...).Err(); err != nil {
 		return false, checkErrNotFound(err)
 	}
 
@@ -238,13 +258,13 @@ func (s *RedisStore) Lock(name, owner string, duration time.Duration) Lock {
 }
 
 // Lpush runs the Redis lpush command (used via reflection, do not delete)
-func (s *RedisStore) Lpush(segment string, key string) {
-	s.client.LPush(segment, s.k(key))
+func (s *RedisStore) Lpush(segment, key string) error {
+	return s.client.LPush(segment, key).Err()
 }
 
 // Lrange runs the Redis lrange command (used via reflection, do not delete)
-func (s *RedisStore) Lrange(key string, start int64, stop int64) []string {
-	return s.client.LRange(s.k(key), start, stop).Val()
+func (s *RedisStore) Lrange(key string, start, stop int64) []string {
+	return s.client.LRange(key, start, stop).Val()
 }
 
 func (s *RedisStore) get(key string) *redis.StringCmd {

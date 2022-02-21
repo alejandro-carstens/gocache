@@ -5,16 +5,32 @@
 [![GoDoc](https://godoc.org/github.com/alejandro-carstens/golavel-cache?status.svg)](https://godoc.org/github.com/alejandro-carstens/gocache)
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/alejandro-carstens/golavel-cache/blob/master/LICENSE)
 
-Some data retrieval performed by your application could be CPU intensive or take several seconds to complete. For these cases, it is common to cache the retrieved data for a period of time so that it can be retrieved quickly on subsequent requests for the same data. The cached data is usually stored in a very fast data store such as Memcached or Redis.
+Some data retrieval performed by your application could be CPU intensive or take several seconds to complete. For these cases, it is common to cache the retrieved data for a period of time so that it can be retrieved quickly on subsequent requests for the same data. The cached data is usually stored in a very fast data store such as [Memcached](https://memcached.org) or [Redis](https://redis.io).
 
-This package allows you to implement a store agnostic caching system via an expressive and unified interface by providing an abstraction layer between different data store clients and your application. This allows for each store to be used interchangeably without any code changes other than the programmatic configuration of the desired store(s).
+This package allows you to implement a store agnostic caching system via an expressive and unified interface by providing an abstraction layer between different data store drivers and your application. This allows for each store to be used interchangeably without any code changes other than the programmatic configuration of the desired store(s).
+
+## Table Of Contents
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [Usage](#usage)
+    - [Obtaining A Cache Instance](#obtaining-a-cache-instance)
+    - [Retrieving Items From The Cache](#retrieving-items-from-the-cache)
+    - [Storing Items In The Cache](#storing-items-in-the-cache)
+    - [Removing Items From The Cache](#removing-items-from-the-cache)
+- [Cache Tags](#cache-tags)
+    - [Storing Cache Tagged Items](#storing-cache-tagged-items)
+    - [Accessing Cache Tagged Items](#accessing-cache-tagged-items)
+    - [Removing Tagged Cache Items](#removing-tagged-cache-items)
+- [Atomic Locks](#atomic-locks)
+- [Contributing](#contributing)
+- [Liscense](#liscense)
 
 ## Installation
 To start using this package in your application simply run:`go get github.com/alejandro-carstens/gocache`
 
 ## Configuration
 
-This package supports 3 backends out of the box: Redis, Memcache and Local (via go-cache). Each store has a specific configuration whose parameters can be easily referenced in the following GoDoc sections:
+This package supports 3 backends out of the box: [Redis](https://redis.io), [Memcached](https://memcached.org) and Local (via [go-cache](https://github.com/patrickmn/go-cache)). Each store has a specific configuration whose parameters can be easily referenced in the following [GoDoc](https://pkg.go.dev/github.com/alejandro-carstens/gocache) sections:
 - [RedisConfig](https://pkg.go.dev/github.com/alejandro-carstens/gocache#RedisConfig)
 - [MemcacheConfig](https://pkg.go.dev/github.com/alejandro-carstens/gocache#MemcacheConfig)
 - [LocalConfig](https://pkg.go.dev/github.com/alejandro-carstens/gocache#LocalConfig)
@@ -22,7 +38,7 @@ This package supports 3 backends out of the box: Redis, Memcache and Local (via 
 ## Usage
 
 ### Obtaining A Cache Instance
-In order to new up a cache implementation just simply call ```gocache.New``` with the desired configuration: 
+In order to new up a cache implementation simply call ```gocache.New``` with the desired configuration: 
 ```go
 // Redis
 cache, err := gocache.New(&RedisConfig{
@@ -81,14 +97,14 @@ if errors.Is(gocache.ErrNotFound, err) {
     // handle err
 }
 ```
-The method ```Many``` is also exposed in order to retrieve multiple cache records with one call. The results of the ```Many``` invocation will be returned in a slice of [gocache.Item](https://pkg.go.dev/github.com/alejandro-carstens/gocache#Item) instances. Please see the example below:
+The method ```Many``` is also exposed in order to retrieve multiple cache records with one call. The results of the ```Many``` invocation will be returned in a map of [gocache.Item](https://pkg.go.dev/github.com/alejandro-carstens/gocache#Item) instances keyed by the retrieved cached entries keys. Please see the example below:
 
 ```go
 items, err := cache.Many("string", "uint64", "int", "int64", "float64", "float32", "any")
 // handle err
 
-for _, item := range items {
-    switch item.Key():
+for key, item := range items {
+    switch key:
     case "string":
         v, err := item.String()
         // handle err
@@ -188,10 +204,10 @@ err := cache.Flush()
 ### Storing Cache Tagged Items
 Cache tags allow you to tag related items in the cache and then flush all cached values that have been assigned a given tag. You may access a tagged cache by passing in an ordered sliced of tag names. For example, let's access a tagged cache and put a value into the cache:
 ```go
-err := cache.Tags("artist", "person").Put("John", "Doe", time.Minute)
+err := cache.Tags("person", "artist").Put("John", "Doe", time.Minute)
 // handle err
 
-err := cache.Tags("accountant", "person").Put("Jane", "Doe", time.Minute)
+err := cache.Tags("person", "accountant").Put("Jane", "Doe", time.Minute)
 // handle err
 ```
 ### Accessing Cache Tagged Items
@@ -220,6 +236,8 @@ In addition you can also call ```Forget```:
 res, err := cache.Tags("person", "accountant").Forget("Jane")
 // handle err
 ```
+
+<b>Important Note:</b> with the exception of the [Redis](https://redis.io) driver, when calling `Flush` with tags, the underlying entries won't be deleted so please make sure to set expiration values when using tags and flushing.
 
 ## Atomic Locks
 

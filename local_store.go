@@ -172,12 +172,14 @@ func (s *LocalStore) Flush() (bool, error) {
 }
 
 // Forget forgets/evicts a given key-value pair from the store
-func (s *LocalStore) Forget(key string) (bool, error) {
-	if _, valid := s.c.Get(s.k(key)); !valid {
-		return false, nil
-	}
+func (s *LocalStore) Forget(keys ...string) (bool, error) {
+	for _, key := range keys {
+		if _, valid := s.c.Get(s.k(key)); !valid {
+			return false, nil
+		}
 
-	s.c.Delete(s.k(key))
+		s.c.Delete(s.k(key))
+	}
 
 	return true, nil
 }

@@ -42,7 +42,7 @@ type (
 		// Decrement decrements an integer counter by a given value
 		Decrement(key string, value int64) (int64, error)
 		// Forget forgets/evicts a given key-value pair from the store
-		Forget(key string) (bool, error)
+		Forget(keys ...string) (bool, error)
 		// Forever puts a value in the given store until it is forgotten/evicted manually
 		Forever(key string, value interface{}) error
 		// Flush flushes the store
@@ -83,8 +83,6 @@ type (
 	// TaggedCache represents the methods a tagged-caching store needs to implement
 	TaggedCache interface {
 		store
-		// TagFlush flushes the tags of the TaggedCache
-		TagFlush() error
 		// GetTags returns the TaggedCache Tags
 		GetTags() tagSet
 	}
