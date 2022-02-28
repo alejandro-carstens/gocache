@@ -177,7 +177,12 @@ func (s *MemcacheStore) Many(keys ...string) (Items, error) {
 	for _, key := range keys {
 		val, err := s.get(key)
 		if err != nil {
-			return nil, err
+			items[key] = Item{
+				key: key,
+				err: err,
+			}
+
+			continue
 		}
 
 		items[key] = Item{
