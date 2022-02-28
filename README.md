@@ -64,7 +64,7 @@ cache, err := gocache.New(&LocalConfig{
 
 ### Retrieving Items From The Cache
 
-All methods including the prefix `Get` are used to retrieve items from the cache. In an item does not exist in the cache for the given key an error of type ```gocache.ErrNotFound``` will be raised. Please see the following examples:
+All methods including the prefix `Get` are used to retrieve items from the cache. If an item does not exist in the cache for the given key an error of type ```gocache.ErrNotFound``` will be raised. Please see the following examples:
 
 ```go
 
@@ -171,7 +171,7 @@ var entries = []gocache.Entry{
 err := cache.PutMany(entries...)
 // handle err
 ```
-To increment and decrement values (for now you can only increment using ```int64``` values) simply use ```Increment``` & ```Decrement```. Please note that if there is not entroy for the key being incremented the initial value will be 0 and the entry will set to not expire:
+To increment and decrement values (for now you can only increment using ```int64``` values) simply use ```Increment``` & ```Decrement```. Please note that if there is no entry for the key being incremented the initial value will be 0 plus whatever value was passed in and the entry will be set to not expire:
 ```go
 val, err := cache.Increment("a", 1) // a = 1
 // handle err
