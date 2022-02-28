@@ -1,4 +1,4 @@
-## gocache
+# gocache
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/alejandro-carstens/gocache)](https://goreportcard.com/report/github.com/alejandro-carstens/gocache)
 [![Build Status](https://travis-ci.org/alejandro-carstens/gocache.svg?branch=master)](https://travis-ci.org/alejandro-carstens/gocache)
