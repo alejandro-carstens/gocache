@@ -26,7 +26,7 @@ This package allows you to implement a store agnostic caching system via an expr
 - [Liscense](#liscense)
 
 ## Installation
-To start using this package in your application simply run:`go get github.com/alejandro-carstens/gocache`
+To start using this package in your application simply run:`go get -u github.com/alejandro-carstens/gocache`
 
 ## Configuration
 
