@@ -18,6 +18,7 @@ type (
 		key    string
 		value  string
 		tagKey string
+		err    error
 	}
 	// Items is an Item map keyed by the Item key
 	Items map[string]Item
@@ -98,4 +99,14 @@ func (i Item) Unmarshal(entity interface{}) error {
 	_, err := decode(i.value, entity)
 
 	return err
+}
+
+// Error returns the error that occurred when trying to retrieve a given Item
+func (i Item) Error() error {
+	return i.err
+}
+
+// EntryNotFound checks if an entry was retrieved for the given key
+func (i Item) EntryNotFound() bool {
+	return errors.Is(i.err, ErrNotFound)
 }

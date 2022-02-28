@@ -234,8 +234,9 @@ func TestPutGetManyWithTags(t *testing.T) {
 						Name:        "hello",
 						Description: "world",
 					},
+					"error": ErrNotFound,
 				}
-				results, err = cache.Tags(ts).Many("string", "uint64", "int", "int64", "float64", "float32", "struct")
+				results, err = cache.Tags(ts).Many("string", "uint64", "int", "int64", "float64", "float32", "struct", "error")
 			)
 			require.NoError(t, err)
 
@@ -269,6 +270,9 @@ func TestPutGetManyWithTags(t *testing.T) {
 					var res example
 					require.NoError(t, result.Unmarshal(&res))
 					require.Equal(t, expectedResults[result.Key()], res)
+				case "error":
+					require.Equal(t, expectedResults[result.Key()], result.Error())
+					require.True(t, result.EntryNotFound())
 				}
 			}
 

@@ -199,14 +199,19 @@ func (s *LocalStore) PutMany(entries ...Entry) error {
 func (s *LocalStore) Many(keys ...string) (Items, error) {
 	items := Items{}
 	for _, key := range keys {
-		value, valid := s.c.Get(s.k(key))
+		val, valid := s.c.Get(s.k(key))
 		if !valid {
-			return nil, ErrNotFound
+			items[key] = Item{
+				key: key,
+				err: ErrNotFound,
+			}
+
+			continue
 		}
 
 		items[key] = Item{
 			key:   key,
-			value: fmt.Sprint(value),
+			value: fmt.Sprint(val),
 		}
 	}
 

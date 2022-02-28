@@ -198,7 +198,12 @@ func (s *RedisStore) Many(keys ...string) (Items, error) {
 	for _, key := range keys {
 		val, err := s.get(key).Result()
 		if err != nil {
-			return nil, err
+			items[key] = Item{
+				key: key,
+				err: checkErrNotFound(err),
+			}
+
+			continue
 		}
 
 		items[key] = Item{
