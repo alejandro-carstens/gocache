@@ -105,6 +105,55 @@ func TestPutGetUint64WithTags(t *testing.T) {
 	}
 }
 
+func TestPutGetBoolWithTags(t *testing.T) {
+	for _, d := range drivers {
+		t.Run(d.string(), func(t *testing.T) {
+			var (
+				cache = createStore(t, d)
+				ts    = tag()
+			)
+			require.NoError(t, cache.Tags(ts).Put("key", true, time.Second))
+
+			got, err := cache.Tags(ts).GetBool("key")
+			require.NoError(t, err)
+			require.Equal(t, true, got)
+
+			require.NoError(t, cache.Tags(ts).Put("key", "a", time.Second))
+
+			got, err = cache.Tags(ts).GetBool("key")
+			require.NoError(t, err)
+			require.Equal(t, true, got)
+
+			require.NoError(t, cache.Tags(ts).Put("key", 1, time.Second))
+
+			got, err = cache.Tags(ts).GetBool("key")
+			require.NoError(t, err)
+			require.Equal(t, true, got)
+
+			require.NoError(t, cache.Tags(ts).Put("key", false, time.Second))
+
+			got, err = cache.Tags(ts).GetBool("key")
+			require.NoError(t, err)
+			require.Equal(t, false, got)
+
+			require.NoError(t, cache.Tags(ts).Put("key", 0, time.Second))
+
+			got, err = cache.Tags(ts).GetBool("key")
+			require.NoError(t, err)
+			require.Equal(t, false, got)
+
+			require.NoError(t, cache.Tags(ts).Put("key", "", time.Second))
+
+			got, err = cache.Tags(ts).GetBool("key")
+			require.NoError(t, err)
+			require.Equal(t, false, got)
+
+			_, err = cache.Tags(ts).Forget("key")
+			require.NoError(t, err)
+		})
+	}
+}
+
 func TestIncrementWithTags(t *testing.T) {
 	for _, d := range drivers {
 		t.Run(d.string(), func(t *testing.T) {
@@ -217,6 +266,11 @@ func TestPutGetManyWithTags(t *testing.T) {
 						},
 						Duration: 10 * time.Second,
 					},
+					{
+						Key:      "bool",
+						Value:    false,
+						Duration: 10 * time.Second,
+					},
 				}
 				ts = tag()
 			)
@@ -235,8 +289,9 @@ func TestPutGetManyWithTags(t *testing.T) {
 						Description: "world",
 					},
 					"error": ErrNotFound,
+					"bool":  false,
 				}
-				results, err = cache.Tags(ts).Many("string", "uint64", "int", "int64", "float64", "float32", "struct", "error")
+				results, err = cache.Tags(ts).Many("string", "uint64", "int", "int64", "float64", "float32", "struct", "error", "bool")
 			)
 			require.NoError(t, err)
 
@@ -273,6 +328,9 @@ func TestPutGetManyWithTags(t *testing.T) {
 				case "error":
 					require.Equal(t, expectedResults[result.Key()], result.Error())
 					require.True(t, result.EntryNotFound())
+				case "bool":
+					require.Equal(t, expectedResults[result.Key()], result.Bool())
+					require.NoError(t, result.Error())
 				}
 			}
 

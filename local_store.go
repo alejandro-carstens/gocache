@@ -109,6 +109,16 @@ func (s *LocalStore) GetUint64(key string) (uint64, error) {
 	return interfaceToUint64(value)
 }
 
+// GetBool gets a bool value from the store
+func (s *LocalStore) GetBool(key string) (bool, error) {
+	value, valid := s.c.Get(s.k(key))
+	if !valid {
+		return false, ErrNotFound
+	}
+
+	return stringToBool(fmt.Sprint(value)), nil
+}
+
 // Increment increments an integer counter by a given value
 func (s *LocalStore) Increment(key string, value int64) (int64, error) {
 	if _, valid := s.c.Get(s.k(key)); !valid {

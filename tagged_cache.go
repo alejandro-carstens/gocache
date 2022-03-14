@@ -156,6 +156,16 @@ func (tc *taggedCache) GetUint64(key string) (uint64, error) {
 	return tc.store.GetUint64(tagKey)
 }
 
+// GetBool gets a bool value from the store
+func (tc *taggedCache) GetBool(key string) (bool, error) {
+	tagKey, err := tc.taggedItemKey(key)
+	if err != nil {
+		return false, err
+	}
+
+	return tc.store.GetBool(tagKey)
+}
+
 // GetFloat64 gets a float value from the store
 func (tc *taggedCache) GetFloat64(key string) (float64, error) {
 	tagKey, err := tc.taggedItemKey(key)
