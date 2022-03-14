@@ -86,6 +86,12 @@ v, err := cache.GetString("username")
 v, err := cache.GetUint64("id")
 // handle err
 
+// GetBool will return false in the event of the cache entry being
+// the string 'false', empty string, boolean false, string '0' or
+// the number 0. The value v will be true otherwise.
+v, err := cache.GetBool("active")
+// handle err
+
 // Get any type e.g. Movie{Name string, Views int64}
 var m Movie
 err := cache.Get("e.t.", &m)
@@ -100,7 +106,7 @@ if errors.Is(gocache.ErrNotFound, err) {
 The method ```Many``` is also exposed in order to retrieve multiple cache records with one call. The results of the ```Many``` invocation will be returned in a map of [gocache.Item](https://pkg.go.dev/github.com/alejandro-carstens/gocache#Item) instances keyed by the retrieved cached entries keys. Please see the example below:
 
 ```go
-items, err := cache.Many("string", "uint64", "int", "int64", "float64", "float32", "any")
+items, err := cache.Many("string", "uint64", "int", "int64", "float64", "float32", "any", "bool")
 // handle err
 
 for key, item := range items {
@@ -127,6 +133,11 @@ for key, item := range items {
         var m Movie
         err := item.Get(&m)
         // handle err
+    case "bool":
+        // Bool will return false in the event of the cache entry being
+        // the string 'false', empty string, boolean false, string '0' 
+        // or the number 0. The value v will be true otherwise.
+        v := item.Bool()
     }
 }
 
