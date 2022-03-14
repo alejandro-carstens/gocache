@@ -134,6 +134,52 @@ func TestPutGetUint64(t *testing.T) {
 	}
 }
 
+func TestPutGetBool(t *testing.T) {
+	for _, d := range drivers {
+		t.Run(d.string(), func(t *testing.T) {
+			cache := createStore(t, d)
+			require.NoError(t, cache.Put("key", true, time.Second))
+
+			got, err := cache.GetBool("key")
+			require.NoError(t, err)
+			require.Equal(t, true, got)
+
+			require.NoError(t, cache.Put("key", "a", time.Second))
+
+			got, err = cache.GetBool("key")
+			require.NoError(t, err)
+			require.Equal(t, true, got)
+
+			require.NoError(t, cache.Put("key", 1, time.Second))
+
+			got, err = cache.GetBool("key")
+			require.NoError(t, err)
+			require.Equal(t, true, got)
+
+			require.NoError(t, cache.Put("key", false, time.Second))
+
+			got, err = cache.GetBool("key")
+			require.NoError(t, err)
+			require.Equal(t, false, got)
+
+			require.NoError(t, cache.Put("key", 0, time.Second))
+
+			got, err = cache.GetBool("key")
+			require.NoError(t, err)
+			require.Equal(t, false, got)
+
+			require.NoError(t, cache.Put("key", "", time.Second))
+
+			got, err = cache.GetBool("key")
+			require.NoError(t, err)
+			require.Equal(t, false, got)
+
+			_, err = cache.Forget("key")
+			require.NoError(t, err)
+		})
+	}
+}
+
 func TestForever(t *testing.T) {
 	for _, d := range drivers {
 		t.Run(d.string(), func(t *testing.T) {
@@ -197,6 +243,11 @@ func TestPutGetMany(t *testing.T) {
 						},
 						Duration: 10 * time.Second,
 					},
+					{
+						Key:      "bool",
+						Value:    false,
+						Duration: 10 * time.Second,
+					},
 				}
 			)
 			require.NoError(t, cache.PutMany(entries...))
@@ -214,8 +265,9 @@ func TestPutGetMany(t *testing.T) {
 						Description: "world",
 					},
 					"error": ErrNotFound,
+					"bool":  false,
 				}
-				results, err = cache.Many("string", "uint64", "int", "int64", "float64", "float32", "struct", "error")
+				results, err = cache.Many("string", "uint64", "int", "int64", "float64", "float32", "struct", "error", "bool")
 			)
 			require.NoError(t, err)
 
@@ -252,6 +304,9 @@ func TestPutGetMany(t *testing.T) {
 				case "error":
 					require.Equal(t, expectedResults[result.Key()], result.Error())
 					require.True(t, result.EntryNotFound())
+				case "bool":
+					require.Equal(t, expectedResults[result.Key()], result.Bool())
+					require.NoError(t, result.Error())
 				}
 			}
 

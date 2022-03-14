@@ -84,6 +84,16 @@ func (s *RedisStore) GetUint64(key string) (uint64, error) {
 	return res, checkErrNotFound(err)
 }
 
+// GetBool gets a bool value from the store
+func (s *RedisStore) GetBool(key string) (bool, error) {
+	value, err := s.get(key).Result()
+	if err != nil {
+		return false, checkErrNotFound(err)
+	}
+
+	return stringToBool(value), nil
+}
+
 // GetString gets a string value from the store
 func (s *RedisStore) GetString(key string) (string, error) {
 	value, err := s.get(key).Result()

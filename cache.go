@@ -23,14 +23,6 @@ func New(config config) (Cache, error) {
 }
 
 type (
-	// cacheConnector represents the connector methods to be implemented
-	cacheConnector interface {
-		// Connect is responsible for connecting with the caching store
-		connect(config config) (Cache, error)
-		// validate verifies that the given params
-		// are valid for establishing a connection
-		validate(config config) error
-	}
 	// store represents the caching methods to be implemented
 	store interface {
 		// GetString gets a string value from the store
@@ -57,6 +49,8 @@ type (
 		GetFloat32(key string) (float32, error)
 		// GetUint64 gets a uint64 value from the store
 		GetUint64(key string) (uint64, error)
+		// GetBool gets a bool value from the store
+		GetBool(key string) (bool, error)
 		// Prefix gets the cache key prefix
 		Prefix() string
 		// Many gets many values from the store

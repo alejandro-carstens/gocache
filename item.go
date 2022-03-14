@@ -62,6 +62,11 @@ func (i Item) Int() (int, error) {
 	return strconv.Atoi(i.value)
 }
 
+// Bool returns the boolean representation of an Item's value
+func (i Item) Bool() bool {
+	return stringToBool(i.value)
+}
+
 // Int64 returns the int64 representation of an Item's value
 func (i Item) Int64() (int64, error) {
 	if !isInterfaceNumericString(i.value) && !isNumeric(i.value) {

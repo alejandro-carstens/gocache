@@ -116,6 +116,16 @@ func (s *MemcacheStore) GetUint64(key string) (uint64, error) {
 	return stringToUint64(value)
 }
 
+// GetBool gets a bool value from the store
+func (s *MemcacheStore) GetBool(key string) (bool, error) {
+	value, err := s.get(key)
+	if err != nil {
+		return false, checkErrNotFound(err)
+	}
+
+	return stringToBool(value), nil
+}
+
 // GetString gets a string value from the store
 func (s *MemcacheStore) GetString(key string) (string, error) {
 	value, err := s.get(key)
