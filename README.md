@@ -118,20 +118,20 @@ for key, item := range items {
         v, err := item.Uint64()
         // handle err
     case "int":
-        v, err := item.GetInt()
+        v, err := item.Int()
         // handle err
     case "int64":
-        v, err := item.GetInt64()
+        v, err := item.Int64()
         // handle err
     case "float64":
-        v, err := item.GetFloat64()
+        v, err := item.Float64()
         // handle err
     case "float32":
-        v, err := item.GetFloat32()
+        v, err := item.Float32()
         // handle err
     case "any":
         var m Movie
-        err := item.Get(&m)
+        err := item.Unmarshal(&m)
         // handle err
     case "bool":
         // Bool will return false in the event of the cache entry being
