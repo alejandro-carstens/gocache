@@ -41,21 +41,21 @@ This package supports 3 backends out of the box: [Redis](https://redis.io), [Mem
 In order to new up a cache implementation simply call ```gocache.New``` with the desired configuration: 
 ```go
 // Redis
-cache, err := gocache.New(&RedisConfig{
+cache, err := gocache.New(&gocache.RedisConfig{
     Prefix: "gocache:",
     Addr:   "localhost:6379",
 })
 // handle err
 
 // Memcache
-cache, err := gocache.New(&MemcacheConfig{
+cache, err := gocache.New(&gocache.MemcacheConfig{
     Prefix:  "gocache:",
     Servers: []string{"127.0.0.1:11211"},
 })
 // handle err
 
 // Local
-cache, err := gocache.New(&LocalConfig{
+cache, err := gocache.New(&gocache.LocalConfig{
     Prefix:          "gocache:",
     DefaultInterval: time.Second,
 })
@@ -220,12 +220,12 @@ v, err := cache.Tags("person", "accountant").GetString("Jane")
 // handle err
 ```
 ### Removing Tagged Cache Items
-You may flush all items that are assigned a tag or list of tags. For example, this statement would remove all caches tagged with either people, authors, or both. So, both Jane and John would be removed from the cache:
+You may flush all items that are assigned a tag or list of tags. For example, this statement would remove all caches tagged with either persons, accountants, or both. So, both Jane and John would be removed from the cache:
 ```go
 err := cache.Tags("person", "accountant").Flush()
 // handle err
 ```
-In contrast, this statement would remove only cached values tagged with authors, so Anne would be removed, but not John:
+In contrast, this statement would remove only cached values tagged with accountants, so Anne would be removed, but not John:
 ```go
 err := cache.Tags("accountant").Flush()
 // handle err
