@@ -231,12 +231,12 @@ v, err := cache.Tags("person", "accountant").GetString("Jane")
 // handle err
 ```
 ### Removing Tagged Cache Items
-You may flush all items that are assigned a tag or list of tags. For example, this statement would remove all caches tagged with either persons, accountants, or both. So, both Jane and John would be removed from the cache:
+You may flush all items that are assigned a tag or list of tags. For example, this statement would remove all caches tagged with either ```person```, ```accountant```, or both. So, both Jane and John would be removed from the cache:
 ```go
 err := cache.Tags("person", "accountant").Flush()
 // handle err
 ```
-In contrast, this statement would remove only cached values tagged with accountants, so Anne would be removed, but not John:
+In contrast, this statement would remove only cached values tagged with ```accountant```, so Anne would be removed, but not John:
 ```go
 err := cache.Tags("accountant").Flush()
 // handle err
