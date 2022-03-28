@@ -107,9 +107,10 @@ func (tc *redisTaggedCache) pushKeys(key, reference string) error {
 
 	fullKey := tc.Prefix() + hex.EncodeToString(h.Sum(nil)) + ":" + key
 	for _, segment := range strings.Split(namespace, "|") {
-		inputs := []reflect.Value{reflect.ValueOf(tc.referenceKey(segment, reference)), reflect.ValueOf(fullKey)}
-
-		res := reflect.ValueOf(tc.store).MethodByName("Lpush").Call(inputs)
+		var (
+			inputs = []reflect.Value{reflect.ValueOf(tc.referenceKey(segment, reference)), reflect.ValueOf(fullKey)}
+			res    = reflect.ValueOf(tc.store).MethodByName("Lpush").Call(inputs)
+		)
 		for _, r := range res {
 			if !r.IsNil() {
 				return errors.New(r.String())

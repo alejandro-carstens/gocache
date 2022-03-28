@@ -13,7 +13,6 @@ type tagSet struct {
 	names []string
 }
 
-// Reset resets the tag set
 func (ts *tagSet) reset() error {
 	for i, name := range ts.names {
 		id, err := ts.resetTag(name)
@@ -27,7 +26,6 @@ func (ts *tagSet) reset() error {
 	return nil
 }
 
-// GetNamespace gets the current tagSet namespace
 func (ts *tagSet) getNamespace() (string, error) {
 	tagsIds, err := ts.tagIds()
 	if err != nil {
