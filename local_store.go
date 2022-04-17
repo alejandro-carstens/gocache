@@ -265,3 +265,10 @@ func (s *LocalStore) Lock(name, owner string, duration time.Duration) Lock {
 		duration: duration,
 	}
 }
+
+// Exists checks if an entry exists in the cache for the given key
+func (s *LocalStore) Exists(key string) (bool, error) {
+	_, valid := s.c.Get(s.k(key))
+
+	return valid, nil
+}

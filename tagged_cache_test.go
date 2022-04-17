@@ -457,6 +457,33 @@ func TestFlushWithTags(t *testing.T) {
 	}
 }
 
+func TestTagExists(t *testing.T) {
+	for _, d := range drivers {
+		t.Run(d.string(), func(t *testing.T) {
+			var (
+				cache = createStore(t, d)
+				ts    = tag()
+				err   = cache.Tags(ts).Put("key", 2, time.Second)
+			)
+			require.NoError(t, err)
+
+			exists, err := cache.Tags(ts).Exists("key")
+			require.NoError(t, err)
+			require.True(t, exists)
+
+			_, err = cache.Tags(ts).Forget("key")
+			require.NoError(t, err)
+
+			exists, err = cache.Tags(ts).Exists("key")
+			require.NoError(t, err)
+			require.False(t, exists)
+
+			_, err = cache.Tags(ts).Flush()
+			require.NoError(t, err)
+		})
+	}
+}
+
 func tag() string {
 	return "tag"
 }

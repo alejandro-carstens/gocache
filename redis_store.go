@@ -174,10 +174,10 @@ func (s *RedisStore) Forget(keys ...string) (bool, error) {
 			return false, checkErrNotFound(err)
 		}
 	}
+
 	if len(delKeys) == 0 {
 		return true, nil
 	}
-
 	if err := s.client.Del(delKeys...).Err(); err != nil {
 		return false, checkErrNotFound(err)
 	}
@@ -227,11 +227,6 @@ func (s *RedisStore) Many(keys ...string) (Items, error) {
 	return items, err
 }
 
-// Connection returns the store's connection
-func (s *RedisStore) Connection() interface{} {
-	return s.client
-}
-
 // Tags returns the taggedCache for the given store
 func (s *RedisStore) Tags(names ...string) TaggedCache {
 	return &redisTaggedCache{
@@ -270,6 +265,18 @@ func (s *RedisStore) Lock(name, owner string, duration time.Duration) Lock {
 		owner:    owner,
 		duration: duration,
 	}
+}
+
+// Exists checks if an entry exists in the cache for the given key
+func (s *RedisStore) Exists(key string) (bool, error) {
+	_, err := s.get(key).Result()
+	if err == nil {
+		return true, nil
+	} else if err != nil && isErrNotFound(err) {
+		return false, nil
+	}
+
+	return false, err
 }
 
 // Lpush runs the Redis lpush command (used via reflection, do not delete)

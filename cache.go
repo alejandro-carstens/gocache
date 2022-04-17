@@ -61,6 +61,8 @@ type (
 		Get(key string, entity interface{}) error
 		// Close closes the c releasing all open resources
 		Close() error
+		// Exists checks if an entry exists in the cache for the given key
+		Exists(key string) (bool, error)
 	}
 	// tags represents the tagging methods to be implemented
 	tags interface {

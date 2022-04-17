@@ -261,6 +261,18 @@ func (s *MemcacheStore) Lock(name, owner string, duration time.Duration) Lock {
 	}
 }
 
+// Exists checks if an entry exists in the cache for the given key
+func (s *MemcacheStore) Exists(key string) (bool, error) {
+	_, err := s.client.Get(s.k(key))
+	if err == nil {
+		return true, nil
+	} else if err != nil && isErrNotFound(err) {
+		return false, nil
+	}
+
+	return false, err
+}
+
 func (s *MemcacheStore) get(key string) (string, error) {
 	item, err := s.client.Get(s.k(key))
 	if err != nil {

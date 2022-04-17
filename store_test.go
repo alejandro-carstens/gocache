@@ -421,6 +421,32 @@ func TestIncrementDecrement(t *testing.T) {
 	}
 }
 
+func TestExists(t *testing.T) {
+	for _, d := range drivers {
+		t.Run(d.string(), func(t *testing.T) {
+			var (
+				cache = createStore(t, d)
+				err   = cache.Put("key", 2, time.Second)
+			)
+			require.NoError(t, err)
+
+			exists, err := cache.Exists("key")
+			require.NoError(t, err)
+			require.True(t, exists)
+
+			_, err = cache.Forget("key")
+			require.NoError(t, err)
+
+			exists, err = cache.Exists("key")
+			require.NoError(t, err)
+			require.False(t, exists)
+
+			_, err = cache.Flush()
+			require.NoError(t, err)
+		})
+	}
+}
+
 func createStore(t *testing.T, d driver) Cache {
 	t.Helper()
 

@@ -223,6 +223,16 @@ func (tc *taggedCache) GetTags() tagSet {
 	return tc.tags
 }
 
+// Exists checks if an entry exists in the cache for the given key
+func (tc *taggedCache) Exists(key string) (bool, error) {
+	tagKey, err := tc.taggedItemKey(key)
+	if err != nil {
+		return false, err
+	}
+
+	return tc.store.Exists(tagKey)
+}
+
 func (tc *taggedCache) taggedItemKey(key string) (string, error) {
 	namespace, err := tc.tags.getNamespace()
 	if err != nil {
