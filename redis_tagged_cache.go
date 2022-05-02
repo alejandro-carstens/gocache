@@ -33,6 +33,16 @@ func (tc *redisTaggedCache) Put(key string, value interface{}, duration time.Dur
 	return tc.taggedCache.Put(key, value, duration)
 }
 
+// Add an item to the cache only if an item doesn't already exist for the given key, or if the existing item has
+// expired. If the record was successfully added true will be returned else false will be returned
+func (tc *redisTaggedCache) Add(key string, value interface{}, duration time.Duration) (bool, error) {
+	if err := tc.pushKeys(key, referenceKeyStandard); err != nil {
+		return false, err
+	}
+
+	return tc.taggedCache.Add(key, value, duration)
+}
+
 // PutMany implementation of the TaggedCache interface
 func (tc *redisTaggedCache) PutMany(entries ...Entry) error {
 	for i, entry := range entries {

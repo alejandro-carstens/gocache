@@ -25,6 +25,17 @@ func (tc *taggedCache) Put(key string, value interface{}, duration time.Duration
 	return tc.store.Put(tagKey, value, duration)
 }
 
+// Add an item to the cache only if an item doesn't already exist for the given key, or if the existing item has
+// expired. If the record was successfully added true will be returned else false will be returned
+func (tc *taggedCache) Add(key string, value interface{}, duration time.Duration) (bool, error) {
+	tagKey, err := tc.taggedItemKey(key)
+	if err != nil {
+		return false, err
+	}
+
+	return tc.store.Add(tagKey, value, duration)
+}
+
 // Increment increments an integer counter by a given value
 func (tc *taggedCache) Increment(key string, value int64) (int64, error) {
 	tagKey, err := tc.taggedItemKey(key)
