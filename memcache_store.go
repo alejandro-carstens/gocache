@@ -46,6 +46,22 @@ func (s *MemcacheStore) Put(key string, value interface{}, duration time.Duratio
 	return s.client.Set(item)
 }
 
+// Add an item to the cache only if an item doesn't already exist for the given key, or if the existing item has
+// expired. If the record was successfully added true will be returned else false will be returned
+func (s *MemcacheStore) Add(key string, value interface{}, duration time.Duration) (bool, error) {
+	item, err := s.item(key, value, duration)
+	if err != nil {
+		return false, err
+	}
+	if err = s.client.Add(item); errors.Is(err, memcache.ErrNotStored) {
+		return false, nil
+	} else if err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
 // Forever puts a value in the given store until it is forgotten/evicted
 func (s *MemcacheStore) Forever(key string, value interface{}) error {
 	return s.Put(key, value, 0)

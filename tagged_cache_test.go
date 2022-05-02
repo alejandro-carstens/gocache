@@ -478,7 +478,52 @@ func TestTagExists(t *testing.T) {
 			require.NoError(t, err)
 			require.False(t, exists)
 
-			_, err = cache.Tags(ts).Flush()
+			_, err = cache.Flush()
+			require.NoError(t, err)
+		})
+	}
+}
+
+func TestTagAdd(t *testing.T) {
+	for _, d := range drivers {
+		t.Run(d.string(), func(t *testing.T) {
+			var (
+				cache    = createStore(t, d)
+				ts       = tag()
+				res, err = cache.Tags(ts).Add("key", 2, time.Second)
+			)
+			require.NoError(t, err)
+			require.True(t, res)
+
+			res, err = cache.Tags(ts).Add("key", 2, time.Second)
+			require.NoError(t, err)
+			require.False(t, res)
+
+			i, err := cache.Tags(ts).GetInt("key")
+			require.NoError(t, err)
+			require.Equal(t, 2, i)
+
+			res, err = cache.Tags(ts).Flush()
+			require.NoError(t, err)
+			require.True(t, res)
+
+			res, err = cache.Tags(ts).Add("key", 2, time.Second)
+			require.NoError(t, err)
+			require.True(t, res)
+
+			res, err = cache.Tags(ts).Add("other_key", "whatever", time.Second)
+			require.NoError(t, err)
+			require.True(t, res)
+
+			res, err = cache.Tags(ts).Add("other_key", "whatever", time.Second)
+			require.NoError(t, err)
+			require.False(t, res)
+
+			v, err := cache.Tags(ts).GetString("other_key")
+			require.NoError(t, err)
+			require.Equal(t, "whatever", v)
+
+			_, err = cache.Flush()
 			require.NoError(t, err)
 		})
 	}

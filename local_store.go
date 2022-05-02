@@ -169,6 +169,21 @@ func (s *LocalStore) Put(key string, value interface{}, duration time.Duration) 
 	return nil
 }
 
+// Add an item to the cache only if an item doesn't already exist for the given key, or if the existing item has
+// expired. If the record was successfully added true will be returned else false will be returned
+func (s *LocalStore) Add(key string, value interface{}, duration time.Duration) (bool, error) {
+	if isNumeric(value) {
+		return s.c.Add(s.k(key), value, duration) == nil, nil
+	}
+
+	val, err := encode(value)
+	if err != nil {
+		return false, err
+	}
+
+	return s.c.Add(s.k(key), val, duration) == nil, nil
+}
+
 // Forever puts a value in the given store until it is forgotten/evicted
 func (s *LocalStore) Forever(key string, value interface{}) error {
 	return s.Put(key, value, -1)

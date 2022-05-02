@@ -447,6 +447,50 @@ func TestExists(t *testing.T) {
 	}
 }
 
+func TestAdd(t *testing.T) {
+	for _, d := range drivers {
+		t.Run(d.string(), func(t *testing.T) {
+			var (
+				cache    = createStore(t, d)
+				res, err = cache.Add("key", 2, time.Second)
+			)
+			require.NoError(t, err)
+			require.True(t, res)
+
+			res, err = cache.Add("key", 2, time.Second)
+			require.NoError(t, err)
+			require.False(t, res)
+
+			i, err := cache.GetInt("key")
+			require.NoError(t, err)
+			require.Equal(t, 2, i)
+
+			res, err = cache.Forget("key")
+			require.NoError(t, err)
+			require.True(t, res)
+
+			res, err = cache.Add("key", 2, time.Second)
+			require.NoError(t, err)
+			require.True(t, res)
+
+			res, err = cache.Add("other_key", "whatever", time.Second)
+			require.NoError(t, err)
+			require.True(t, res)
+
+			res, err = cache.Add("other_key", "whatever", time.Second)
+			require.NoError(t, err)
+			require.False(t, res)
+
+			v, err := cache.GetString("other_key")
+			require.NoError(t, err)
+			require.Equal(t, "whatever", v)
+
+			_, err = cache.Flush()
+			require.NoError(t, err)
+		})
+	}
+}
+
 func createStore(t *testing.T, d driver) Cache {
 	t.Helper()
 

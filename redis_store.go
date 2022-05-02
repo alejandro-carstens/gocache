@@ -1,12 +1,16 @@
 package gocache
 
 import (
+	"errors"
 	"time"
 
 	"github.com/go-redis/redis"
 )
 
-const deleteLimit = 1000
+const (
+	deleteLimit = 1000
+	redisOk     = "OK"
+)
 
 var _ Cache = &RedisStore{}
 
@@ -126,6 +130,31 @@ func (s *RedisStore) Put(key string, value interface{}, duration time.Duration) 
 	}
 
 	return s.client.Set(s.k(key), val, duration).Err()
+}
+
+// Add an item to the cache only if an item doesn't already exist for the given key, or if the existing item has
+// expired. If the record was successfully added true will be returned else false will be returned
+func (s *RedisStore) Add(key string, value interface{}, duration time.Duration) (bool, error) {
+	if isNumeric(value) {
+		res, err := s.client.Eval(redisLuaAddScript, []string{s.k(key)}, value, duration.Seconds()).String()
+		if err != nil && !errors.Is(err, redis.Nil) {
+			return false, err
+		}
+
+		return res == redisOk, nil
+	}
+
+	val, err := encode(value)
+	if err != nil {
+		return false, err
+	}
+
+	res, err := s.client.Eval(redisLuaAddScript, []string{s.k(key)}, val, duration.Seconds()).String()
+	if err != nil && !errors.Is(err, redis.Nil) {
+		return false, err
+	}
+
+	return res == redisOk, nil
 }
 
 // Forever puts a value in the given store until it is forgotten/evicted
