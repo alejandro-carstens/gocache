@@ -12,7 +12,7 @@ func New(config config, encoder Encoder) (Cache, error) {
 	}
 	switch config.(type) {
 	case *LocalConfig:
-		return NewLocalStore(config.(*LocalConfig))
+		return NewLocalStore(config.(*LocalConfig), encoder)
 	case *RedisConfig:
 		return NewRedisStore(config.(*RedisConfig), encoder)
 	case *MemcacheConfig:

@@ -158,7 +158,7 @@ func (s *MemcacheStore) GetString(key string) (string, error) {
 		return "", checkErrNotFound(err)
 	}
 
-	v := string(item.Value)
+	var v = string(item.Value)
 	if isStringNumeric(v) || isStringBool(v) {
 		return v, nil
 	}
@@ -280,7 +280,7 @@ func (s *MemcacheStore) Get(key string, entity interface{}) error {
 }
 
 // Close closes the c releasing all open resources
-func (s *MemcacheStore) Close() error {
+func (*MemcacheStore) Close() error {
 	return nil
 }
 

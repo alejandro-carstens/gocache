@@ -1,28 +1,9 @@
 package gocache
 
 import (
-	"encoding/json"
 	"fmt"
 	"strconv"
 )
-
-func encode(item interface{}) (string, error) {
-	value, err := json.Marshal(item)
-
-	return string(value), err
-}
-
-func simpleDecode(value string) (string, error) {
-	err := json.Unmarshal([]byte(value), &value)
-
-	return value, err
-}
-
-func decode(value string, entity interface{}) (interface{}, error) {
-	err := json.Unmarshal([]byte(value), &entity)
-
-	return entity, err
-}
 
 func isNumeric(i interface{}) bool {
 	switch i.(type) {

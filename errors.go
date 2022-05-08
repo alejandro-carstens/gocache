@@ -7,8 +7,13 @@ import (
 	"github.com/go-redis/redis"
 )
 
-// ErrNotFound represents an agnostic cache entry not found error
-var ErrNotFound = errors.New("gocache: not found")
+var (
+	// ErrNotFound represents an agnostic cache entry not found error
+	ErrNotFound = errors.New("gocache: not found")
+	// ErrFailedToRetrieveEntry indicates that an entry was not able to be properly retrieved from the cache when
+	// calling cache.Many
+	ErrFailedToRetrieveEntry = errors.New("gocache: an error occurred while retrieving value, for more detail call Item.Error()")
+)
 
 func checkErrNotFound(err error) error {
 	if isErrNotFound(err) {

@@ -36,26 +36,27 @@ func (i Item) TagKey() string {
 }
 
 // String returns the string representation of an Item's value
-func (i Item) String() string {
-	if i.encoder != nil {
-		v := i.value
-		if err := i.encoder.Decode([]byte(v), &v); err != nil {
-			return i.value
-		}
-
-		return v
+func (i Item) String() (string, error) {
+	if i.err != nil {
+		return "", ErrFailedToRetrieveEntry
+	}
+	if isStringNumeric(i.value) || isStringBool(i.value) {
+		return i.value, nil
 	}
 
-	s, err := simpleDecode(i.value)
-	if err != nil {
-		return i.value
+	var v = i.value
+	if err := i.encoder.Decode([]byte(v), &v); err != nil {
+		return "", err
 	}
 
-	return s
+	return v, nil
 }
 
 // Uint64 returns the uint64 representation of an Item's value
 func (i Item) Uint64() (uint64, error) {
+	if i.err != nil {
+		return 0, ErrFailedToRetrieveEntry
+	}
 	if !isInterfaceNumericString(i.value) && !isNumeric(i.value) {
 		return 0, errors.New("invalid numeric value")
 	}
@@ -65,6 +66,9 @@ func (i Item) Uint64() (uint64, error) {
 
 // Int returns the int representation of an Item's value
 func (i Item) Int() (int, error) {
+	if i.err != nil {
+		return 0, ErrFailedToRetrieveEntry
+	}
 	if !isInterfaceNumericString(i.value) && !isNumeric(i.value) {
 		return 0, errors.New("invalid numeric value")
 	}
@@ -79,6 +83,9 @@ func (i Item) Bool() bool {
 
 // Int64 returns the int64 representation of an Item's value
 func (i Item) Int64() (int64, error) {
+	if i.err != nil {
+		return 0, ErrFailedToRetrieveEntry
+	}
 	if !isInterfaceNumericString(i.value) && !isNumeric(i.value) {
 		return 0, errors.New("invalid numeric value")
 	}
@@ -88,6 +95,9 @@ func (i Item) Int64() (int64, error) {
 
 // Float32 returns the float32 representation of an Item's value
 func (i Item) Float32() (float32, error) {
+	if i.err != nil {
+		return 0, ErrFailedToRetrieveEntry
+	}
 	if !isInterfaceNumericString(i.value) && !isNumeric(i.value) {
 		return 0, errors.New("invalid numeric value")
 	}
@@ -102,6 +112,9 @@ func (i Item) Float32() (float32, error) {
 
 // Float64 returns the float32 representation of an Item's value
 func (i Item) Float64() (float64, error) {
+	if i.err != nil {
+		return 0, ErrFailedToRetrieveEntry
+	}
 	if !isInterfaceNumericString(i.value) && !isNumeric(i.value) {
 		return 0, errors.New("invalid numeric value")
 	}
@@ -111,13 +124,11 @@ func (i Item) Float64() (float64, error) {
 
 // Unmarshal decodes an Item's value to the provided entity
 func (i Item) Unmarshal(entity interface{}) error {
-	if i.encoder != nil {
-		return i.encoder.Decode([]byte(i.value), entity)
+	if i.err != nil {
+		return ErrFailedToRetrieveEntry
 	}
 
-	_, err := decode(i.value, entity)
-
-	return err
+	return i.encoder.Decode([]byte(i.value), entity)
 }
 
 // Error returns the error that occurred when trying to retrieve a given Item

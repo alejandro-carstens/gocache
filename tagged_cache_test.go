@@ -300,7 +300,9 @@ func TestPutGetManyWithTags(t *testing.T) {
 
 				switch result.Key() {
 				case "string":
-					require.Equal(t, expectedResults[result.Key()], result.String())
+					res, err := result.String()
+					require.NoError(t, err)
+					require.Equal(t, expectedResults[result.Key()], res)
 				case "uint64":
 					res, err := result.Uint64()
 					require.NoError(t, err)

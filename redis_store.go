@@ -112,6 +112,9 @@ func (s *RedisStore) GetString(key string) (string, error) {
 	if err != nil {
 		return "", checkErrNotFound(err)
 	}
+	if isStringNumeric(value) || isStringBool(value) {
+		return value, nil
+	}
 	if err = s.encoder.Decode([]byte(value), &value); err != nil {
 		return "", err
 	}
@@ -249,9 +252,8 @@ func (s *RedisStore) Many(keys ...string) (Items, error) {
 		val, err := s.get(key).Result()
 		if err != nil {
 			items[key] = Item{
-				key:     key,
-				err:     checkErrNotFound(err),
-				encoder: s.encoder,
+				key: key,
+				err: checkErrNotFound(err),
 			}
 
 			continue

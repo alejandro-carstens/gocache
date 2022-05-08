@@ -11,18 +11,19 @@ import (
 var _ Cache = &LocalStore{}
 
 // NewLocalStore validates the passed in config and creates a Cache implementation of type *LocalStore
-func NewLocalStore(cnf *LocalConfig) (*LocalStore, error) {
+func NewLocalStore(cnf *LocalConfig, encoder Encoder) (*LocalStore, error) {
 	if err := cnf.validate(); err != nil {
 		return nil, nil
 	}
 
 	return &LocalStore{
-		c:                 cache.New(cnf.DefaultExpiration, cnf.DefaultInterval),
-		defaultExpiration: cnf.DefaultExpiration,
-		defaultInterval:   cnf.DefaultInterval,
 		prefix: prefix{
 			val: cnf.Prefix,
 		},
+		defaultExpiration: cnf.DefaultExpiration,
+		defaultInterval:   cnf.DefaultInterval,
+		c:                 cache.New(cnf.DefaultExpiration, cnf.DefaultInterval),
+		encoder:           encoder,
 	}, nil
 }
 
@@ -32,6 +33,7 @@ type LocalStore struct {
 	c                 *cache.Cache
 	defaultExpiration time.Duration
 	defaultInterval   time.Duration
+	encoder           Encoder
 }
 
 // GetString gets a string value from the store
@@ -40,8 +42,21 @@ func (s *LocalStore) GetString(key string) (string, error) {
 	if !valid {
 		return "", ErrNotFound
 	}
+	if isNumeric(value) || isBool(value) {
+		return fmt.Sprint(value), nil
+	}
 
-	return simpleDecode(fmt.Sprint(value))
+	data, valid := value.([]byte)
+	if !valid {
+		return "", errors.New("cannot decode cached value")
+	}
+
+	var v string
+	if err := s.encoder.Decode(data, &v); err != nil {
+		return "", err
+	}
+
+	return v, nil
 }
 
 // GetFloat64 gets a float value from the store
@@ -50,7 +65,7 @@ func (s *LocalStore) GetFloat64(key string) (float64, error) {
 	if !valid {
 		return 0, ErrNotFound
 	}
-	if !isInterfaceNumericString(value) && !isNumeric(value) {
+	if !isNumeric(value) {
 		return 0, errors.New("invalid numeric value")
 	}
 
@@ -63,7 +78,7 @@ func (s *LocalStore) GetFloat32(key string) (float32, error) {
 	if !valid {
 		return 0, ErrNotFound
 	}
-	if !isInterfaceNumericString(value) && !isNumeric(value) {
+	if !isNumeric(value) {
 		return 0, errors.New("invalid numeric value")
 	}
 
@@ -76,7 +91,7 @@ func (s *LocalStore) GetInt64(key string) (int64, error) {
 	if !valid {
 		return 0, ErrNotFound
 	}
-	if !isInterfaceNumericString(value) && !isNumeric(value) {
+	if !isNumeric(value) {
 		return 0, errors.New("invalid numeric value")
 	}
 
@@ -89,7 +104,7 @@ func (s *LocalStore) GetInt(key string) (int, error) {
 	if !valid {
 		return 0, ErrNotFound
 	}
-	if !isInterfaceNumericString(value) && !isNumeric(value) {
+	if !isNumeric(value) {
 		return 0, errors.New("invalid numeric value")
 	}
 
@@ -102,7 +117,7 @@ func (s *LocalStore) GetUint64(key string) (uint64, error) {
 	if !valid {
 		return 0, ErrNotFound
 	}
-	if !isInterfaceNumericString(value) && !isNumeric(value) {
+	if !isNumeric(value) {
 		return 0, errors.New("invalid numeric value")
 	}
 
@@ -115,8 +130,21 @@ func (s *LocalStore) GetBool(key string) (bool, error) {
 	if !valid {
 		return false, ErrNotFound
 	}
+	if isNumeric(value) || isBool(value) {
+		return stringToBool(fmt.Sprint(value)), nil
+	}
 
-	return stringToBool(fmt.Sprint(value)), nil
+	data, valid := value.([]byte)
+	if !valid {
+		return false, errors.New("cannot decode cached value")
+	}
+
+	var v string
+	if err := s.encoder.Decode(data, &v); err != nil {
+		return false, err
+	}
+
+	return stringToBool(v), nil
 }
 
 // Increment increments an integer counter by a given value
@@ -128,11 +156,8 @@ func (s *LocalStore) Increment(key string, value int64) (int64, error) {
 
 		return value, nil
 	}
-	if err := s.c.Increment(s.k(key), value); err != nil {
-		return 0, err
-	}
 
-	return s.GetInt64(key)
+	return s.c.IncrementInt64(s.k(key), value)
 }
 
 // Decrement decrements an integer counter by a given value
@@ -144,22 +169,19 @@ func (s *LocalStore) Decrement(key string, value int64) (int64, error) {
 
 		return value, nil
 	}
-	if err := s.c.Decrement(s.k(key), value); err != nil {
-		return 0, err
-	}
 
-	return s.GetInt64(key)
+	return s.c.DecrementInt64(s.k(key), value)
 }
 
 // Put puts a value in the given store for a predetermined amount of time in seconds.
 func (s *LocalStore) Put(key string, value interface{}, duration time.Duration) error {
-	if isNumeric(value) {
+	if isNumeric(value) || isBool(value) {
 		s.c.Set(s.k(key), value, duration)
 
 		return nil
 	}
 
-	val, err := encode(value)
+	val, err := s.encoder.Encode(value)
 	if err != nil {
 		return err
 	}
@@ -172,11 +194,11 @@ func (s *LocalStore) Put(key string, value interface{}, duration time.Duration) 
 // Add an item to the cache only if an item doesn't already exist for the given key, or if the existing item has
 // expired. If the record was successfully added true will be returned else false will be returned
 func (s *LocalStore) Add(key string, value interface{}, duration time.Duration) (bool, error) {
-	if isNumeric(value) {
+	if isNumeric(value) || isBool(value) {
 		return s.c.Add(s.k(key), value, duration) == nil, nil
 	}
 
-	val, err := encode(value)
+	val, err := s.encoder.Encode(value)
 	if err != nil {
 		return false, err
 	}
@@ -191,7 +213,7 @@ func (s *LocalStore) Forever(key string, value interface{}) error {
 
 // Flush flushes the store
 func (s *LocalStore) Flush() (bool, error) {
-	s.c = cache.New(s.defaultExpiration, s.defaultInterval)
+	s.c.Flush()
 
 	return true, nil
 }
@@ -233,10 +255,25 @@ func (s *LocalStore) Many(keys ...string) (Items, error) {
 
 			continue
 		}
+		if isNumeric(val) || isBool(val) {
+			items[key] = Item{
+				key:     key,
+				value:   fmt.Sprint(val),
+				encoder: s.encoder,
+			}
+
+			continue
+		}
+
+		data, valid := val.([]byte)
+		if !valid {
+			return nil, errors.New("cannot decode cached value")
+		}
 
 		items[key] = Item{
-			key:   key,
-			value: fmt.Sprint(val),
+			key:     key,
+			value:   string(data),
+			encoder: s.encoder,
 		}
 	}
 
@@ -250,13 +287,16 @@ func (s *LocalStore) Get(key string, entity interface{}) error {
 		return ErrNotFound
 	}
 
-	_, err := decode(fmt.Sprint(value), entity)
+	data, valid := value.([]byte)
+	if !valid {
+		return errors.New("cannot decode cached value")
+	}
 
-	return err
+	return s.encoder.Decode(data, entity)
 }
 
 // Close closes the c releasing all open resources
-func (s *LocalStore) Close() error {
+func (*LocalStore) Close() error {
 	return nil
 }
 

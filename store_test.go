@@ -274,7 +274,9 @@ func TestPutGetMany(t *testing.T) {
 			for _, result := range results {
 				switch result.Key() {
 				case "string":
-					require.Equal(t, expectedResults[result.Key()], result.String())
+					res, err := result.String()
+					require.NoError(t, err)
+					require.Equal(t, expectedResults[result.Key()], res)
 				case "uint64":
 					res, err := result.Uint64()
 					require.NoError(t, err)
@@ -515,7 +517,7 @@ func createStore(t *testing.T, d driver) Cache {
 		}
 	}
 
-	cache, err := New(cnf, Msgpack{})
+	cache, err := New(cnf, JSON{})
 	require.NoError(t, err)
 
 	return cache
