@@ -77,7 +77,7 @@ func (s *MemcacheStore) GetFloat64(key string) (float64, error) {
 		return 0, err
 	}
 	if !isStringNumeric(value) {
-		return 0, errors.New("invalid numeric val")
+		return 0, errors.New("invalid numeric value")
 	}
 
 	return stringToFloat64(value)
@@ -90,20 +90,20 @@ func (s *MemcacheStore) GetFloat32(key string) (float32, error) {
 		return 0, err
 	}
 	if !isStringNumeric(value) {
-		return 0, errors.New("invalid numeric val")
+		return 0, errors.New("invalid numeric value")
 	}
 
 	return stringToFloat32(value)
 }
 
 // GetInt64 gets an int64 value from the store
-func (s *MemcacheStore) GetInt64(key string) (res int64, err error) {
+func (s *MemcacheStore) GetInt64(key string) (int64, error) {
 	value, err := s.value(key)
 	if err != nil {
 		return 0, err
 	}
 	if !isStringNumeric(value) {
-		return 0, errors.New("invalid numeric val")
+		return 0, errors.New("invalid numeric value")
 	}
 
 	return stringToInt64(value)
@@ -116,7 +116,7 @@ func (s *MemcacheStore) GetInt(key string) (int, error) {
 		return 0, err
 	}
 	if !isStringNumeric(value) {
-		return 0, errors.New("invalid numeric val")
+		return 0, errors.New("invalid numeric value")
 	}
 
 	return stringToInt(value)
@@ -169,7 +169,7 @@ func (s *MemcacheStore) GetString(key string) (string, error) {
 	return v, nil
 }
 
-// Increment increments an integer counter by a given val
+// Increment increments an integer counter by a given value
 func (s *MemcacheStore) Increment(key string, value int64) (int64, error) {
 	res, err := s.client.Increment(s.k(key), uint64(value))
 	if err != nil {
@@ -186,7 +186,7 @@ func (s *MemcacheStore) Increment(key string, value int64) (int64, error) {
 	return int64(res), nil
 }
 
-// Decrement decrements an integer counter by a given val
+// Decrement decrements an integer counter by a given value
 func (s *MemcacheStore) Decrement(key string, value int64) (int64, error) {
 	newValue, err := s.client.Decrement(s.k(key), uint64(value))
 	if err != nil {

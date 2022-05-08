@@ -36,7 +36,7 @@ func (tc *taggedCache) Add(key string, value interface{}, duration time.Duration
 	return tc.store.Add(tagKey, value, duration)
 }
 
-// Increment increments an integer counter by a given val
+// Increment increments an integer counter by a given value
 func (tc *taggedCache) Increment(key string, value int64) (int64, error) {
 	tagKey, err := tc.taggedItemKey(key)
 	if err != nil {
@@ -46,7 +46,7 @@ func (tc *taggedCache) Increment(key string, value int64) (int64, error) {
 	return tc.store.Increment(tagKey, value)
 }
 
-// Decrement decrements an integer counter by a given val
+// Decrement decrements an integer counter by a given value
 func (tc *taggedCache) Decrement(key string, value int64) (int64, error) {
 	tagKey, err := tc.taggedItemKey(key)
 	if err != nil {
@@ -56,7 +56,7 @@ func (tc *taggedCache) Decrement(key string, value int64) (int64, error) {
 	return tc.store.Decrement(tagKey, value)
 }
 
-// Forget forgets/evicts a given key-val pair from the store
+// Forget forgets/evicts a given key-value pair from the store
 func (tc *taggedCache) Forget(keys ...string) (bool, error) {
 	var tagKeys = make([]string, len(keys))
 	for i, key := range keys {

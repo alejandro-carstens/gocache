@@ -51,7 +51,7 @@ func (s *LocalStore) GetFloat64(key string) (float64, error) {
 		return 0, ErrNotFound
 	}
 	if !isInterfaceNumericString(value) && !isNumeric(value) {
-		return 0, errors.New("invalid numeric val")
+		return 0, errors.New("invalid numeric value")
 	}
 
 	return interfaceToFloat64(value)
@@ -64,7 +64,7 @@ func (s *LocalStore) GetFloat32(key string) (float32, error) {
 		return 0, ErrNotFound
 	}
 	if !isInterfaceNumericString(value) && !isNumeric(value) {
-		return 0, errors.New("invalid numeric val")
+		return 0, errors.New("invalid numeric value")
 	}
 
 	return interfaceToFloat32(value)
@@ -77,7 +77,7 @@ func (s *LocalStore) GetInt64(key string) (int64, error) {
 		return 0, ErrNotFound
 	}
 	if !isInterfaceNumericString(value) && !isNumeric(value) {
-		return 0, errors.New("invalid numeric val")
+		return 0, errors.New("invalid numeric value")
 	}
 
 	return interfaceToInt64(value)
@@ -90,7 +90,7 @@ func (s *LocalStore) GetInt(key string) (int, error) {
 		return 0, ErrNotFound
 	}
 	if !isInterfaceNumericString(value) && !isNumeric(value) {
-		return 0, errors.New("invalid numeric val")
+		return 0, errors.New("invalid numeric value")
 	}
 
 	return interfaceToInt(value)
@@ -103,7 +103,7 @@ func (s *LocalStore) GetUint64(key string) (uint64, error) {
 		return 0, ErrNotFound
 	}
 	if !isInterfaceNumericString(value) && !isNumeric(value) {
-		return 0, errors.New("invalid numeric val")
+		return 0, errors.New("invalid numeric value")
 	}
 
 	return interfaceToUint64(value)
@@ -119,7 +119,7 @@ func (s *LocalStore) GetBool(key string) (bool, error) {
 	return stringToBool(fmt.Sprint(value)), nil
 }
 
-// Increment increments an integer counter by a given val
+// Increment increments an integer counter by a given value
 func (s *LocalStore) Increment(key string, value int64) (int64, error) {
 	if _, valid := s.c.Get(s.k(key)); !valid {
 		if err := s.Forever(key, value); err != nil {
@@ -135,7 +135,7 @@ func (s *LocalStore) Increment(key string, value int64) (int64, error) {
 	return s.GetInt64(key)
 }
 
-// Decrement decrements an integer counter by a given val
+// Decrement decrements an integer counter by a given value
 func (s *LocalStore) Decrement(key string, value int64) (int64, error) {
 	if _, valid := s.c.Get(s.k(key)); !valid {
 		if err := s.Forever(key, -1*value); err != nil {

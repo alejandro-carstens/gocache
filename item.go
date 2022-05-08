@@ -35,7 +35,7 @@ func (i Item) TagKey() string {
 	return i.tagKey
 }
 
-// String returns the string representation of an Item's val
+// String returns the string representation of an Item's value
 func (i Item) String() string {
 	if i.encoder != nil {
 		v := i.value
@@ -54,42 +54,42 @@ func (i Item) String() string {
 	return s
 }
 
-// Uint64 returns the uint64 representation of an Item's val
+// Uint64 returns the uint64 representation of an Item's value
 func (i Item) Uint64() (uint64, error) {
 	if !isInterfaceNumericString(i.value) && !isNumeric(i.value) {
-		return 0, errors.New("invalid numeric val")
+		return 0, errors.New("invalid numeric value")
 	}
 
 	return strconv.ParseUint(i.value, 10, 64)
 }
 
-// Int returns the int representation of an Item's val
+// Int returns the int representation of an Item's value
 func (i Item) Int() (int, error) {
 	if !isInterfaceNumericString(i.value) && !isNumeric(i.value) {
-		return 0, errors.New("invalid numeric val")
+		return 0, errors.New("invalid numeric value")
 	}
 
 	return strconv.Atoi(i.value)
 }
 
-// Bool returns the boolean representation of an Item's val
+// Bool returns the boolean representation of an Item's value
 func (i Item) Bool() bool {
 	return stringToBool(i.value)
 }
 
-// Int64 returns the int64 representation of an Item's val
+// Int64 returns the int64 representation of an Item's value
 func (i Item) Int64() (int64, error) {
 	if !isInterfaceNumericString(i.value) && !isNumeric(i.value) {
-		return 0, errors.New("invalid numeric val")
+		return 0, errors.New("invalid numeric value")
 	}
 
 	return strconv.ParseInt(i.value, 10, 64)
 }
 
-// Float32 returns the float32 representation of an Item's val
+// Float32 returns the float32 representation of an Item's value
 func (i Item) Float32() (float32, error) {
 	if !isInterfaceNumericString(i.value) && !isNumeric(i.value) {
-		return 0, errors.New("invalid numeric val")
+		return 0, errors.New("invalid numeric value")
 	}
 
 	f, err := strconv.ParseFloat(i.value, 32)
@@ -100,10 +100,10 @@ func (i Item) Float32() (float32, error) {
 	return float32(f), nil
 }
 
-// Float64 returns the float32 representation of an Item's val
+// Float64 returns the float32 representation of an Item's value
 func (i Item) Float64() (float64, error) {
 	if !isInterfaceNumericString(i.value) && !isNumeric(i.value) {
-		return 0, errors.New("invalid numeric val")
+		return 0, errors.New("invalid numeric value")
 	}
 
 	return strconv.ParseFloat(i.value, 64)

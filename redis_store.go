@@ -119,12 +119,12 @@ func (s *RedisStore) GetString(key string) (string, error) {
 	return value, nil
 }
 
-// Increment increments an integer counter by a given val
+// Increment increments an integer counter by a given value
 func (s *RedisStore) Increment(key string, value int64) (int64, error) {
 	return s.client.IncrBy(s.k(key), value).Result()
 }
 
-// Decrement decrements an integer counter by a given val
+// Decrement decrements an integer counter by a given value
 func (s *RedisStore) Decrement(key string, value int64) (int64, error) {
 	return s.client.DecrBy(s.k(key), value).Result()
 }

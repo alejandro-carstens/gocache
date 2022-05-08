@@ -32,11 +32,11 @@ type (
 		// Add an item to the cache only if an item doesn't already exist for the given key, or if the existing item has
 		// expired. If the record was successfully added true will be returned else false will be returned
 		Add(key string, value interface{}, duration time.Duration) (bool, error)
-		// Increment increments an integer counter by a given val
+		// Increment increments an integer counter by a given value
 		Increment(key string, value int64) (int64, error)
-		// Decrement decrements an integer counter by a given val
+		// Decrement decrements an integer counter by a given value
 		Decrement(key string, value int64) (int64, error)
-		// Forget forgets/evicts a given key-val pair from the store
+		// Forget forgets/evicts a given key-value pair from the store
 		Forget(keys ...string) (bool, error)
 		// Forever puts a value in the given store until it is forgotten/evicted manually
 		Forever(key string, value interface{}) error
