@@ -77,8 +77,12 @@ func (i Item) Int() (int, error) {
 }
 
 // Bool returns the boolean representation of an Item's value
-func (i Item) Bool() bool {
-	return stringToBool(i.value)
+func (i Item) Bool() (bool, error) {
+	if i.err != nil {
+		return false, ErrFailedToRetrieveEntry
+	}
+
+	return stringToBool(i.value), nil
 }
 
 // Int64 returns the int64 representation of an Item's value

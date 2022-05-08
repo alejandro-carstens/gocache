@@ -331,8 +331,9 @@ func TestPutGetManyWithTags(t *testing.T) {
 					require.Equal(t, expectedResults[result.Key()], result.Error())
 					require.True(t, result.EntryNotFound())
 				case "bool":
-					require.Equal(t, expectedResults[result.Key()], result.Bool())
-					require.NoError(t, result.Error())
+					res, err := result.Bool()
+					require.NoError(t, err)
+					require.Equal(t, expectedResults[result.Key()], res)
 				}
 			}
 
