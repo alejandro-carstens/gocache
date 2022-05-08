@@ -34,7 +34,7 @@ type LocalStore struct {
 	defaultInterval   time.Duration
 }
 
-// GetString gets a string val from the store
+// GetString gets a string value from the store
 func (s *LocalStore) GetString(key string) (string, error) {
 	value, valid := s.c.Get(s.k(key))
 	if !valid {
@@ -44,7 +44,7 @@ func (s *LocalStore) GetString(key string) (string, error) {
 	return simpleDecode(fmt.Sprint(value))
 }
 
-// GetFloat64 gets a float val from the store
+// GetFloat64 gets a float value from the store
 func (s *LocalStore) GetFloat64(key string) (float64, error) {
 	value, valid := s.c.Get(s.k(key))
 	if !valid {
@@ -57,7 +57,7 @@ func (s *LocalStore) GetFloat64(key string) (float64, error) {
 	return interfaceToFloat64(value)
 }
 
-// GetFloat32 gets a float32 val from the store
+// GetFloat32 gets a float32 value from the store
 func (s *LocalStore) GetFloat32(key string) (float32, error) {
 	value, valid := s.c.Get(s.k(key))
 	if !valid {
@@ -70,7 +70,7 @@ func (s *LocalStore) GetFloat32(key string) (float32, error) {
 	return interfaceToFloat32(value)
 }
 
-// GetInt64 gets an int val from the store
+// GetInt64 gets an int value from the store
 func (s *LocalStore) GetInt64(key string) (int64, error) {
 	value, valid := s.c.Get(s.k(key))
 	if !valid {
@@ -83,7 +83,7 @@ func (s *LocalStore) GetInt64(key string) (int64, error) {
 	return interfaceToInt64(value)
 }
 
-// GetInt gets an int val from the store
+// GetInt gets an int value from the store
 func (s *LocalStore) GetInt(key string) (int, error) {
 	value, valid := s.c.Get(s.k(key))
 	if !valid {
@@ -96,7 +96,7 @@ func (s *LocalStore) GetInt(key string) (int, error) {
 	return interfaceToInt(value)
 }
 
-// GetUint64 gets an uint64 val from the store
+// GetUint64 gets an uint64 value from the store
 func (s *LocalStore) GetUint64(key string) (uint64, error) {
 	value, valid := s.c.Get(s.k(key))
 	if !valid {
@@ -109,7 +109,7 @@ func (s *LocalStore) GetUint64(key string) (uint64, error) {
 	return interfaceToUint64(value)
 }
 
-// GetBool gets a bool val from the store
+// GetBool gets a bool value from the store
 func (s *LocalStore) GetBool(key string) (bool, error) {
 	value, valid := s.c.Get(s.k(key))
 	if !valid {
@@ -151,7 +151,7 @@ func (s *LocalStore) Decrement(key string, value int64) (int64, error) {
 	return s.GetInt64(key)
 }
 
-// Put puts a val in the given store for a predetermined amount of time in seconds.
+// Put puts a value in the given store for a predetermined amount of time in seconds.
 func (s *LocalStore) Put(key string, value interface{}, duration time.Duration) error {
 	if isNumeric(value) {
 		s.c.Set(s.k(key), value, duration)
@@ -184,7 +184,7 @@ func (s *LocalStore) Add(key string, value interface{}, duration time.Duration) 
 	return s.c.Add(s.k(key), val, duration) == nil, nil
 }
 
-// Forever puts a val in the given store until it is forgotten/evicted
+// Forever puts a value in the given store until it is forgotten/evicted
 func (s *LocalStore) Forever(key string, value interface{}) error {
 	return s.Put(key, value, -1)
 }
@@ -196,7 +196,7 @@ func (s *LocalStore) Flush() (bool, error) {
 	return true, nil
 }
 
-// Forget forgets/evicts a given key-val pair from the store
+// Forget forgets/evicts a given key-value pair from the store
 func (s *LocalStore) Forget(keys ...string) (bool, error) {
 	for _, key := range keys {
 		if _, valid := s.c.Get(s.k(key)); !valid {
@@ -243,7 +243,7 @@ func (s *LocalStore) Many(keys ...string) (Items, error) {
 	return items, nil
 }
 
-// Get gets the struct representation of a val from the store
+// Get gets the struct representation of a value from the store
 func (s *LocalStore) Get(key string, entity interface{}) error {
 	value, valid := s.c.Get(s.Prefix() + key)
 	if !valid {

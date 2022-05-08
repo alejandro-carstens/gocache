@@ -5,14 +5,13 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/alejandro-carstens/gocache/encoder"
 	"github.com/bradfitz/gomemcache/memcache"
 )
 
 var _ Cache = &MemcacheStore{}
 
 // NewMemcacheStore validates the passed in config and creates a Cache implementation of type *MemcacheStore
-func NewMemcacheStore(cnf *MemcacheConfig, encoder encoder.Encoder) (*MemcacheStore, error) {
+func NewMemcacheStore(cnf *MemcacheConfig, encoder Encoder) (*MemcacheStore, error) {
 	if err := cnf.validate(); err != nil {
 		return nil, err
 	}
@@ -37,10 +36,10 @@ func NewMemcacheStore(cnf *MemcacheConfig, encoder encoder.Encoder) (*MemcacheSt
 type MemcacheStore struct {
 	prefix
 	client  *memcache.Client
-	encoder encoder.Encoder
+	encoder Encoder
 }
 
-// Put puts a val in the given store for a predetermined amount of time in seconds
+// Put puts a value in the given store for a predetermined amount of time in seconds
 func (s *MemcacheStore) Put(key string, value interface{}, duration time.Duration) error {
 	item, err := s.item(key, value, duration)
 	if err != nil {
@@ -66,12 +65,12 @@ func (s *MemcacheStore) Add(key string, value interface{}, duration time.Duratio
 	return true, nil
 }
 
-// Forever puts a val in the given store until it is forgotten/evicted
+// Forever puts a value in the given store until it is forgotten/evicted
 func (s *MemcacheStore) Forever(key string, value interface{}) error {
 	return s.Put(key, value, 0)
 }
 
-// GetFloat64 gets a float64 val from the store
+// GetFloat64 gets a float64 value from the store
 func (s *MemcacheStore) GetFloat64(key string) (float64, error) {
 	value, err := s.value(key)
 	if err != nil {
@@ -84,7 +83,7 @@ func (s *MemcacheStore) GetFloat64(key string) (float64, error) {
 	return stringToFloat64(value)
 }
 
-// GetFloat32 gets a float32 val from the store
+// GetFloat32 gets a float32 value from the store
 func (s *MemcacheStore) GetFloat32(key string) (float32, error) {
 	value, err := s.value(key)
 	if err != nil {
@@ -97,7 +96,7 @@ func (s *MemcacheStore) GetFloat32(key string) (float32, error) {
 	return stringToFloat32(value)
 }
 
-// GetInt64 gets an int64 val from the store
+// GetInt64 gets an int64 value from the store
 func (s *MemcacheStore) GetInt64(key string) (res int64, err error) {
 	value, err := s.value(key)
 	if err != nil {
@@ -110,7 +109,7 @@ func (s *MemcacheStore) GetInt64(key string) (res int64, err error) {
 	return stringToInt64(value)
 }
 
-// GetInt gets an int val from the store
+// GetInt gets an int value from the store
 func (s *MemcacheStore) GetInt(key string) (int, error) {
 	value, err := s.value(key)
 	if err != nil {
@@ -123,7 +122,7 @@ func (s *MemcacheStore) GetInt(key string) (int, error) {
 	return stringToInt(value)
 }
 
-// GetUint64 gets an uint64 val from the store
+// GetUint64 gets an uint64 value from the store
 func (s *MemcacheStore) GetUint64(key string) (uint64, error) {
 	value, err := s.value(key)
 	if err != nil {
@@ -136,7 +135,7 @@ func (s *MemcacheStore) GetUint64(key string) (uint64, error) {
 	return stringToUint64(value)
 }
 
-// GetBool gets a bool val from the store
+// GetBool gets a bool value from the store
 func (s *MemcacheStore) GetBool(key string) (bool, error) {
 	value, err := s.value(key)
 	if err != nil {
@@ -152,7 +151,7 @@ func (s *MemcacheStore) GetBool(key string) (bool, error) {
 	return stringToBool(value), nil
 }
 
-// GetString gets a string val from the store
+// GetString gets a string value from the store
 func (s *MemcacheStore) GetString(key string) (string, error) {
 	item, err := s.client.Get(s.k(key))
 	if err != nil {
@@ -250,7 +249,7 @@ func (s *MemcacheStore) Many(keys ...string) (Items, error) {
 	return items, nil
 }
 
-// Forget forgets/evicts a given key-val pair from the store
+// Forget forgets/evicts a given key-value pair from the store
 func (s *MemcacheStore) Forget(keys ...string) (bool, error) {
 	for _, key := range keys {
 		if err := s.client.Delete(s.k(key)); err != nil {
@@ -270,7 +269,7 @@ func (s *MemcacheStore) Flush() (bool, error) {
 	return true, nil
 }
 
-// Get gets the struct representation of a val from the store
+// Get gets the struct representation of a value from the store
 func (s *MemcacheStore) Get(key string, entity interface{}) error {
 	item, err := s.client.Get(s.k(key))
 	if err != nil {

@@ -207,7 +207,7 @@ func TestForeverWithTags(t *testing.T) {
 		t.Run(d.string(), func(t *testing.T) {
 			var (
 				cache    = createStore(t, d)
-				expected = "val"
+				expected = "value"
 				ts       = tag()
 			)
 			require.NoError(t, cache.Tags(ts).Forever("key", expected))

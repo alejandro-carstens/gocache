@@ -4,7 +4,6 @@ import (
 	"errors"
 	"time"
 
-	"github.com/alejandro-carstens/gocache/encoder"
 	"github.com/go-redis/redis"
 )
 
@@ -16,7 +15,7 @@ const (
 var _ Cache = &RedisStore{}
 
 // NewRedisStore validates the passed in config and creates a Cache implementation of type *RedisStore
-func NewRedisStore(cnf *RedisConfig, encoder encoder.Encoder) (*RedisStore, error) {
+func NewRedisStore(cnf *RedisConfig, encoder Encoder) (*RedisStore, error) {
 	if err := cnf.validate(); err != nil {
 		return nil, err
 	}
@@ -53,45 +52,45 @@ func NewRedisStore(cnf *RedisConfig, encoder encoder.Encoder) (*RedisStore, erro
 type RedisStore struct {
 	prefix
 	client  *redis.Client
-	encoder encoder.Encoder
+	encoder Encoder
 }
 
-// GetFloat64 gets a float64 val from the store
+// GetFloat64 gets a float64 value from the store
 func (s *RedisStore) GetFloat64(key string) (float64, error) {
 	res, err := s.get(key).Float64()
 
 	return res, checkErrNotFound(err)
 }
 
-// GetFloat32 gets a float32 val from the store
+// GetFloat32 gets a float32 value from the store
 func (s *RedisStore) GetFloat32(key string) (float32, error) {
 	res, err := s.get(key).Float32()
 
 	return res, checkErrNotFound(err)
 }
 
-// GetInt64 gets an int64 val from the store
+// GetInt64 gets an int64 value from the store
 func (s *RedisStore) GetInt64(key string) (int64, error) {
 	res, err := s.get(key).Int64()
 
 	return res, checkErrNotFound(err)
 }
 
-// GetInt gets an int val from the store
+// GetInt gets an int value from the store
 func (s *RedisStore) GetInt(key string) (int, error) {
 	res, err := s.get(key).Int()
 
 	return res, checkErrNotFound(err)
 }
 
-// GetUint64 gets an uint64 val from the store
+// GetUint64 gets an uint64 value from the store
 func (s *RedisStore) GetUint64(key string) (uint64, error) {
 	res, err := s.get(key).Uint64()
 
 	return res, checkErrNotFound(err)
 }
 
-// GetBool gets a bool val from the store
+// GetBool gets a bool value from the store
 func (s *RedisStore) GetBool(key string) (bool, error) {
 	value, err := s.get(key).Result()
 	if err != nil {
@@ -107,7 +106,7 @@ func (s *RedisStore) GetBool(key string) (bool, error) {
 	return stringToBool(value), nil
 }
 
-// GetString gets a string val from the store
+// GetString gets a string value from the store
 func (s *RedisStore) GetString(key string) (string, error) {
 	value, err := s.get(key).Result()
 	if err != nil {
@@ -130,7 +129,7 @@ func (s *RedisStore) Decrement(key string, value int64) (int64, error) {
 	return s.client.DecrBy(s.k(key), value).Result()
 }
 
-// Put puts a val in the given store for a predetermined amount of time in seconds
+// Put puts a value in the given store for a predetermined amount of time in seconds
 func (s *RedisStore) Put(key string, value interface{}, duration time.Duration) error {
 	if isNumeric(value) || isBool(value) {
 		return s.client.Set(s.k(key), value, duration).Err()
@@ -169,7 +168,7 @@ func (s *RedisStore) Add(key string, value interface{}, duration time.Duration) 
 	return res == redisOk, nil
 }
 
-// Forever puts a val in the given store until it is forgotten/evicted
+// Forever puts a value in the given store until it is forgotten/evicted
 func (s *RedisStore) Forever(key string, value interface{}) error {
 	if isNumeric(value) || isBool(value) {
 		if err := s.client.Set(s.k(key), value, 0).Err(); err != nil {
@@ -199,7 +198,7 @@ func (s *RedisStore) Flush() (bool, error) {
 	return true, nil
 }
 
-// Forget forgets/evicts a given key-val pair from the store
+// Forget forgets/evicts a given key-value pair from the store
 func (s *RedisStore) Forget(keys ...string) (bool, error) {
 	if len(keys) == 0 {
 		return true, nil
@@ -297,7 +296,7 @@ func (s *RedisStore) Close() error {
 	return s.client.Close()
 }
 
-// Get gets the struct representation of a val from the store
+// Get gets the struct representation of a value from the store
 func (s *RedisStore) Get(key string, entity interface{}) error {
 	value, err := s.get(key).Bytes()
 	if err != nil {

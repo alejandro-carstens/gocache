@@ -4,8 +4,6 @@ import (
 	"errors"
 	"strconv"
 	"time"
-
-	"github.com/alejandro-carstens/gocache/encoder"
 )
 
 type (
@@ -21,7 +19,7 @@ type (
 		value   string
 		tagKey  string
 		err     error
-		encoder encoder.Encoder
+		encoder Encoder
 	}
 	// Items is an Item map keyed by the Item key
 	Items map[string]Item
@@ -111,7 +109,7 @@ func (i Item) Float64() (float64, error) {
 	return strconv.ParseFloat(i.value, 64)
 }
 
-// Unmarshal decodes an Item's val to the provided entity
+// Unmarshal decodes an Item's value to the provided entity
 func (i Item) Unmarshal(entity interface{}) error {
 	if i.encoder != nil {
 		return i.encoder.Decode([]byte(i.value), entity)

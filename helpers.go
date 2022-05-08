@@ -138,11 +138,11 @@ func isInterfaceNumericString(value interface{}) bool {
 }
 
 func stringToBool(value string) bool {
-	// If the cache val is '0' or 'false' we return false
+	// If the cache value is '0' or 'false' we return false
 	if len(value) > 0 && (value == "0" || value == "false" || value == `""`) {
 		return false
 	}
-	// If the cache val is empty we return false
+	// If the cache value is empty we return false
 	if len(value) == 0 {
 		return false
 	}

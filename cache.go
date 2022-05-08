@@ -3,12 +3,10 @@ package gocache
 import (
 	"errors"
 	"time"
-
-	"github.com/alejandro-carstens/gocache/encoder"
 )
 
 // New new-ups an instance of Store
-func New(config config, encoder encoder.Encoder) (Cache, error) {
+func New(config config, encoder Encoder) (Cache, error) {
 	if err := config.validate(); err != nil {
 		return nil, err
 	}
@@ -27,9 +25,9 @@ func New(config config, encoder encoder.Encoder) (Cache, error) {
 type (
 	// store represents the caching methods to be implemented
 	store interface {
-		// GetString gets a string val from the store
+		// GetString gets a string value from the store
 		GetString(key string) (string, error)
-		// Put puts a val in the given store for a predetermined amount of time in seconds
+		// Put puts a value in the given store for a predetermined amount of time in seconds
 		Put(key string, value interface{}, duration time.Duration) error
 		// Add an item to the cache only if an item doesn't already exist for the given key, or if the existing item has
 		// expired. If the record was successfully added true will be returned else false will be returned
@@ -40,21 +38,21 @@ type (
 		Decrement(key string, value int64) (int64, error)
 		// Forget forgets/evicts a given key-val pair from the store
 		Forget(keys ...string) (bool, error)
-		// Forever puts a val in the given store until it is forgotten/evicted manually
+		// Forever puts a value in the given store until it is forgotten/evicted manually
 		Forever(key string, value interface{}) error
 		// Flush flushes the store
 		Flush() (bool, error)
-		// GetInt64 gets an int64 val from the store
+		// GetInt64 gets an int64 value from the store
 		GetInt64(key string) (int64, error)
-		// GetInt gets an int val from the store
+		// GetInt gets an int value from the store
 		GetInt(key string) (int, error)
-		// GetFloat64 gets a float64 val from the store
+		// GetFloat64 gets a float64 value from the store
 		GetFloat64(key string) (float64, error)
-		// GetFloat32 gets a float32 val from the store
+		// GetFloat32 gets a float32 value from the store
 		GetFloat32(key string) (float32, error)
-		// GetUint64 gets a uint64 val from the store
+		// GetUint64 gets a uint64 value from the store
 		GetUint64(key string) (uint64, error)
-		// GetBool gets a bool val from the store
+		// GetBool gets a bool value from the store
 		GetBool(key string) (bool, error)
 		// Prefix gets the cache key prefix
 		Prefix() string
@@ -62,7 +60,7 @@ type (
 		Many(keys ...string) (Items, error)
 		// PutMany puts many values in the given store until they are forgotten/evicted
 		PutMany(entries ...Entry) error
-		// Get gets the struct representation of a val from the store
+		// Get gets the struct representation of a value from the store
 		Get(key string, entity interface{}) error
 		// Close closes the c releasing all open resources
 		Close() error
