@@ -252,7 +252,9 @@ func (s *MemcacheStore) Many(keys ...string) (Items, error) {
 // Forget forgets/evicts a given key-value pair from the store
 func (s *MemcacheStore) Forget(keys ...string) (bool, error) {
 	for _, key := range keys {
-		if err := s.client.Delete(s.k(key)); err != nil {
+		if err := s.client.Delete(s.k(key)); errors.Is(err, memcache.ErrCacheMiss) {
+			continue
+		} else if err != nil {
 			return false, err
 		}
 	}
@@ -288,7 +290,7 @@ func (*MemcacheStore) Close() error {
 func (s *MemcacheStore) Tags(names ...string) TaggedCache {
 	return &taggedCache{
 		store: s,
-		tags: tagSet{
+		tags: &TagSet{
 			store: s,
 			names: names,
 		},

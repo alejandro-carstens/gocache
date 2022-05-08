@@ -8,34 +8,36 @@ import (
 )
 
 func TestLock(t *testing.T) {
-	for _, d := range drivers {
-		t.Run(d.string(), func(t *testing.T) {
-			var (
-				cache    = createStore(t, d)
+	for _, e := range encoders {
+		for _, d := range drivers {
+			t.Run(d.string(), func(t *testing.T) {
+				var (
+					cache    = createStore(t, d, e)
+					got, err = cache.Lock("test", "test", 10*time.Second).Acquire()
+				)
+				require.NoError(t, err)
+				require.True(t, got)
+
 				got, err = cache.Lock("test", "test", 10*time.Second).Acquire()
-			)
-			require.NoError(t, err)
-			require.True(t, got)
+				require.NoError(t, err)
+				require.False(t, got)
 
-			got, err = cache.Lock("test", "test", 10*time.Second).Acquire()
-			require.NoError(t, err)
-			require.False(t, got)
+				user, err := cache.Lock("test", "test", 10*time.Second).GetCurrentOwner()
+				require.NoError(t, err)
+				require.Equal(t, "test", user)
 
-			user, err := cache.Lock("test", "test", 10*time.Second).GetCurrentOwner()
-			require.NoError(t, err)
-			require.Equal(t, "test", user)
+				got, err = cache.Lock("test", "test", 10*time.Second).Release()
+				require.NoError(t, err)
+				require.True(t, got)
 
-			got, err = cache.Lock("test", "test", 10*time.Second).Release()
-			require.NoError(t, err)
-			require.True(t, got)
+				got, err = cache.Lock("test", "test", 10*time.Second).Acquire()
+				require.NoError(t, err)
+				require.True(t, got)
+				require.NoError(t, cache.Lock("test", "test", 10*time.Second).ForceRelease())
 
-			got, err = cache.Lock("test", "test", 10*time.Second).Acquire()
-			require.NoError(t, err)
-			require.True(t, got)
-			require.NoError(t, cache.Lock("test", "test", 10*time.Second).ForceRelease())
-
-			_, err = cache.Flush()
-			require.NoError(t, err)
-		})
+				_, err = cache.Flush()
+				require.NoError(t, err)
+			})
+		}
 	}
 }

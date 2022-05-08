@@ -7,15 +7,15 @@ import (
 	"github.com/rs/xid"
 )
 
-// tagSet is the representation of a tag set for the caching stores
-type tagSet struct {
+// TagSet is the representation of a tag set for the caching stores
+type TagSet struct {
 	store store
 	names []string
 }
 
-func (ts *tagSet) reset() error {
+func (ts *TagSet) Reset() error {
 	for i, name := range ts.names {
-		id, err := ts.resetTag(name)
+		id, err := ts.ResetTag(name)
 		if err != nil {
 			return err
 		}
@@ -26,8 +26,8 @@ func (ts *tagSet) reset() error {
 	return nil
 }
 
-func (ts *tagSet) getNamespace() (string, error) {
-	tagsIds, err := ts.tagIds()
+func (ts *TagSet) Namespace() (string, error) {
+	tagsIds, err := ts.TagIds()
 	if err != nil {
 		return "", err
 	}
@@ -35,10 +35,10 @@ func (ts *tagSet) getNamespace() (string, error) {
 	return strings.Join(tagsIds, "|"), err
 }
 
-func (ts *tagSet) tagIds() ([]string, error) {
+func (ts *TagSet) TagIds() ([]string, error) {
 	tagIds := make([]string, len(ts.names))
 	for i, name := range ts.names {
-		val, err := ts.tagId(name)
+		val, err := ts.TagId(name)
 		if err != nil {
 			return tagIds, err
 		}
@@ -49,24 +49,44 @@ func (ts *tagSet) tagIds() ([]string, error) {
 	return tagIds, nil
 }
 
-func (ts *tagSet) tagId(name string) (string, error) {
-	value, err := ts.store.GetString(ts.tagKey(name))
+func (ts *TagSet) TagId(name string) (string, error) {
+	value, err := ts.store.GetString(ts.TagKey(name))
 	if err != nil && !isErrNotFound(err) {
 		return "", err
 	}
 	if len(value) == 0 {
-		return ts.resetTag(name)
+		return ts.ResetTag(name)
 	}
 
 	return fmt.Sprint(value), nil
 }
 
-func (ts *tagSet) tagKey(name string) string {
+func (ts *TagSet) TagKey(name string) string {
 	return "tag:" + name + ":key"
 }
 
-func (ts *tagSet) resetTag(name string) (string, error) {
+func (ts *TagSet) ResetTag(name string) (string, error) {
 	id := xid.New().String()
 
-	return id, ts.store.Forever(ts.tagKey(name), id)
+	return id, ts.store.Forever(ts.TagKey(name), id)
+}
+
+func (ts *TagSet) Flush() error {
+	for _, name := range ts.names {
+		if err := ts.FlushTag(name); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (ts *TagSet) FlushTag(name string) error {
+	_, err := ts.store.Forget(ts.TagKey(name))
+
+	return err
+}
+
+func (ts *TagSet) Names() []string {
+	return ts.names
 }

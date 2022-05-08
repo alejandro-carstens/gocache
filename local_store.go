@@ -221,10 +221,6 @@ func (s *LocalStore) Flush() (bool, error) {
 // Forget forgets/evicts a given key-value pair from the store
 func (s *LocalStore) Forget(keys ...string) (bool, error) {
 	for _, key := range keys {
-		if _, valid := s.c.Get(s.k(key)); !valid {
-			return false, nil
-		}
-
 		s.c.Delete(s.k(key))
 	}
 
@@ -304,7 +300,7 @@ func (*LocalStore) Close() error {
 func (s *LocalStore) Tags(names ...string) TaggedCache {
 	return &taggedCache{
 		store: s,
-		tags: tagSet{
+		tags: &TagSet{
 			store: s,
 			names: names,
 		},

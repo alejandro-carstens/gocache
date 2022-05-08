@@ -285,7 +285,7 @@ func (s *RedisStore) Tags(names ...string) TaggedCache {
 	return &redisTaggedCache{
 		taggedCache{
 			store: s,
-			tags: tagSet{
+			tags: &TagSet{
 				store: s,
 				names: names,
 			},
