@@ -24,8 +24,8 @@ func decode(value string, entity interface{}) (interface{}, error) {
 	return entity, err
 }
 
-func isNumeric(s interface{}) bool {
-	switch s.(type) {
+func isNumeric(i interface{}) bool {
+	switch i.(type) {
 	case int:
 		return true
 	case int8:
@@ -57,8 +57,23 @@ func isNumeric(s interface{}) bool {
 	}
 }
 
+func isBool(i interface{}) bool {
+	switch i.(type) {
+	case bool:
+		return true
+	default:
+		return false
+	}
+}
+
 func isStringNumeric(value string) bool {
 	_, err := strconv.ParseFloat(value, 64)
+
+	return err == nil
+}
+
+func isStringBool(value string) bool {
+	_, err := strconv.ParseBool(value)
 
 	return err == nil
 }
@@ -123,11 +138,11 @@ func isInterfaceNumericString(value interface{}) bool {
 }
 
 func stringToBool(value string) bool {
-	// If the cache value is '0' or 'false' we return false
+	// If the cache val is '0' or 'false' we return false
 	if len(value) > 0 && (value == "0" || value == "false" || value == `""`) {
 		return false
 	}
-	// If the cache value is empty we return false
+	// If the cache val is empty we return false
 	if len(value) == 0 {
 		return false
 	}

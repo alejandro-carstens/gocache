@@ -54,7 +54,7 @@ type (
 		// Default is 5 seconds.
 		DialTimeout time.Duration
 		// Timeout for socket reads. If reached, commands will fail
-		// with a timeout instead of blocking. Use value -1 for no timeout and 0 for default.
+		// with a timeout instead of blocking. Use val -1 for no timeout and 0 for default.
 		// Default is 3 seconds.
 		ReadTimeout time.Duration
 		// Timeout for socket writes. If reached, commands will fail

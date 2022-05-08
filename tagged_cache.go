@@ -15,7 +15,7 @@ type taggedCache struct {
 	tags  tagSet
 }
 
-// Put puts a value in the given store for a predetermined amount of time in seconds
+// Put puts a val in the given store for a predetermined amount of time in seconds
 func (tc *taggedCache) Put(key string, value interface{}, duration time.Duration) error {
 	tagKey, err := tc.taggedItemKey(key)
 	if err != nil {
@@ -36,7 +36,7 @@ func (tc *taggedCache) Add(key string, value interface{}, duration time.Duration
 	return tc.store.Add(tagKey, value, duration)
 }
 
-// Increment increments an integer counter by a given value
+// Increment increments an integer counter by a given val
 func (tc *taggedCache) Increment(key string, value int64) (int64, error) {
 	tagKey, err := tc.taggedItemKey(key)
 	if err != nil {
@@ -46,7 +46,7 @@ func (tc *taggedCache) Increment(key string, value int64) (int64, error) {
 	return tc.store.Increment(tagKey, value)
 }
 
-// Decrement decrements an integer counter by a given value
+// Decrement decrements an integer counter by a given val
 func (tc *taggedCache) Decrement(key string, value int64) (int64, error) {
 	tagKey, err := tc.taggedItemKey(key)
 	if err != nil {
@@ -56,7 +56,7 @@ func (tc *taggedCache) Decrement(key string, value int64) (int64, error) {
 	return tc.store.Decrement(tagKey, value)
 }
 
-// Forget forgets/evicts a given key-value pair from the store
+// Forget forgets/evicts a given key-val pair from the store
 func (tc *taggedCache) Forget(keys ...string) (bool, error) {
 	var tagKeys = make([]string, len(keys))
 	for i, key := range keys {
@@ -71,7 +71,7 @@ func (tc *taggedCache) Forget(keys ...string) (bool, error) {
 	return tc.store.Forget(tagKeys...)
 }
 
-// Forever puts a value in the given store until it is forgotten/evicted
+// Forever puts a val in the given store until it is forgotten/evicted
 func (tc *taggedCache) Forever(key string, value interface{}) error {
 	tagKey, err := tc.taggedItemKey(key)
 	if err != nil {
@@ -137,7 +137,7 @@ func (tc *taggedCache) Prefix() string {
 	return tc.store.Prefix()
 }
 
-// GetInt64 gets an int64 value from the store
+// GetInt64 gets an int64 val from the store
 func (tc *taggedCache) GetInt64(key string) (int64, error) {
 	tagKey, err := tc.taggedItemKey(key)
 	if err != nil {
@@ -147,7 +147,7 @@ func (tc *taggedCache) GetInt64(key string) (int64, error) {
 	return tc.store.GetInt64(tagKey)
 }
 
-// GetInt gets an int value from the store
+// GetInt gets an int val from the store
 func (tc *taggedCache) GetInt(key string) (int, error) {
 	tagKey, err := tc.taggedItemKey(key)
 	if err != nil {
@@ -157,7 +157,7 @@ func (tc *taggedCache) GetInt(key string) (int, error) {
 	return tc.store.GetInt(tagKey)
 }
 
-// GetUint64 gets an uint64 value from the store
+// GetUint64 gets an uint64 val from the store
 func (tc *taggedCache) GetUint64(key string) (uint64, error) {
 	tagKey, err := tc.taggedItemKey(key)
 	if err != nil {
@@ -167,7 +167,7 @@ func (tc *taggedCache) GetUint64(key string) (uint64, error) {
 	return tc.store.GetUint64(tagKey)
 }
 
-// GetBool gets a bool value from the store
+// GetBool gets a bool val from the store
 func (tc *taggedCache) GetBool(key string) (bool, error) {
 	tagKey, err := tc.taggedItemKey(key)
 	if err != nil {
@@ -177,7 +177,7 @@ func (tc *taggedCache) GetBool(key string) (bool, error) {
 	return tc.store.GetBool(tagKey)
 }
 
-// GetFloat64 gets a float value from the store
+// GetFloat64 gets a float val from the store
 func (tc *taggedCache) GetFloat64(key string) (float64, error) {
 	tagKey, err := tc.taggedItemKey(key)
 	if err != nil {
@@ -187,7 +187,7 @@ func (tc *taggedCache) GetFloat64(key string) (float64, error) {
 	return tc.store.GetFloat64(tagKey)
 }
 
-// GetFloat32 gets an int value from the store
+// GetFloat32 gets an int val from the store
 func (tc *taggedCache) GetFloat32(key string) (float32, error) {
 	tagKey, err := tc.taggedItemKey(key)
 	if err != nil {
@@ -197,7 +197,7 @@ func (tc *taggedCache) GetFloat32(key string) (float32, error) {
 	return tc.store.GetFloat32(tagKey)
 }
 
-// Get gets the struct representation of a value from the store
+// Get gets the struct representation of a val from the store
 func (tc *taggedCache) Get(key string, entity interface{}) error {
 	tagKey, err := tc.taggedItemKey(key)
 	if err != nil {

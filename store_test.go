@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/alejandro-carstens/gocache/encoder"
 	"github.com/stretchr/testify/require"
 )
 
@@ -68,11 +69,11 @@ func TestPutGetString(t *testing.T) {
 	for _, d := range drivers {
 		t.Run(d.string(), func(t *testing.T) {
 			cache := createStore(t, d)
-			require.NoError(t, cache.Put("key", "value", time.Second))
+			require.NoError(t, cache.Put("key", "val", time.Second))
 
 			got, err := cache.GetString("key")
 			require.NoError(t, err)
-			require.Equal(t, "value", got)
+			require.Equal(t, "val", got)
 
 			_, err = cache.Forget("key")
 			require.NoError(t, err)
@@ -185,7 +186,7 @@ func TestForever(t *testing.T) {
 		t.Run(d.string(), func(t *testing.T) {
 			var (
 				cache    = createStore(t, d)
-				expected = "value"
+				expected = "val"
 			)
 			require.NoError(t, cache.Forever("key", expected))
 
@@ -515,7 +516,7 @@ func createStore(t *testing.T, d driver) Cache {
 		}
 	}
 
-	cache, err := New(cnf)
+	cache, err := New(cnf, encoder.Msgpack{})
 	require.NoError(t, err)
 
 	return cache

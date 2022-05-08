@@ -13,3 +13,8 @@ require (
 	github.com/stretchr/testify v1.6.1
 	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776 // indirect
 )
+
+require (
+	github.com/vmihailenco/msgpack/v5 v5.3.5
+	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
+)

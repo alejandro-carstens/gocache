@@ -2,15 +2,17 @@ package gocache
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
+	"github.com/alejandro-carstens/gocache/encoder"
 	"github.com/bradfitz/gomemcache/memcache"
 )
 
 var _ Cache = &MemcacheStore{}
 
 // NewMemcacheStore validates the passed in config and creates a Cache implementation of type *MemcacheStore
-func NewMemcacheStore(cnf *MemcacheConfig) (*MemcacheStore, error) {
+func NewMemcacheStore(cnf *MemcacheConfig, encoder encoder.Encoder) (*MemcacheStore, error) {
 	if err := cnf.validate(); err != nil {
 		return nil, err
 	}
@@ -23,20 +25,22 @@ func NewMemcacheStore(cnf *MemcacheConfig) (*MemcacheStore, error) {
 	client.Timeout = cnf.Timeout
 
 	return &MemcacheStore{
-		client: client,
 		prefix: prefix{
 			val: cnf.Prefix,
 		},
+		client:  client,
+		encoder: encoder,
 	}, nil
 }
 
 // MemcacheStore is the representation of the memcache caching store
 type MemcacheStore struct {
 	prefix
-	client *memcache.Client
+	client  *memcache.Client
+	encoder encoder.Encoder
 }
 
-// Put puts a value in the given store for a predetermined amount of time in seconds
+// Put puts a val in the given store for a predetermined amount of time in seconds
 func (s *MemcacheStore) Put(key string, value interface{}, duration time.Duration) error {
 	item, err := s.item(key, value, duration)
 	if err != nil {
@@ -62,99 +66,113 @@ func (s *MemcacheStore) Add(key string, value interface{}, duration time.Duratio
 	return true, nil
 }
 
-// Forever puts a value in the given store until it is forgotten/evicted
+// Forever puts a val in the given store until it is forgotten/evicted
 func (s *MemcacheStore) Forever(key string, value interface{}) error {
 	return s.Put(key, value, 0)
 }
 
-// GetFloat64 gets a float64 value from the store
+// GetFloat64 gets a float64 val from the store
 func (s *MemcacheStore) GetFloat64(key string) (float64, error) {
-	value, err := s.get(key)
+	value, err := s.value(key)
 	if err != nil {
-		return 0.0, err
+		return 0, err
 	}
 	if !isStringNumeric(value) {
-		return 0.0, errors.New("invalid numeric value")
+		return 0, errors.New("invalid numeric val")
 	}
 
 	return stringToFloat64(value)
 }
 
-// GetFloat32 gets a float32 value from the store
+// GetFloat32 gets a float32 val from the store
 func (s *MemcacheStore) GetFloat32(key string) (float32, error) {
-	value, err := s.get(key)
+	value, err := s.value(key)
 	if err != nil {
-		return 0.0, err
+		return 0, err
 	}
 	if !isStringNumeric(value) {
-		return 0.0, errors.New("invalid numeric value")
+		return 0, errors.New("invalid numeric val")
 	}
 
 	return stringToFloat32(value)
 }
 
-// GetInt64 gets an int64 value from the store
-func (s *MemcacheStore) GetInt64(key string) (int64, error) {
-	value, err := s.get(key)
+// GetInt64 gets an int64 val from the store
+func (s *MemcacheStore) GetInt64(key string) (res int64, err error) {
+	value, err := s.value(key)
 	if err != nil {
 		return 0, err
 	}
 	if !isStringNumeric(value) {
-		return 0, errors.New("invalid numeric value")
+		return 0, errors.New("invalid numeric val")
 	}
 
 	return stringToInt64(value)
 }
 
-// GetInt gets an int value from the store
+// GetInt gets an int val from the store
 func (s *MemcacheStore) GetInt(key string) (int, error) {
-	value, err := s.get(key)
+	value, err := s.value(key)
 	if err != nil {
 		return 0, err
 	}
 	if !isStringNumeric(value) {
-		return 0, errors.New("invalid numeric value")
+		return 0, errors.New("invalid numeric val")
 	}
 
 	return stringToInt(value)
 }
 
-// GetUint64 gets an uint64 value from the store
+// GetUint64 gets an uint64 val from the store
 func (s *MemcacheStore) GetUint64(key string) (uint64, error) {
-	value, err := s.get(key)
+	value, err := s.value(key)
 	if err != nil {
 		return 0, err
 	}
 	if !isStringNumeric(value) {
-		return 0, errors.New("invalid numeric value")
+		return 0, errors.New("invalid numeric val")
 	}
 
 	return stringToUint64(value)
 }
 
-// GetBool gets a bool value from the store
+// GetBool gets a bool val from the store
 func (s *MemcacheStore) GetBool(key string) (bool, error) {
-	value, err := s.get(key)
+	value, err := s.value(key)
 	if err != nil {
 		return false, checkErrNotFound(err)
+	}
+	if isStringNumeric(value) || isStringBool(value) {
+		return stringToBool(value), nil
+	}
+	if err = s.encoder.Decode([]byte(value), &value); err != nil {
+		return false, err
 	}
 
 	return stringToBool(value), nil
 }
 
-// GetString gets a string value from the store
+// GetString gets a string val from the store
 func (s *MemcacheStore) GetString(key string) (string, error) {
-	value, err := s.get(key)
+	item, err := s.client.Get(s.k(key))
 	if err != nil {
+		return "", checkErrNotFound(err)
+	}
+
+	v := string(item.Value)
+	if isStringNumeric(v) || isStringBool(v) {
+		return v, nil
+	}
+	if err = s.encoder.Decode(item.Value, &v); err != nil {
 		return "", err
 	}
 
-	return value, nil
+	return v, nil
 }
 
-// Increment increments an integer counter by a given value
+// Increment increments an integer counter by a given val
 func (s *MemcacheStore) Increment(key string, value int64) (int64, error) {
-	newValue, err := s.client.Increment(s.k(key), uint64(value))
+	res, err := s.client.Increment(s.k(key), uint64(value))
 	if err != nil {
 		if !errors.Is(err, memcache.ErrCacheMiss) {
 			return value, err
@@ -166,10 +184,10 @@ func (s *MemcacheStore) Increment(key string, value int64) (int64, error) {
 		return value, nil
 	}
 
-	return int64(newValue), nil
+	return int64(res), nil
 }
 
-// Decrement decrements an integer counter by a given value
+// Decrement decrements an integer counter by a given val
 func (s *MemcacheStore) Decrement(key string, value int64) (int64, error) {
 	newValue, err := s.client.Decrement(s.k(key), uint64(value))
 	if err != nil {
@@ -201,26 +219,38 @@ func (s *MemcacheStore) PutMany(entries ...Entry) error {
 func (s *MemcacheStore) Many(keys ...string) (Items, error) {
 	items := Items{}
 	for _, key := range keys {
-		val, err := s.get(key)
+		item, err := s.client.Get(s.k(key))
 		if err != nil {
 			items[key] = Item{
 				key: key,
-				err: err,
+				err: checkErrNotFound(err),
+			}
+
+			continue
+		}
+
+		v := string(item.Value)
+		if isStringNumeric(v) || isStringBool(v) {
+			items[key] = Item{
+				key:     key,
+				value:   v,
+				encoder: s.encoder,
 			}
 
 			continue
 		}
 
 		items[key] = Item{
-			key:   key,
-			value: val,
+			key:     key,
+			value:   v,
+			encoder: s.encoder,
 		}
 	}
 
 	return items, nil
 }
 
-// Forget forgets/evicts a given key-value pair from the store
+// Forget forgets/evicts a given key-val pair from the store
 func (s *MemcacheStore) Forget(keys ...string) (bool, error) {
 	for _, key := range keys {
 		if err := s.client.Delete(s.k(key)); err != nil {
@@ -240,15 +270,14 @@ func (s *MemcacheStore) Flush() (bool, error) {
 	return true, nil
 }
 
-// Get gets the struct representation of a value from the store
+// Get gets the struct representation of a val from the store
 func (s *MemcacheStore) Get(key string, entity interface{}) error {
-	value, err := s.get(key)
+	item, err := s.client.Get(s.k(key))
 	if err != nil {
-		return err
+		return checkErrNotFound(err)
 	}
-	_, err = decode(value, entity)
 
-	return err
+	return s.encoder.Decode(item.Value, &entity)
 }
 
 // Close closes the c releasing all open resources
@@ -289,33 +318,32 @@ func (s *MemcacheStore) Exists(key string) (bool, error) {
 	return false, err
 }
 
-func (s *MemcacheStore) get(key string) (string, error) {
+func (s *MemcacheStore) value(key string) (string, error) {
 	item, err := s.client.Get(s.k(key))
 	if err != nil {
 		return "", checkErrNotFound(err)
 	}
 
-	return s.getItemValue(item.Value), nil
-}
-
-func (s *MemcacheStore) getItemValue(itemValue []byte) string {
-	value, err := simpleDecode(string(itemValue))
-	if err != nil {
-		return string(itemValue)
-	}
-
-	return value
+	return string(item.Value), nil
 }
 
 func (s *MemcacheStore) item(key string, value interface{}, duration time.Duration) (*memcache.Item, error) {
-	val, err := encode(value)
+	var (
+		val []byte
+		err error
+	)
+	if isNumeric(value) || isBool(value) {
+		val = []byte(fmt.Sprint(value))
+	} else {
+		val, err = s.encoder.Encode(value)
+	}
 	if err != nil {
 		return nil, err
 	}
 
 	return &memcache.Item{
 		Key:        s.k(key),
-		Value:      []byte(val),
+		Value:      val,
 		Expiration: int32(duration.Seconds()),
 	}, nil
 }
