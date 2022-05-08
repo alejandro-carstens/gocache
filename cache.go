@@ -82,8 +82,8 @@ type (
 	// TaggedCache represents the methods a tagged-caching store needs to implement
 	TaggedCache interface {
 		store
-		// GetTags returns the TaggedCache Tags
-		GetTags() tagSet
+		// TagKey returns the underlying tagged cache item key
+		TagKey(key string) (string, error)
 	}
 	// Lock represents the methods to be implemented by a cache lock
 	Lock interface {

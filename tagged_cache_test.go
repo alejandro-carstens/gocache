@@ -369,21 +369,6 @@ func TestPutGetWithTags(t *testing.T) {
 	}
 }
 
-func TestTagSet(t *testing.T) {
-	for _, d := range drivers {
-		t.Run(d.string(), func(t *testing.T) {
-			var (
-				cache          = createStore(t, d)
-				ts             = cache.Tags("Alejandro").GetTags()
-				namespace, err = ts.getNamespace()
-			)
-			require.NoError(t, err)
-			require.Equal(t, 20, len([]rune(namespace)))
-			require.Nil(t, ts.reset())
-		})
-	}
-}
-
 func TestFlushWithTags(t *testing.T) {
 	for _, d := range drivers {
 		t.Run(d.string(), func(t *testing.T) {

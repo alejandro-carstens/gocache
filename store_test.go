@@ -517,7 +517,7 @@ func createStore(t *testing.T, d driver) Cache {
 		}
 	}
 
-	cache, err := New(cnf, JSON{})
+	cache, err := New(cnf, Msgpack{})
 	require.NoError(t, err)
 
 	return cache

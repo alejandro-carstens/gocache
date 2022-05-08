@@ -54,7 +54,7 @@ func (tc *redisTaggedCache) PutMany(entries ...Entry) error {
 			return err
 		}
 
-		key, err := tc.taggedItemKey(entry.Key)
+		key, err := tc.TagKey(entry.Key)
 		if err != nil {
 			return err
 		}
