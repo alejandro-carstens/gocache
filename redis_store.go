@@ -239,33 +239,68 @@ func (s *RedisStore) ForgetMany(keys ...string) error {
 
 // PutMany puts many values in the given store until they are forgotten/evicted
 func (s *RedisStore) PutMany(entries ...Entry) error {
-	pipe := s.client.TxPipeline()
-	for _, entry := range entries {
-		if err := s.Put(entry.Key, entry.Value, entry.Duration); err != nil {
-			return err
+	if _, err := s.client.TxPipelined(func(pipe redis.Pipeliner) error {
+		for _, entry := range entries {
+			if isNumeric(entry.Value) || isBool(entry.Value) {
+				if err := pipe.Set(s.k(entry.Key), entry.Value, entry.Duration).Err(); err != nil {
+					return err
+				}
+
+				continue
+			}
+
+			val, err := s.encoder.Encode(entry.Value)
+			if err != nil {
+				return err
+			}
+			if err = pipe.Set(s.k(entry.Key), val, entry.Duration).Err(); err != nil {
+				return err
+			}
 		}
+
+		return nil
+	}); err != nil {
+		return err
 	}
 
-	_, err := pipe.Exec()
-
-	return err
+	return nil
 }
 
 // Many gets many values from the store
 func (s *RedisStore) Many(keys ...string) (Items, error) {
-	var (
-		items = Items{}
-		pipe  = s.client.TxPipeline()
-	)
-	for _, key := range keys {
-		val, err := s.get(key).Result()
-		if err != nil {
+	if len(keys) == 0 {
+		return nil, nil
+	}
+
+	var prefixedKeys = make([]string, len(keys))
+	for i, key := range keys {
+		prefixedKeys[i] = s.k(key)
+	}
+
+	results, err := s.client.MGet(prefixedKeys...).Result()
+	if err != nil {
+		return nil, err
+	}
+
+	var items = Items{}
+	for i, result := range results {
+		if len(keys) <= i {
+			return nil, errors.New("could not retrieve key")
+		}
+
+		key := keys[i]
+		if result == nil {
 			items[key] = Item{
 				key: key,
-				err: checkErrNotFound(err),
+				err: ErrNotFound,
 			}
 
 			continue
+		}
+
+		val, valid := result.(string)
+		if !valid {
+			return nil, errors.New("result is not of type string")
 		}
 		if isStringNumeric(val) || isStringBool(val) {
 			items[key] = Item{
@@ -283,8 +318,6 @@ func (s *RedisStore) Many(keys ...string) (Items, error) {
 			encoder: s.encoder,
 		}
 	}
-
-	_, err := pipe.Exec()
 
 	return items, err
 }
