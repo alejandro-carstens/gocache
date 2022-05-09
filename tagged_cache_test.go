@@ -400,6 +400,13 @@ func TestPutGetWithTags(t *testing.T) {
 				require.NoError(t, cache.Tags(ts...).Get("key", &newExample))
 				require.Equal(t, firstExample, newExample)
 
+				type custom int
+				require.NoError(t, cache.Tags(ts...).Put("key", custom(1), time.Second))
+
+				var c custom
+				require.NoError(t, cache.Tags(ts...).Get("key", &c))
+				require.EqualValues(t, 1, c)
+
 				_, err := cache.Tags(ts...).Forget("key")
 				require.NoError(t, err)
 				require.NoError(t, cache.Tags(ts...).TagSet().Flush())

@@ -358,6 +358,13 @@ func TestPutGet(t *testing.T) {
 				require.NoError(t, cache.Get("key", &newExample))
 				require.Equal(t, firstExample, newExample)
 
+				type custom int
+				require.NoError(t, cache.Put("key", custom(1), time.Second))
+
+				var c custom
+				require.NoError(t, cache.Get("key", &c))
+				require.EqualValues(t, 1, c)
+
 				_, err := cache.Forget("key")
 				require.NoError(t, err)
 			})
