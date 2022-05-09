@@ -37,7 +37,9 @@ type (
 		// Decrement decrements an integer counter by a given value
 		Decrement(key string, value int64) (int64, error)
 		// Forget forgets/evicts a given key-value pair from the store
-		Forget(keys ...string) (bool, error)
+		Forget(key string) (bool, error)
+		// ForgetMany forgets/evicts a set of given key-value pair from the store
+		ForgetMany(keys ...string) error
 		// Forever puts a value in the given store until it is forgotten/evicted manually
 		Forever(key string, value interface{}) error
 		// Flush flushes the store

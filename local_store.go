@@ -218,13 +218,22 @@ func (s *LocalStore) Flush() (bool, error) {
 	return true, nil
 }
 
-// Forget forgets/evicts a given key-value pair from the store
-func (s *LocalStore) Forget(keys ...string) (bool, error) {
+func (s *LocalStore) Forget(key string) (bool, error) {
+	var exists bool
+	if _, exists = s.c.Get(s.k(key)); exists {
+		s.c.Delete(s.k(key))
+	}
+
+	return exists, nil
+}
+
+// ForgetMany forgets/evicts a set of given key-value pair from the store
+func (s *LocalStore) ForgetMany(keys ...string) error {
 	for _, key := range keys {
 		s.c.Delete(s.k(key))
 	}
 
-	return true, nil
+	return nil
 }
 
 // PutMany puts many values in the given store until they are forgotten/evicted

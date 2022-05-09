@@ -56,19 +56,28 @@ func (tc *taggedCache) Decrement(key string, value int64) (int64, error) {
 	return tc.store.Decrement(tagKey, value)
 }
 
-// Forget forgets/evicts a given key-value pair from the store
-func (tc *taggedCache) Forget(keys ...string) (bool, error) {
+func (tc *taggedCache) Forget(key string) (bool, error) {
+	tagKey, err := tc.tagKey(key)
+	if err != nil {
+		return false, err
+	}
+
+	return tc.store.Forget(tagKey)
+}
+
+// ForgetMany forgets/evicts a set of given key-value pair from the store
+func (tc *taggedCache) ForgetMany(keys ...string) error {
 	var tagKeys = make([]string, len(keys))
 	for i, key := range keys {
 		tagKey, err := tc.tagKey(key)
 		if err != nil {
-			return false, err
+			return err
 		}
 
 		tagKeys[i] = tagKey
 	}
 
-	return tc.store.Forget(tagKeys...)
+	return tc.store.ForgetMany(tagKeys...)
 }
 
 // Forever puts a value in the given store until it is forgotten/evicted

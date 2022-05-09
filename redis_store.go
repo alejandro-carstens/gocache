@@ -201,10 +201,19 @@ func (s *RedisStore) Flush() (bool, error) {
 	return true, nil
 }
 
-// Forget forgets/evicts a given key-value pair from the store
-func (s *RedisStore) Forget(keys ...string) (bool, error) {
+func (s *RedisStore) Forget(key string) (bool, error) {
+	res, err := s.client.Del(s.k(key)).Result()
+	if err != nil && errors.Is(err, redis.Nil) {
+		return false, err
+	}
+
+	return res > 0, nil
+}
+
+// ForgetMany forgets/evicts a set of given key-value pair from the store
+func (s *RedisStore) ForgetMany(keys ...string) error {
 	if len(keys) == 0 {
-		return true, nil
+		return nil
 	}
 
 	var delKeys []string
@@ -214,18 +223,18 @@ func (s *RedisStore) Forget(keys ...string) (bool, error) {
 			continue
 		}
 		if err := s.client.Del(delKeys...).Err(); err != nil {
-			return false, checkErrNotFound(err)
+			return checkErrNotFound(err)
 		}
 	}
 
 	if len(delKeys) == 0 {
-		return true, nil
+		return nil
 	}
 	if err := s.client.Del(delKeys...).Err(); err != nil {
-		return false, checkErrNotFound(err)
+		return checkErrNotFound(err)
 	}
 
-	return true, nil
+	return nil
 }
 
 // PutMany puts many values in the given store until they are forgotten/evicted

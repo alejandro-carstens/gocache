@@ -180,7 +180,7 @@ func (tc *redisTaggedCache) deleteValues(key string) error {
 		if len(delKeys) == 0 {
 			continue
 		}
-		if _, err := tc.store.Forget(delKeys...); err != nil {
+		if err := tc.store.ForgetMany(delKeys...); err != nil {
 			return err
 		}
 	}

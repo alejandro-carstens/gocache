@@ -249,17 +249,25 @@ func (s *MemcacheStore) Many(keys ...string) (Items, error) {
 	return items, nil
 }
 
-// Forget forgets/evicts a given key-value pair from the store
-func (s *MemcacheStore) Forget(keys ...string) (bool, error) {
-	for _, key := range keys {
-		if err := s.client.Delete(s.k(key)); errors.Is(err, memcache.ErrCacheMiss) {
-			continue
-		} else if err != nil {
-			return false, err
-		}
+func (s *MemcacheStore) Forget(key string) (bool, error) {
+	if err := s.client.Delete(s.k(key)); errors.Is(err, memcache.ErrCacheMiss) {
+		return false, nil
+	} else if err != nil {
+		return false, err
 	}
 
 	return true, nil
+}
+
+// ForgetMany forgets/evicts a set of given key-value pair from the store
+func (s *MemcacheStore) ForgetMany(keys ...string) error {
+	for _, key := range keys {
+		if err := s.client.Delete(s.k(key)); err != nil && !errors.Is(err, memcache.ErrCacheMiss) {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // Flush flushes the store
