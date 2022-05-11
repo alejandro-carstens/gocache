@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
+
+	"github.com/alejandro-carstens/gocache/encoder"
 )
 
 type (
@@ -32,9 +34,9 @@ var (
 		memcacheDriver,
 		localDriver,
 	}
-	encoders = []Encoder{
-		JSON{},
-		Msgpack{},
+	encoders = []encoder.Encoder{
+		encoder.JSON{},
+		encoder.Msgpack{},
 	}
 )
 
@@ -532,7 +534,7 @@ func TestAdd(t *testing.T) {
 	}
 }
 
-func createStore(t *testing.T, d driver, encoder Encoder) Cache {
+func createStore(t *testing.T, d driver, encoder encoder.Encoder) Cache {
 	t.Helper()
 
 	var (

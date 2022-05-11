@@ -6,12 +6,14 @@ import (
 	"time"
 
 	"github.com/patrickmn/go-cache"
+
+	"github.com/alejandro-carstens/gocache/encoder"
 )
 
 var _ Cache = &LocalStore{}
 
 // NewLocalStore validates the passed in config and creates a Cache implementation of type *LocalStore
-func NewLocalStore(cnf *LocalConfig, encoder Encoder) (*LocalStore, error) {
+func NewLocalStore(cnf *LocalConfig, encoder encoder.Encoder) (*LocalStore, error) {
 	if err := cnf.validate(); err != nil {
 		return nil, nil
 	}
@@ -33,7 +35,7 @@ type LocalStore struct {
 	c                 *cache.Cache
 	defaultExpiration time.Duration
 	defaultInterval   time.Duration
-	encoder           Encoder
+	encoder           encoder.Encoder
 }
 
 // GetString gets a string value from the store

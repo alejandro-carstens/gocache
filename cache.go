@@ -3,10 +3,12 @@ package gocache
 import (
 	"errors"
 	"time"
+
+	"github.com/alejandro-carstens/gocache/encoder"
 )
 
 // New new-ups an instance of Store
-func New(config config, encoder Encoder) (Cache, error) {
+func New(config config, encoder encoder.Encoder) (Cache, error) {
 	if err := config.validate(); err != nil {
 		return nil, err
 	}

@@ -4,6 +4,8 @@ import (
 	"errors"
 	"strconv"
 	"time"
+
+	"github.com/alejandro-carstens/gocache/encoder"
 )
 
 type (
@@ -19,7 +21,7 @@ type (
 		value   string
 		tagKey  string
 		err     error
-		encoder Encoder
+		encoder encoder.Encoder
 	}
 	// Items is an Item map keyed by the Item key
 	Items map[string]Item

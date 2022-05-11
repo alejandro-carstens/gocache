@@ -1,4 +1,4 @@
-package gocache
+package encoder
 
 import (
 	"encoding/json"
@@ -12,11 +12,19 @@ var (
 )
 
 type (
+	// Encoder represents an interface that exposes functionality to encode and decode non-numeric or
+	// boolean cache entries
 	Encoder interface {
+		// Encode returns the encoded/marshaled version of item
 		Encode(item interface{}) ([]byte, error)
+		// Decode decodes the MessagePack-encoded data and stores the result
+		// in the value pointed to by v.
 		Decode(data []byte, destination interface{}) error
 	}
-	JSON    struct{}
+	// JSON is an Encoder implementation for the encoding/json package
+	JSON struct{}
+	// Msgpack is an Encoder implementation for the msgpack package. To learn
+	// more about msgpack please see: https://msgpack.uptrace.dev
 	Msgpack struct{}
 )
 

@@ -6,12 +6,14 @@ import (
 	"time"
 
 	"github.com/bradfitz/gomemcache/memcache"
+
+	"github.com/alejandro-carstens/gocache/encoder"
 )
 
 var _ Cache = &MemcacheStore{}
 
 // NewMemcacheStore validates the passed in config and creates a Cache implementation of type *MemcacheStore
-func NewMemcacheStore(cnf *MemcacheConfig, encoder Encoder) (*MemcacheStore, error) {
+func NewMemcacheStore(cnf *MemcacheConfig, encoder encoder.Encoder) (*MemcacheStore, error) {
 	if err := cnf.validate(); err != nil {
 		return nil, err
 	}
@@ -36,7 +38,7 @@ func NewMemcacheStore(cnf *MemcacheConfig, encoder Encoder) (*MemcacheStore, err
 type MemcacheStore struct {
 	prefix
 	client  *memcache.Client
-	encoder Encoder
+	encoder encoder.Encoder
 }
 
 // Put puts a value in the given store for a predetermined amount of time in seconds

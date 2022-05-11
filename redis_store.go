@@ -5,6 +5,8 @@ import (
 	"time"
 
 	"github.com/go-redis/redis"
+
+	"github.com/alejandro-carstens/gocache/encoder"
 )
 
 const (
@@ -15,7 +17,7 @@ const (
 var _ Cache = &RedisStore{}
 
 // NewRedisStore validates the passed in config and creates a Cache implementation of type *RedisStore
-func NewRedisStore(cnf *RedisConfig, encoder Encoder) (*RedisStore, error) {
+func NewRedisStore(cnf *RedisConfig, encoder encoder.Encoder) (*RedisStore, error) {
 	if err := cnf.validate(); err != nil {
 		return nil, err
 	}
@@ -52,7 +54,7 @@ func NewRedisStore(cnf *RedisConfig, encoder Encoder) (*RedisStore, error) {
 type RedisStore struct {
 	prefix
 	client  *redis.Client
-	encoder Encoder
+	encoder encoder.Encoder
 }
 
 // GetFloat64 gets a float64 value from the store
