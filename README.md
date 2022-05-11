@@ -38,27 +38,27 @@ This package supports 3 backends out of the box: [Redis](https://redis.io), [Mem
 ## Usage
 
 ### Obtaining A Cache Instance
-In order to new up a cache implementation simply call ```gocache.New``` with the desired configuration: 
+In order to new up a cache implementation simply call ```gocache.New``` with the desired configuration and encoder: 
 ```go
 // Redis
 cache, err := gocache.New(&gocache.RedisConfig{
     Prefix: "gocache:",
     Addr:   "localhost:6379",
-})
+}, encoder.JSON{})
 // handle err
 
 // Memcache
 cache, err := gocache.New(&gocache.MemcacheConfig{
     Prefix:  "gocache:",
     Servers: []string{"127.0.0.1:11211"},
-})
+}, encoder.Msgpack{})
 // handle err
 
 // Local
 cache, err := gocache.New(&gocache.LocalConfig{
     Prefix:          "gocache:",
     DefaultInterval: time.Second,
-})
+}, encoder.JSON{})
 // handle err
 ```
 
@@ -137,7 +137,8 @@ for key, item := range items {
         // Bool will return false in the event of the cache entry being
         // the string 'false', empty string, boolean false, string '0' 
         // or the number 0. The value v will be true otherwise.
-        v := item.Bool()
+        v, err := item.Bool()
+        // handle err
     }
 }
 
@@ -198,11 +199,16 @@ val, err := cache.Decrement("b", 5) // b = -5
 ```
 
 ### Removing Items From The Cache
-You may remove items from the cache using the ```Forget``` method:
+You may remove items from the cache using the ```Forget``` or ```ForgetMany``` methods:
 ```go
 // Note that res will be true if the cache entry was removed and false 
 // if no entry was for the given key
 res, err := cache.Forget("key") 
+// handle err
+
+// If no error is returned you can assume all keys where deleted. Not present keys will be
+// ignored
+err := cache.ForgetMany("key1", "key2", "key3")
 // handle err
 ```
 If you want to clear all entries from the cache you can use the ```Flush``` method:
