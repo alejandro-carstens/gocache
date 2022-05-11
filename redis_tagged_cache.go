@@ -107,7 +107,7 @@ func (tc *redisTaggedCache) Flush() (bool, error) {
 }
 
 func (tc *redisTaggedCache) pushKeys(key, reference string) error {
-	namespace, err := tc.tags.Namespace()
+	namespace, err := tc.tags.namespace()
 	if err != nil {
 		return err
 	}
@@ -140,7 +140,7 @@ func (tc *redisTaggedCache) deleteForeverKeys() error {
 }
 
 func (tc *redisTaggedCache) deleteKeysByReference(reference string) error {
-	namespace, err := tc.tags.Namespace()
+	namespace, err := tc.tags.namespace()
 	if err != nil {
 		return err
 	}

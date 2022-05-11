@@ -56,6 +56,7 @@ func (tc *taggedCache) Decrement(key string, value int64) (int64, error) {
 	return tc.store.Decrement(tagKey, value)
 }
 
+// Forget forgets/evicts a given key-value pair from the store
 func (tc *taggedCache) Forget(key string) (bool, error) {
 	tagKey, err := tc.tagKey(key)
 	if err != nil {
@@ -248,13 +249,14 @@ func (tc *taggedCache) Exists(key string) (bool, error) {
 	return tc.store.Exists(tagKey)
 }
 
+// TagSet returns the store underlying *TagSet
 func (tc *taggedCache) TagSet() *TagSet {
 	return tc.tags
 }
 
-// TagKey returns the underlying tagged cache item key
+// tagKey returns the underlying tagged cache item key
 func (tc *taggedCache) tagKey(key string) (string, error) {
-	namespace, err := tc.tags.Namespace()
+	namespace, err := tc.tags.namespace()
 	if err != nil {
 		return namespace, err
 	}

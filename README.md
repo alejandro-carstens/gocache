@@ -256,6 +256,24 @@ res, err := cache.Tags("person", "accountant").Forget("Jane")
 
 <b>Important Note:</b> with the exception of the [Redis](https://redis.io) driver, when calling `Flush` with tags, the underlying entries won't be deleted so please make sure to set expiration values when using tags and flushing.
 
+### Accessing Tags
+In order to interact with tags directly you can call ```TagSet``` on a tagged cache. The underlying ```TagSet``` instance allows you to do the following:
+```go
+// Obtain the underlying tagged cache TagSet instance
+ts := cache.Tags("person", "accountant").TagSet()
+
+// Hard deletes cache entries used to hold tag set tags
+err := ts.Flush()
+// handle err
+
+// Returns the tag ids associated with the provided tag set tags 
+ids, err := ts.TagIds()
+// handle err
+
+// Resets all the tag set tags
+err := ts.Reset()
+```
+
 ## Atomic Locks
 
 Atomic locks allow for the manipulation of distributed locks without worrying about race conditions. An example of this would be that you only want one process to work on one object at a time, such as the same file should only be uploaded one at a time (we do not want the same file to be uploaded more than once at any given time). You may create and manage locks using the via the ```Lock``` method:

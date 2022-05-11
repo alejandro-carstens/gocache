@@ -220,6 +220,7 @@ func (s *LocalStore) Flush() (bool, error) {
 	return true, nil
 }
 
+// Forget forgets/evicts a given key-value pair from the store
 func (s *LocalStore) Forget(key string) (bool, error) {
 	var exists bool
 	if _, exists = s.c.Get(s.k(key)); exists {

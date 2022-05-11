@@ -251,6 +251,7 @@ func (s *MemcacheStore) Many(keys ...string) (Items, error) {
 	return items, nil
 }
 
+// Forget forgets/evicts a given key-value pair from the store
 func (s *MemcacheStore) Forget(key string) (bool, error) {
 	if err := s.client.Delete(s.k(key)); errors.Is(err, memcache.ErrCacheMiss) {
 		return false, nil
