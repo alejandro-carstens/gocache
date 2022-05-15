@@ -9,7 +9,17 @@ import (
 
 var _ Lock = &redisLock{}
 
+func newRedisLock(client *redis.Client, name, owner string, duration time.Duration) *redisLock {
+	return (&redisLock{
+		client:   client,
+		name:     name,
+		owner:    owner,
+		duration: duration,
+	}).initBaseLock()
+}
+
 type redisLock struct {
+	baseLock
 	client   *redis.Client
 	name     string
 	owner    string
@@ -45,4 +55,10 @@ func (rl *redisLock) GetCurrentOwner() (string, error) {
 	}
 
 	return res, err
+}
+
+func (rl *redisLock) initBaseLock() *redisLock {
+	rl.lock = rl
+
+	return rl
 }

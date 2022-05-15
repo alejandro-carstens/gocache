@@ -176,10 +176,18 @@ func (s *MemcacheStore) Increment(key string, value int64) (int64, error) {
 	res, err := s.client.Increment(s.k(key), uint64(value))
 	if err != nil {
 		if !errors.Is(err, memcache.ErrCacheMiss) {
-			return value, err
-		}
-		if err = s.Put(key, value, 0); err != nil {
 			return 0, err
+		}
+		if value < 0 {
+			value = 0
+		}
+
+		added, err := s.Add(key, value, 0)
+		if err != nil {
+			return 0, err
+		}
+		if !added {
+			return 0, ErrFailedToAddItemEntry
 		}
 
 		return value, nil
@@ -188,15 +196,21 @@ func (s *MemcacheStore) Increment(key string, value int64) (int64, error) {
 	return int64(res), nil
 }
 
-// Decrement decrements an integer counter by a given value
+// Decrement decrements an integer counter by a given value. Please note that for memcache a new value will be
+// capped at 0
 func (s *MemcacheStore) Decrement(key string, value int64) (int64, error) {
 	newValue, err := s.client.Decrement(s.k(key), uint64(value))
 	if err != nil {
 		if !errors.Is(err, memcache.ErrCacheMiss) {
-			return value, err
-		}
-		if err = s.Put(key, 0, 0); err != nil {
 			return 0, err
+		}
+
+		added, err := s.Add(key, 0, 0)
+		if err != nil {
+			return 0, err
+		}
+		if !added {
+			return 0, ErrFailedToAddItemEntry
 		}
 
 		return 0, nil
@@ -310,12 +324,7 @@ func (s *MemcacheStore) Tags(names ...string) TaggedCache {
 
 // Lock returns a memcache implementation of the Lock interface
 func (s *MemcacheStore) Lock(name, owner string, duration time.Duration) Lock {
-	return &memcacheLock{
-		client:   s.client,
-		name:     name,
-		owner:    owner,
-		duration: duration,
-	}
+	return newMemcacheLock(s.client, name, owner, duration)
 }
 
 // Exists checks if an entry exists in the cache for the given key

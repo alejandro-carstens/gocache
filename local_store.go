@@ -152,8 +152,12 @@ func (s *LocalStore) GetBool(key string) (bool, error) {
 // Increment increments an integer counter by a given value
 func (s *LocalStore) Increment(key string, value int64) (int64, error) {
 	if _, valid := s.c.Get(s.k(key)); !valid {
-		if err := s.Forever(key, value); err != nil {
+		added, err := s.Add(key, value, -1)
+		if err != nil {
 			return 0, err
+		}
+		if !added {
+			return 0, ErrFailedToAddItemEntry
 		}
 
 		return value, nil
@@ -165,11 +169,15 @@ func (s *LocalStore) Increment(key string, value int64) (int64, error) {
 // Decrement decrements an integer counter by a given value
 func (s *LocalStore) Decrement(key string, value int64) (int64, error) {
 	if _, valid := s.c.Get(s.k(key)); !valid {
-		if err := s.Forever(key, -1*value); err != nil {
+		added, err := s.Add(key, -1*value, -1)
+		if err != nil {
 			return 0, err
 		}
+		if !added {
+			return 0, ErrFailedToAddItemEntry
+		}
 
-		return value, nil
+		return -1 * value, nil
 	}
 
 	return s.c.DecrementInt64(s.k(key), value)
@@ -321,12 +329,7 @@ func (s *LocalStore) Tags(names ...string) TaggedCache {
 
 // Lock returns a map implementation of the Lock interface
 func (s *LocalStore) Lock(name, owner string, duration time.Duration) Lock {
-	return &localLock{
-		c:        s.c,
-		name:     name,
-		owner:    owner,
-		duration: duration,
-	}
+	return newLocalLock(s.c, name, owner, duration)
 }
 
 // Exists checks if an entry exists in the cache for the given key

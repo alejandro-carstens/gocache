@@ -8,7 +8,17 @@ import (
 
 var _ Lock = &memcacheLock{}
 
+func newMemcacheLock(client *memcache.Client, name, owner string, duration time.Duration) *memcacheLock {
+	return (&memcacheLock{
+		client:   client,
+		name:     name,
+		owner:    owner,
+		duration: duration,
+	}).initBaseLock()
+}
+
 type memcacheLock struct {
+	baseLock
 	client   *memcache.Client
 	name     string
 	owner    string
@@ -61,4 +71,10 @@ func (ml *memcacheLock) GetCurrentOwner() (string, error) {
 	}
 
 	return string(item.Value), nil
+}
+
+func (ml *memcacheLock) initBaseLock() *memcacheLock {
+	ml.lock = ml
+
+	return ml
 }

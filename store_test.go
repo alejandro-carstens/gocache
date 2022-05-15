@@ -399,6 +399,11 @@ func TestIncrement(t *testing.T) {
 }
 
 func TestDecrement(t *testing.T) {
+	var expectedLoweBoundSet = map[string]int64{
+		memcacheDriver.string(): 0,
+		redisDriver.string():    -2,
+		localDriver.string():    -2,
+	}
 	for _, e := range encoders {
 		for _, d := range drivers {
 			t.Run(d.string(), func(t *testing.T) {
@@ -414,6 +419,13 @@ func TestDecrement(t *testing.T) {
 				got, err := cache.GetInt64("decrement_key")
 				require.NoError(t, err)
 				require.EqualValues(t, 1, got)
+
+				_, err = cache.Forget("decrement_key")
+				require.NoError(t, err)
+
+				got, err = cache.Decrement("decrement_key", 2)
+				require.NoError(t, err)
+				require.Equal(t, expectedLoweBoundSet[d.string()], got)
 
 				_, err = cache.Forget("decrement_key")
 				require.NoError(t, err)

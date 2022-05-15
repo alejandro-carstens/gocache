@@ -89,8 +89,7 @@ type (
 		// TagSet returns the underlying tagged cache tag set
 		TagSet() *TagSet
 	}
-	// Lock represents the methods to be implemented by a cache lock
-	Lock interface {
+	lock interface {
 		// Acquire is responsible for acquiring a lock
 		Acquire() (bool, error)
 		// ForceRelease forces a cache lock release
@@ -101,5 +100,16 @@ type (
 		// Release frees up a lock for use by
 		// a different concurrent process
 		Release() (bool, error)
+	}
+	// Lock represents the methods to be implemented by a cache lock
+	Lock interface {
+		lock
+		// Get attempts to acquire a lock. If acquired, fn will be invoked and the lock will be safely release once
+		// the invocation either succeeds or errors
+		Get(fn func() error) (acquired bool, err error)
+		// Block will attempt to acquire a lock for the specified "wait" time. If acquired, fn will be invoked and
+		// the lock will be safely release once the invocation either succeeds or errors. The interval variable
+		// will be used as the wait duration between attempts to acquire the lock
+		Block(interval, wait time.Duration, fn func() error) (acquired bool, err error)
 	}
 )

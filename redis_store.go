@@ -355,12 +355,7 @@ func (s *RedisStore) Get(key string, entity interface{}) error {
 
 // Lock returns a redis implementation of the Lock interface
 func (s *RedisStore) Lock(name, owner string, duration time.Duration) Lock {
-	return &redisLock{
-		client:   s.client,
-		name:     name,
-		owner:    owner,
-		duration: duration,
-	}
+	return newRedisLock(s.client, name, owner, duration)
 }
 
 // Exists checks if an entry exists in the cache for the given key

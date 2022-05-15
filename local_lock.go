@@ -10,7 +10,17 @@ import (
 
 var _ Lock = &localLock{}
 
+func newLocalLock(client *cache.Cache, name, owner string, duration time.Duration) *localLock {
+	return (&localLock{
+		c:        client,
+		name:     name,
+		owner:    owner,
+		duration: duration,
+	}).initBaseLock()
+}
+
 type localLock struct {
+	baseLock
 	c        *cache.Cache
 	name     string
 	owner    string
@@ -65,4 +75,10 @@ func (l *localLock) GetCurrentOwner() (string, error) {
 	}
 
 	return owner, nil
+}
+
+func (l *localLock) initBaseLock() *localLock {
+	l.lock = l
+
+	return l
 }

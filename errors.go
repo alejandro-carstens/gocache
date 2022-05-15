@@ -13,6 +13,9 @@ var (
 	// ErrFailedToRetrieveEntry indicates that an entry was not able to be properly retrieved from the cache when
 	// calling cache.Many
 	ErrFailedToRetrieveEntry = errors.New("gocache: an error occurred while retrieving value, for more detail call Item.Error()")
+	// ErrFailedToAddItemEntry is returned when we expected to add an entry to the cache but an entry was already
+	// present for the given key
+	ErrFailedToAddItemEntry = errors.New("gocache: failed to add entry to cache")
 )
 
 func checkErrNotFound(err error) error {
