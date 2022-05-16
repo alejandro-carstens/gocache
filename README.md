@@ -284,7 +284,7 @@ err := ts.Reset()
 
 ## Atomic Locks
 
-Atomic locks allow for the manipulation of distributed locks without worrying about race conditions. An example of this would be that you only want one process to work on one object at a time, such as the same file should only be uploaded one at a time (we do not want the same file to be uploaded more than once at any given time). You may create and manage locks using the via the ```Lock``` method:
+Atomic locks allow for the manipulation of distributed locks without worrying about race conditions. An example of this would be that you only want one process to work on one object at a time, such as the same file should only be uploaded one at a time (we do not want the same file to be uploaded more than once at any given time). You may create and manage locks via the ```Lock``` method:
 ```go
 var (
     lock          = cache.Lock("merchant_1", "pid_1", 30 * time.Second)
