@@ -1,6 +1,7 @@
 package gocache
 
 import (
+	"errors"
 	"sync"
 	"testing"
 	"time"
@@ -151,6 +152,8 @@ func TestLock_Block(t *testing.T) {
 
 				require.Equal(t, 2, cnt)
 				require.Len(t, acquiredResults, 3)
+				require.Len(t, errs, 1)
+				require.True(t, errors.Is(errs[0], ErrBlockWaitTimeout))
 
 				var blocked int
 				for _, res := range acquiredResults {
