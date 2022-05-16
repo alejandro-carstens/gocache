@@ -16,6 +16,8 @@ var (
 	// ErrFailedToAddItemEntry is returned when we expected to add an entry to the cache but an entry was already
 	// present for the given key
 	ErrFailedToAddItemEntry = errors.New("gocache: failed to add entry to cache")
+	// ErrBlockWaitTimeout is returned when the max wait for acquiring a lock during a Block call is exceeded
+	ErrBlockWaitTimeout = errors.New("failed to acquire lock due to lock wait timeout")
 )
 
 func checkErrNotFound(err error) error {

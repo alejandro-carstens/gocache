@@ -1,7 +1,6 @@
 package gocache
 
 import (
-	"errors"
 	"fmt"
 	"time"
 )
@@ -50,7 +49,7 @@ func (l *baseLock) Block(interval, wait time.Duration, fn func() error) (acquire
 
 		time.Sleep(interval)
 		if time.Now().Add(-wait).After(starting) {
-			return false, errors.New("failed to acquire lock")
+			return false, ErrBlockWaitTimeout
 		}
 	}
 
