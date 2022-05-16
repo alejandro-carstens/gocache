@@ -314,9 +314,12 @@ if !acquired {
 ```
 If the lock is not available at the moment you request it, you may instruct the lock to wait for a given duration using a specified wait interval y using the ```Block``` method. If the lock cannot be acquired within the specified time limit, a ```gocache.ErrBlockWaitTimeout``` will be raised:
 ```go
-acquired, err := cache.Lock("merchant_1", "pid_1", time.Minute).Block(time.Second, 30 * time.Second, func() error {
+var (
+    lock          = cache.Lock("merchant_1", "pid_1", time.Minute)
+    acquired, err = lock.Block(time.Second, 30 * time.Second, func() error {
     // do something cool here
-})
+    })
+)
 // handle err
 if !acquired {
     // do something
