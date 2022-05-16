@@ -317,7 +317,7 @@ If the lock is not available at the moment you request it, you may instruct the 
 var (
     lock          = cache.Lock("merchant_1", "pid_1", time.Minute)
     acquired, err = lock.Block(time.Second, 30 * time.Second, func() error {
-    // do something cool here
+        // do something cool here
     })
 )
 // handle err
