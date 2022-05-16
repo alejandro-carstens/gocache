@@ -156,6 +156,14 @@ err := cache.Put("most_watched_movie", &Movie{
 }, 60 * time.Minute)
 // handle err
 ```
+To atomically add an entry to the cache if the key for the given entry does not exist you can use ```Add```:
+```go
+added, err := cache.Add("key", 2, time.Minute)
+// handle err
+if !added {
+    // do something
+}
+```
 
 To store a value indefinitely (without expiration) simply use the method ```Forever```:
 ```go
@@ -257,7 +265,7 @@ res, err := cache.Tags("person", "accountant").Forget("Jane")
 <b>Important Note:</b> with the exception of the [Redis](https://redis.io) driver, when calling `Flush` with tags, the underlying entries won't be deleted so please make sure to set expiration values when using tags and flushing.
 
 ### Accessing Tags
-In order to interact with tags directly you can call ```TagSet``` on a tagged cache. The underlying ```TagSet``` instance allows you to do the following:
+In order to interact with tags directly you can call ```TagSet``` on a tagged cache:
 ```go
 // Obtain the underlying tagged cache TagSet instance
 ts := cache.Tags("person", "accountant").TagSet()
@@ -294,7 +302,26 @@ if acquired {
     // do something here
 }
 ```
-
+The lock ```Get``` method accepts a closure. After the closure is executed, the lock will automatically be released:
+```go
+acquired, err := cache.Lock("merchant_1", "pid_1", 30 * time.Second).Get(func() error {
+    // do something cool here
+})
+// handle err
+if !acquired {
+    // do something
+}
+```
+If the lock is not available at the moment you request it, you may instruct the lock to wait for a given duration using a specified wait interval. If the lock cannot be acquired within the specified time limit, a ```gocache.ErrLockTimeoutException``` will be raised:
+```go
+acquired, err := cache.Lock("merchant_1", "pid_1", time.Minute).Block(time.Second, 30 * time.Second, func() error {
+    // do something cool here
+})
+// handle err
+if !acquired {
+    // do something
+}
+```
 ## Contributing
 
 Find an area you can help with and do it. Open source is about collaboration and open participation. Try to make your code look like what already exists or hopefully better and submit a pull request. Also, if you have any ideas on how to make the code better or on improving its scope and functionality please raise an issue and I will do my best to address it in a timely manner.
