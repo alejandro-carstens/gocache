@@ -191,7 +191,7 @@ var entries = []gocache.Entry{
 err := cache.PutMany(entries...)
 // handle err
 ```
-To increment and decrement values (for now you can only increment using ```int64``` values) simply use ```Increment``` & ```Decrement```. Please note that if there is no entry for the key being incremented the initial value will be 0 plus whatever value was passed in and the entry will be set to not expire:
+To increment and decrement values (for now you can only increment & decrement using ```int64``` values) simply use ```Increment``` & ```Decrement```. Please note that if there is no entry for the key being incremented the initial value will be 0 plus whatever value was passed in and the entry will be set to not expire:
 ```go
 val, err := cache.Increment("a", 1) // a = 1
 // handle err
@@ -236,7 +236,7 @@ err := cache.Tags("person", "accountant").Put("Jane", "Doe", time.Minute)
 // handle err
 ```
 ### Accessing Cache Tagged Items
-To retrieve a tagged cache item, pass the same ordered list of tags to the tags method and then call the any of the methods shown in the [Retrieving Items From The Cache](#retrieving-items-from-the-cache) section above:
+To retrieve a tagged cache item, pass the same ordered list of tags to the ```Tags``` method and then call the any of the methods shown in the [Retrieving Items From The Cache](#retrieving-items-from-the-cache) section above:
 ```go
 v, err := cache.Tags("person", "artist").GetString("John")
 // handle err
@@ -245,12 +245,12 @@ v, err := cache.Tags("person", "accountant").GetString("Jane")
 // handle err
 ```
 ### Removing Tagged Cache Items
-You may flush all items that are assigned a tag or list of tags. For example, this statement would remove all caches tagged with either ```person```, ```accountant```, or both. So, both Jane and John would be removed from the cache:
+You may flush all items that are assigned a tag or list of tags. For example, this statement would remove all caches tagged with either ```person```, ```accountant```, or both. So, both ```Jane``` and ```John``` would be removed from the cache:
 ```go
 err := cache.Tags("person", "accountant").Flush()
 // handle err
 ```
-In contrast, this statement would remove only cached values tagged with ```accountant```, so Anne would be removed, but not John:
+In contrast, this statement would remove only cached values tagged with ```accountant```, so ```Jane``` would be removed, but not ```John```:
 ```go
 err := cache.Tags("accountant").Flush()
 // handle err
