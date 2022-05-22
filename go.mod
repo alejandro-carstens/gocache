@@ -10,11 +10,13 @@ require (
 	github.com/onsi/gomega v1.8.1 // indirect
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/rs/xid v1.4.0
-	github.com/stretchr/testify v1.6.1
-	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776 // indirect
+	github.com/stretchr/testify v1.7.1
+	gopkg.in/yaml.v3 v3.0.0 // indirect
 )
 
 require (
 	github.com/vmihailenco/msgpack/v5 v5.3.5
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 )
+
+require github.com/pmezard/go-difflib v1.0.0 // indirect
