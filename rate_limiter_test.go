@@ -2,11 +2,18 @@ package gocache
 
 import (
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/require"
 )
+
+type counter int64
+
+func (c *counter) increment() int64 {
+	return atomic.AddInt64((*int64)(c), 1)
+}
 
 func TestRateLimiter_Hit(t *testing.T) {
 	for _, e := range encoders {
@@ -227,6 +234,93 @@ func TestRateLimiter_TooManyAttempts(t *testing.T) {
 				tooMany, err = rateLimiter.TooManyAttempts("whatever", 10)
 				require.NoError(t, err)
 				require.True(t, tooMany)
+			})
+		}
+	}
+}
+
+func TestRateLimit_ThrottleSynchronous(t *testing.T) {
+	for _, e := range encoders {
+		for _, d := range drivers {
+			t.Run(d.string(), func(t *testing.T) {
+				var (
+					c           = createStore(t, d, e)
+					rateLimiter = NewRateLimiter(c)
+				)
+				defer func() {
+					_, err := c.Flush()
+					require.NoError(t, err)
+				}()
+
+				var cnt int
+				for i := 0; i < 101; i++ {
+					response, err := rateLimiter.Throttle("whatever", 100, 2*time.Second, func() error {
+						cnt++
+
+						return nil
+					})
+					require.NoError(t, err)
+					require.EqualValues(t, 100, response.MaxAttempts())
+					require.True(t, 1*time.Second <= response.RetryAfter())
+					if i < 100 {
+						require.Equal(t, i+1, cnt)
+						require.EqualValues(t, 100-i, response.RemainingAttempts())
+						require.False(t, response.IsThrottled())
+
+						continue
+					}
+
+					require.True(t, response.IsThrottled())
+					require.EqualValues(t, 0, response.RemainingAttempts())
+					require.Equal(t, 100, cnt)
+				}
+			})
+		}
+	}
+}
+
+func TestRateLimit_ThrottleConcurrent(t *testing.T) {
+	for _, e := range encoders {
+		for _, d := range drivers {
+			t.Run(d.string(), func(t *testing.T) {
+				var (
+					c           = createStore(t, d, e)
+					rateLimiter = NewRateLimiter(c)
+				)
+				defer func() {
+					_, err := c.Flush()
+					require.NoError(t, err)
+				}()
+
+				var (
+					cnt counter
+					wg  sync.WaitGroup
+				)
+				wg.Add(100)
+				for i := 0; i < 100; i++ {
+					go func() {
+						defer wg.Done()
+						_, err := rateLimiter.Throttle("whatever", 99, 2*time.Second, func() error {
+							cnt.increment()
+
+							return nil
+						})
+						require.NoError(t, err)
+					}()
+				}
+				wg.Wait()
+
+				response, err := rateLimiter.Throttle("whatever", 99, 2*time.Second, func() error {
+					cnt++
+
+					return nil
+				})
+				require.NoError(t, err)
+				require.EqualValues(t, 99, response.MaxAttempts())
+				require.True(t, 1*time.Second <= response.RetryAfter())
+				require.True(t, response.IsThrottled())
+				require.EqualValues(t, 0, response.RemainingAttempts())
+				require.EqualValues(t, 99, cnt)
 			})
 		}
 	}
