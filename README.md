@@ -338,7 +338,7 @@ The most basic usage of the Rate Limiter is to throttle a given action. To do so
         rateLimiter = gocache.NewRateLimiter(cache) // where cache is a gocache.Cache instance
         maxAttempts = 100
         window      = 2 * time.Second
-        res, err    = rateLimiter.Throttle("rate-limiter-key", maxAttempts, window, func() error {
+        res, err    = rateLimiter.Throttle("some-key", maxAttempts, window, func() error {
             // Do something here
         })
     )
