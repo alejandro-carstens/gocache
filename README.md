@@ -5,9 +5,7 @@
 [![GoDoc](https://godoc.org/github.com/alejandro-carstens/golavel-cache?status.svg)](https://godoc.org/github.com/alejandro-carstens/gocache)
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/alejandro-carstens/golavel-cache/blob/master/LICENSE)
 
-Some data retrieval performed by your application could be CPU intensive or take several seconds to complete. For these cases, it is common to cache the retrieved data for a period of time so that it can be retrieved quickly on subsequent requests for the same data. The cached data is usually stored in a very fast data store such as [Memcached](https://memcached.org) or [Redis](https://redis.io).
-
-This package allows you to implement a store agnostic caching system via an expressive and unified interface by providing an abstraction layer between different data store drivers and your application. This allows for each store to be used interchangeably without any code changes other than the programmatic configuration of the desired store(s).
+Inspired by the [Laravel Cache](https://github.com/laravel/framework/tree/9.x/src/Illuminate/Cache) implementation, this package provides a store agnostic caching system via an expressive and unified interface that allows for an abstraction layer between different data store drivers and your application. This enables for each store to be used interchangeably without any code changes other than the programmatic configuration of the desired store(s).
 
 ## Table Of Contents
 - [Installation](#installation)
@@ -22,6 +20,8 @@ This package allows you to implement a store agnostic caching system via an expr
     - [Accessing Cache Tagged Items](#accessing-cache-tagged-items)
     - [Removing Tagged Cache Items](#removing-tagged-cache-items)
 - [Atomic Locks](#atomic-locks)
+- [Rate Limiter](#rate-limiter)
+    - [Usage](#usage-1)
 - [Contributing](#contributing)
 - [Liscense](#liscense)
 
@@ -325,6 +325,62 @@ if !acquired {
     // do something
 }
 ```
+## Rate Limiter
+This package includes a simple to use rate limiter implementation which, in conjunction with a ```gocache.Cache``` instance, provides an easy way to limit any set of operations for a predetermined window of time.
+
+The underlying logic of the Rate Limiter implementation allows for a max number of hits ```x``` for a given duration ```y```. If ```x``` is exceeded during the ```y``` timeframe the Rate Limiter will limit further actions until duration ```y``` expires. Once duration ```y``` is expired the number of hits ```x``` will reset back to 0. 
+
+### Usage
+The most basic usage of the Rate Limiter is to throttle a given action. To do so you can call the ```Throttle``` method on a Rate Limiter instance as such:
+```go
+    var (
+        // new a RateLimiter instance
+        rateLimiter = gocache.NewRateLimiter(cache) // where cache is a gocache.Cache instance
+        maxAttempts = 100
+        window      = 2 * time.Second
+        res, err    = rateLimiter.Throttle("rate-limiter-key", maxAttempts, window, func() error {
+            // Do something here
+        })
+    )
+    // handle err
+    // check if request is throttled
+    if !res.IsThrottled() {
+        // check for remaining attempts
+        remaining := res.RemainingAttempts()
+        // ...
+    } else {
+        // check how much you need to wait
+        wait := res.RetryAfter()
+        // ...
+    }    
+```
+
+For more flexible functionality you can call the following methods individually:
+```go
+    // new a RateLimiter instance
+    rateLimiter := gocache.NewRateLimiter(cache) // where cache is a gocache.Cache instance
+
+    // increment the number of hits for a given key for a given time decay
+    hits, err := rateLimiter.Hit("some-key", time.Minute)
+    // handle err
+    
+    // get the number of hits for a given key
+    hits, err = rateLimiter.Attempts("some-key")
+    // handle err
+    
+    // get the number of hits left
+    remaining, err := rateLimiter.AttemptsLeft("some-key")
+    // handle err
+    
+    // check if number of hits has been exceeded
+    exceeded, err := rateLimiter.TooManyAttempts("some-key", maxAttempts) // maxAttempts = 100
+    // handle err
+    
+    // reset the number of attempts for a given key
+    err = rateLimiter.Clear("some-key")
+    // handle err
+```
+
 ## Contributing
 
 Find an area you can help with and do it. Open source is about collaboration and open participation. Try to make your code look like what already exists or hopefully better and submit a pull request. Also, if you have any ideas on how to make the code better or on improving its scope and functionality please raise an issue and I will do my best to address it in a timely manner.
