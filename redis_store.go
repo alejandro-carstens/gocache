@@ -206,7 +206,9 @@ func (s *RedisStore) Flush() (bool, error) {
 // Forget forgets/evicts a given key-value pair from the store
 func (s *RedisStore) Forget(key string) (bool, error) {
 	res, err := s.client.Del(s.k(key)).Result()
-	if err != nil && errors.Is(err, redis.Nil) {
+	if err != nil && !errors.Is(err, redis.Nil) {
+		return false, nil
+	} else if err != nil {
 		return false, err
 	}
 

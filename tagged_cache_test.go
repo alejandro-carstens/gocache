@@ -248,6 +248,77 @@ func TestForeverWithTags(t *testing.T) {
 	}
 }
 
+func TestForgetWithTags(t *testing.T) {
+	for _, e := range encoders {
+		for _, d := range drivers {
+			t.Run(d.string(), func(t *testing.T) {
+				var (
+					cache    = createStore(t, d, e)
+					ts       = tag()
+					res, err = cache.Tags(ts).Add("key", 2, time.Second)
+				)
+				require.NoError(t, err)
+				require.True(t, res)
+
+				res, err = cache.Tags(ts).Forget("key")
+				require.NoError(t, err)
+				require.True(t, res)
+
+				_, err = cache.Tags(ts).GetInt("key")
+				require.Equal(t, ErrNotFound, err)
+
+				res, err = cache.Tags(ts).Forget("key")
+				require.False(t, res)
+				require.NoError(t, cache.Tags(ts).TagSet().Flush())
+			})
+		}
+	}
+}
+
+func TestForgetManyWithTags(t *testing.T) {
+	for _, e := range encoders {
+		for _, d := range drivers {
+			t.Run(d.string(), func(t *testing.T) {
+				var (
+					cache = createStore(t, d, e)
+					ts    = tag()
+					err   = cache.Tags(ts).PutMany(Entry{
+						Key:      "key1",
+						Value:    1,
+						Duration: time.Second,
+					}, Entry{
+						Key:      "key2",
+						Value:    2,
+						Duration: time.Second,
+					}, Entry{
+						Key:      "key3",
+						Value:    3,
+						Duration: time.Second,
+					})
+				)
+				require.NoError(t, err)
+
+				err = cache.Tags(ts).ForgetMany("key1", "key2")
+				require.NoError(t, err)
+
+				res, err := cache.Tags(ts).Many("key1", "key2", "key3")
+				require.NoError(t, err)
+				require.Equal(t, ErrNotFound, res["key1"].Error())
+				require.Equal(t, ErrNotFound, res["key2"].Error())
+
+				v, err := res["key3"].Int()
+				require.NoError(t, err)
+				require.Equal(t, 3, v)
+				require.NoError(t, cache.ForgetMany("key3"))
+
+				_, err = cache.Tags(ts).GetInt("key")
+				require.Equal(t, ErrNotFound, err)
+				require.NoError(t, cache.Tags(ts).TagSet().Flush())
+			})
+		}
+	}
+}
+
 func TestPutGetManyWithTags(t *testing.T) {
 	for _, e := range encoders {
 		for _, d := range drivers {
