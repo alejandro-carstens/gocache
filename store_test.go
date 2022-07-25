@@ -546,6 +546,73 @@ func TestAdd(t *testing.T) {
 	}
 }
 
+func TestForget(t *testing.T) {
+	for _, e := range encoders {
+		for _, d := range drivers {
+			t.Run(d.string(), func(t *testing.T) {
+				var (
+					cache    = createStore(t, d, e)
+					res, err = cache.Add("key", 2, time.Second)
+				)
+				require.NoError(t, err)
+				require.True(t, res)
+
+				res, err = cache.Forget("key")
+				require.NoError(t, err)
+				require.True(t, res)
+
+				_, err = cache.GetInt("key")
+				require.Equal(t, ErrNotFound, err)
+
+				res, err = cache.Forget("key")
+				require.False(t, res)
+			})
+		}
+	}
+}
+
+func TestForgetMany(t *testing.T) {
+	for _, e := range encoders {
+		for _, d := range drivers {
+			t.Run(d.string(), func(t *testing.T) {
+				var (
+					cache = createStore(t, d, e)
+					err   = cache.PutMany(Entry{
+						Key:      "key1",
+						Value:    1,
+						Duration: time.Second,
+					}, Entry{
+						Key:      "key2",
+						Value:    2,
+						Duration: time.Second,
+					}, Entry{
+						Key:      "key3",
+						Value:    3,
+						Duration: time.Second,
+					})
+				)
+				require.NoError(t, err)
+
+				err = cache.ForgetMany("key1", "key2")
+				require.NoError(t, err)
+
+				res, err := cache.Many("key1", "key2", "key3")
+				require.NoError(t, err)
+				require.Equal(t, ErrNotFound, res["key1"].Error())
+				require.Equal(t, ErrNotFound, res["key2"].Error())
+
+				v, err := res["key3"].Int()
+				require.NoError(t, err)
+				require.Equal(t, 3, v)
+				require.NoError(t, cache.ForgetMany("key3"))
+
+				_, err = cache.GetInt("key")
+				require.Equal(t, ErrNotFound, err)
+			})
+		}
+	}
+}
+
 func createStore(t *testing.T, d driver, encoder encoder.Encoder) Cache {
 	t.Helper()
 
