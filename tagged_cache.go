@@ -249,6 +249,16 @@ func (tc *taggedCache) Exists(key string) (bool, error) {
 	return tc.store.Exists(tagKey)
 }
 
+// Expire implementation of the Cache interface
+func (tc *taggedCache) Expire(key string, duration time.Duration) error {
+	tagKey, err := tc.tagKey(key)
+	if err != nil {
+		return err
+	}
+
+	return tc.store.Expire(tagKey, duration)
+}
+
 // TagSet returns the store underlying *TagSet
 func (tc *taggedCache) TagSet() *TagSet {
 	return tc.tags

@@ -338,3 +338,8 @@ func (s *LocalStore) Exists(key string) (bool, error) {
 
 	return valid, nil
 }
+
+// Expire implementation of the Cache interface
+func (s *LocalStore) Expire(string, time.Duration) error {
+	return ErrNotImplemented
+}

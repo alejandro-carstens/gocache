@@ -11,7 +11,7 @@ import (
 
 func TestLock(t *testing.T) {
 	for _, e := range encoders {
-		for _, d := range drivers {
+		for _, d := range drivers(t) {
 			t.Run(d.string(), func(t *testing.T) {
 				var (
 					cache    = createStore(t, d, e)
@@ -46,7 +46,7 @@ func TestLock(t *testing.T) {
 
 func TestLock_Get(t *testing.T) {
 	for _, e := range encoders {
-		for _, d := range drivers {
+		for _, d := range drivers(t) {
 			t.Run(d.string(), func(t *testing.T) {
 				var (
 					cache             = createStore(t, d, e)
@@ -94,7 +94,7 @@ func TestLock_Get(t *testing.T) {
 
 func TestLock_Block(t *testing.T) {
 	for _, e := range encoders {
-		for _, d := range drivers {
+		for _, d := range drivers(t) {
 			t.Run(d.string(), func(t *testing.T) {
 				var (
 					cache = createStore(t, d, e)

@@ -10,7 +10,7 @@ import (
 
 func TestPutGetInt64WithTags(t *testing.T) {
 	for _, e := range encoders {
-		for _, d := range drivers {
+		for _, d := range drivers(t) {
 			t.Run(d.string(), func(t *testing.T) {
 				var (
 					cache = createStore(t, d, e)
@@ -32,7 +32,7 @@ func TestPutGetInt64WithTags(t *testing.T) {
 
 func TestPutGetIntWithTags(t *testing.T) {
 	for _, e := range encoders {
-		for _, d := range drivers {
+		for _, d := range drivers(t) {
 			t.Run(d.string(), func(t *testing.T) {
 				var (
 					cache = createStore(t, d, e)
@@ -54,7 +54,7 @@ func TestPutGetIntWithTags(t *testing.T) {
 
 func TestPutGetFloat64WithTags(t *testing.T) {
 	for _, e := range encoders {
-		for _, d := range drivers {
+		for _, d := range drivers(t) {
 			t.Run(d.string(), func(t *testing.T) {
 				var (
 					cache    = createStore(t, d, e)
@@ -77,7 +77,7 @@ func TestPutGetFloat64WithTags(t *testing.T) {
 
 func TestPutGetFloat32WithTags(t *testing.T) {
 	for _, e := range encoders {
-		for _, d := range drivers {
+		for _, d := range drivers(t) {
 			t.Run(d.string(), func(t *testing.T) {
 				var (
 					cache    = createStore(t, d, e)
@@ -101,7 +101,7 @@ func TestPutGetFloat32WithTags(t *testing.T) {
 
 func TestPutGetUint64WithTags(t *testing.T) {
 	for _, e := range encoders {
-		for _, d := range drivers {
+		for _, d := range drivers(t) {
 			t.Run(d.string(), func(t *testing.T) {
 				var (
 					cache = createStore(t, d, e)
@@ -123,7 +123,7 @@ func TestPutGetUint64WithTags(t *testing.T) {
 
 func TestPutGetBoolWithTags(t *testing.T) {
 	for _, e := range encoders {
-		for _, d := range drivers {
+		for _, d := range drivers(t) {
 			t.Run(d.string(), func(t *testing.T) {
 				var (
 					cache = createStore(t, d, e)
@@ -175,7 +175,7 @@ func TestPutGetBoolWithTags(t *testing.T) {
 
 func TestIncrementWithTags(t *testing.T) {
 	for _, e := range encoders {
-		for _, d := range drivers {
+		for _, d := range drivers(t) {
 			t.Run(d.string(), func(t *testing.T) {
 				var (
 					cache  = createStore(t, d, e)
@@ -201,7 +201,7 @@ func TestIncrementWithTags(t *testing.T) {
 
 func TestDecrementWithTags(t *testing.T) {
 	for _, e := range encoders {
-		for _, d := range drivers {
+		for _, d := range drivers(t) {
 			t.Run(d.string(), func(t *testing.T) {
 				var (
 					cache  = createStore(t, d, e)
@@ -227,7 +227,7 @@ func TestDecrementWithTags(t *testing.T) {
 
 func TestForeverWithTags(t *testing.T) {
 	for _, e := range encoders {
-		for _, d := range drivers {
+		for _, d := range drivers(t) {
 			t.Run(d.string(), func(t *testing.T) {
 				var (
 					cache    = createStore(t, d, e)
@@ -250,7 +250,7 @@ func TestForeverWithTags(t *testing.T) {
 
 func TestForgetWithTags(t *testing.T) {
 	for _, e := range encoders {
-		for _, d := range drivers {
+		for _, d := range drivers(t) {
 			t.Run(d.string(), func(t *testing.T) {
 				var (
 					cache    = createStore(t, d, e)
@@ -277,7 +277,7 @@ func TestForgetWithTags(t *testing.T) {
 
 func TestForgetManyWithTags(t *testing.T) {
 	for _, e := range encoders {
-		for _, d := range drivers {
+		for _, d := range drivers(t) {
 			t.Run(d.string(), func(t *testing.T) {
 				var (
 					cache = createStore(t, d, e)
@@ -321,7 +321,7 @@ func TestForgetManyWithTags(t *testing.T) {
 
 func TestPutGetManyWithTags(t *testing.T) {
 	for _, e := range encoders {
-		for _, d := range drivers {
+		for _, d := range drivers(t) {
 			t.Run(d.string(), func(t *testing.T) {
 				var (
 					cache   = createStore(t, d, e)
@@ -451,7 +451,7 @@ func TestPutGetManyWithTags(t *testing.T) {
 
 func TestPutGetWithTags(t *testing.T) {
 	for _, e := range encoders {
-		for _, d := range drivers {
+		for _, d := range drivers(t) {
 			t.Run(d.string(), func(t *testing.T) {
 				var (
 					cache = createStore(t, d, e)
@@ -488,7 +488,7 @@ func TestPutGetWithTags(t *testing.T) {
 
 func TestFlushWithTags(t *testing.T) {
 	for _, e := range encoders {
-		for _, d := range drivers {
+		for _, d := range drivers(t) {
 			t.Run(d.string(), func(t *testing.T) {
 				var (
 					cache = createStore(t, d, e)
@@ -567,7 +567,7 @@ func TestFlushWithTags(t *testing.T) {
 
 func TestTagExists(t *testing.T) {
 	for _, e := range encoders {
-		for _, d := range drivers {
+		for _, d := range drivers(t) {
 			t.Run(d.string(), func(t *testing.T) {
 				var (
 					cache = createStore(t, d, e)
@@ -597,7 +597,7 @@ func TestTagExists(t *testing.T) {
 
 func TestTagAdd(t *testing.T) {
 	for _, e := range encoders {
-		for _, d := range drivers {
+		for _, d := range drivers(t) {
 			t.Run(d.string(), func(t *testing.T) {
 				var (
 					cache    = createStore(t, d, e)

@@ -70,6 +70,8 @@ type (
 		Close() error
 		// Exists checks if an entry exists in the cache for the given key
 		Exists(key string) (bool, error)
+		// Expire allows for overriding the expiry time for a given key
+		Expire(key string, duration time.Duration) error
 	}
 	// tags represents the tagging methods to be implemented
 	tags interface {

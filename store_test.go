@@ -29,7 +29,7 @@ const (
 )
 
 var (
-	drivers = []driver{
+	driverList = []driver{
 		redisDriver,
 		memcacheDriver,
 		localDriver,
@@ -40,9 +40,31 @@ var (
 	}
 )
 
+func drivers(t *testing.T, excludeList ...driver) []driver {
+	t.Helper()
+
+	var list []driver
+	for _, d := range driverList {
+		var exclude bool
+		for _, e := range excludeList {
+			if d == e {
+				exclude = true
+
+				break
+			}
+		}
+
+		if !exclude {
+			list = append(list, d)
+		}
+	}
+
+	return list
+}
+
 func TestPutGetInt64(t *testing.T) {
 	for _, e := range encoders {
-		for _, d := range drivers {
+		for _, d := range drivers(t) {
 			t.Run(d.string(), func(t *testing.T) {
 				cache := createStore(t, d, e)
 				require.NoError(t, cache.Put("key", 100, time.Second))
@@ -60,7 +82,7 @@ func TestPutGetInt64(t *testing.T) {
 
 func TestPutGetInt(t *testing.T) {
 	for _, e := range encoders {
-		for _, d := range drivers {
+		for _, d := range drivers(t) {
 			t.Run(d.string(), func(t *testing.T) {
 				cache := createStore(t, d, e)
 				require.NoError(t, cache.Put("key", 100, time.Second))
@@ -78,7 +100,7 @@ func TestPutGetInt(t *testing.T) {
 
 func TestPutGetString(t *testing.T) {
 	for _, e := range encoders {
-		for _, d := range drivers {
+		for _, d := range drivers(t) {
 			t.Run(d.string(), func(t *testing.T) {
 				cache := createStore(t, d, e)
 				require.NoError(t, cache.Put("key", "value", time.Second))
@@ -96,7 +118,7 @@ func TestPutGetString(t *testing.T) {
 
 func TestPutGetFloat64(t *testing.T) {
 	for _, e := range encoders {
-		for _, d := range drivers {
+		for _, d := range drivers(t) {
 			t.Run(d.string(), func(t *testing.T) {
 				var (
 					cache    = createStore(t, d, e)
@@ -117,7 +139,7 @@ func TestPutGetFloat64(t *testing.T) {
 
 func TestPutGetFloat32(t *testing.T) {
 	for _, e := range encoders {
-		for _, d := range drivers {
+		for _, d := range drivers(t) {
 			t.Run(d.string(), func(t *testing.T) {
 				var (
 					cache    = createStore(t, d, e)
@@ -138,7 +160,7 @@ func TestPutGetFloat32(t *testing.T) {
 
 func TestPutGetUint64(t *testing.T) {
 	for _, e := range encoders {
-		for _, d := range drivers {
+		for _, d := range drivers(t) {
 			t.Run(d.string(), func(t *testing.T) {
 				cache := createStore(t, d, e)
 				require.NoError(t, cache.Put("key", 100, time.Second))
@@ -156,7 +178,7 @@ func TestPutGetUint64(t *testing.T) {
 
 func TestPutGetBool(t *testing.T) {
 	for _, e := range encoders {
-		for _, d := range drivers {
+		for _, d := range drivers(t) {
 			t.Run(d.string(), func(t *testing.T) {
 				cache := createStore(t, d, e)
 				require.NoError(t, cache.Put("key", true, time.Second))
@@ -204,7 +226,7 @@ func TestPutGetBool(t *testing.T) {
 
 func TestForever(t *testing.T) {
 	for _, e := range encoders {
-		for _, d := range drivers {
+		for _, d := range drivers(t) {
 			t.Run(d.string(), func(t *testing.T) {
 				var (
 					cache    = createStore(t, d, e)
@@ -225,7 +247,7 @@ func TestForever(t *testing.T) {
 
 func TestPutGetMany(t *testing.T) {
 	for _, e := range encoders {
-		for _, d := range drivers {
+		for _, d := range drivers(t) {
 			t.Run(d.string(), func(t *testing.T) {
 				var (
 					cache   = createStore(t, d, e)
@@ -346,7 +368,7 @@ func TestPutGetMany(t *testing.T) {
 
 func TestPutGet(t *testing.T) {
 	for _, e := range encoders {
-		for _, d := range drivers {
+		for _, d := range drivers(t) {
 			t.Run(d.string(), func(t *testing.T) {
 				var (
 					cache        = createStore(t, d, e)
@@ -376,7 +398,7 @@ func TestPutGet(t *testing.T) {
 
 func TestIncrement(t *testing.T) {
 	for _, e := range encoders {
-		for _, d := range drivers {
+		for _, d := range drivers(t) {
 			t.Run(d.string(), func(t *testing.T) {
 				var (
 					cache  = createStore(t, d, e)
@@ -405,7 +427,7 @@ func TestDecrement(t *testing.T) {
 		localDriver.string():    -2,
 	}
 	for _, e := range encoders {
-		for _, d := range drivers {
+		for _, d := range drivers(t) {
 			t.Run(d.string(), func(t *testing.T) {
 				var (
 					cache  = createStore(t, d, e)
@@ -436,7 +458,7 @@ func TestDecrement(t *testing.T) {
 
 func TestIncrementDecrement(t *testing.T) {
 	for _, e := range encoders {
-		for _, d := range drivers {
+		for _, d := range drivers(t) {
 			t.Run(d.string(), func(t *testing.T) {
 				var (
 					cache    = createStore(t, d, e)
@@ -474,7 +496,7 @@ func TestIncrementDecrement(t *testing.T) {
 
 func TestExists(t *testing.T) {
 	for _, e := range encoders {
-		for _, d := range drivers {
+		for _, d := range drivers(t) {
 			t.Run(d.string(), func(t *testing.T) {
 				var (
 					cache = createStore(t, d, e)
@@ -502,7 +524,7 @@ func TestExists(t *testing.T) {
 
 func TestAdd(t *testing.T) {
 	for _, e := range encoders {
-		for _, d := range drivers {
+		for _, d := range drivers(t) {
 			t.Run(d.string(), func(t *testing.T) {
 				var (
 					cache    = createStore(t, d, e)
@@ -548,7 +570,7 @@ func TestAdd(t *testing.T) {
 
 func TestForget(t *testing.T) {
 	for _, e := range encoders {
-		for _, d := range drivers {
+		for _, d := range drivers(t) {
 			t.Run(d.string(), func(t *testing.T) {
 				var (
 					cache    = createStore(t, d, e)
@@ -573,7 +595,7 @@ func TestForget(t *testing.T) {
 
 func TestForgetMany(t *testing.T) {
 	for _, e := range encoders {
-		for _, d := range drivers {
+		for _, d := range drivers(t) {
 			t.Run(d.string(), func(t *testing.T) {
 				var (
 					cache = createStore(t, d, e)
@@ -608,6 +630,22 @@ func TestForgetMany(t *testing.T) {
 
 				_, err = cache.GetInt("key")
 				require.Equal(t, ErrNotFound, err)
+			})
+		}
+	}
+}
+
+func TestExpire(t *testing.T) {
+	for _, e := range encoders {
+		for _, d := range drivers(t, localDriver) {
+			t.Run(d.string(), func(t *testing.T) {
+				var (
+					cache = createStore(t, d, e)
+					err   = cache.Put("key1", 1, time.Second)
+				)
+				require.NoError(t, err)
+				require.NoError(t, cache.Expire("key1", 0*time.Second))
+				require.Error(t, ErrNotFound, cache.Expire("key1", time.Second))
 			})
 		}
 	}

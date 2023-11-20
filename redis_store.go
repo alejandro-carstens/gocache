@@ -372,6 +372,15 @@ func (s *RedisStore) Exists(key string) (bool, error) {
 	return false, err
 }
 
+// Expire implementation of the Cache interface
+func (s *RedisStore) Expire(key string, duration time.Duration) error {
+	if err := s.client.Expire(s.k(key), duration).Err(); err != nil {
+		return checkErrNotFound(err)
+	}
+
+	return nil
+}
+
 // Lpush runs the Redis lpush command (used via reflection, do not delete)
 func (s *RedisStore) Lpush(segment, key string) error {
 	return s.client.LPush(segment, key).Err()

@@ -339,6 +339,15 @@ func (s *MemcacheStore) Exists(key string) (bool, error) {
 	return false, err
 }
 
+// Expire implementation of the Cache interface
+func (s *MemcacheStore) Expire(key string, duration time.Duration) error {
+	if err := s.client.Touch(s.k(key), int32(duration.Seconds())); err != nil {
+		return checkErrNotFound(err)
+	}
+
+	return nil
+}
+
 func (s *MemcacheStore) value(key string) (string, error) {
 	item, err := s.client.Get(s.k(key))
 	if err != nil {

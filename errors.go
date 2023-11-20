@@ -17,7 +17,9 @@ var (
 	// present for the given key
 	ErrFailedToAddItemEntry = errors.New("gocache: failed to add entry to cache")
 	// ErrBlockWaitTimeout is returned when the max wait for acquiring a lock during a Block call is exceeded
-	ErrBlockWaitTimeout = errors.New("failed to acquire lock due to lock wait timeout")
+	ErrBlockWaitTimeout = errors.New("gocache: failed to acquire lock due to lock wait timeout")
+	// ErrNotImplemented is returned for methods that have not been implemented for the Cache interface
+	ErrNotImplemented = errors.New("gocache: method not implemented")
 )
 
 func checkErrNotFound(err error) error {

@@ -17,7 +17,7 @@ func (c *counter) increment() int64 {
 
 func TestRateLimiter_Hit(t *testing.T) {
 	for _, e := range encoders {
-		for _, d := range drivers {
+		for _, d := range drivers(t) {
 			t.Run(d.string(), func(t *testing.T) {
 				var (
 					c           = createStore(t, d, e)
@@ -59,7 +59,7 @@ func TestRateLimiter_Hit(t *testing.T) {
 
 func TestRateLimiter_ConcurrentHits(t *testing.T) {
 	for _, e := range encoders {
-		for _, d := range drivers {
+		for _, d := range drivers(t) {
 			t.Run(d.string(), func(t *testing.T) {
 				var (
 					wg          sync.WaitGroup
@@ -92,7 +92,7 @@ func TestRateLimiter_ConcurrentHits(t *testing.T) {
 
 func TestRateLimiter_Attempts(t *testing.T) {
 	for _, e := range encoders {
-		for _, d := range drivers {
+		for _, d := range drivers(t) {
 			t.Run(d.string(), func(t *testing.T) {
 				var (
 					c           = createStore(t, d, e)
@@ -119,7 +119,7 @@ func TestRateLimiter_Attempts(t *testing.T) {
 
 func TestRateLimiter_AttemptsLeft(t *testing.T) {
 	for _, e := range encoders {
-		for _, d := range drivers {
+		for _, d := range drivers(t) {
 			t.Run(d.string(), func(t *testing.T) {
 				var (
 					c           = createStore(t, d, e)
@@ -150,7 +150,7 @@ func TestRateLimiter_AttemptsLeft(t *testing.T) {
 
 func TestRateLimiter_AvailableIn(t *testing.T) {
 	for _, e := range encoders {
-		for _, d := range drivers {
+		for _, d := range drivers(t) {
 			t.Run(d.string(), func(t *testing.T) {
 				var (
 					c           = createStore(t, d, e)
@@ -177,7 +177,7 @@ func TestRateLimiter_AvailableIn(t *testing.T) {
 
 func TestRateLimiter_Clear(t *testing.T) {
 	for _, e := range encoders {
-		for _, d := range drivers {
+		for _, d := range drivers(t) {
 			t.Run(d.string(), func(t *testing.T) {
 				var (
 					c           = createStore(t, d, e)
@@ -206,7 +206,7 @@ func TestRateLimiter_Clear(t *testing.T) {
 
 func TestRateLimiter_TooManyAttempts(t *testing.T) {
 	for _, e := range encoders {
-		for _, d := range drivers {
+		for _, d := range drivers(t) {
 			t.Run(d.string(), func(t *testing.T) {
 				var (
 					c           = createStore(t, d, e)
@@ -241,7 +241,7 @@ func TestRateLimiter_TooManyAttempts(t *testing.T) {
 
 func TestRateLimit_ThrottleSynchronous(t *testing.T) {
 	for _, e := range encoders {
-		for _, d := range drivers {
+		for _, d := range drivers(t) {
 			t.Run(d.string(), func(t *testing.T) {
 				var (
 					c           = createStore(t, d, e)
@@ -281,7 +281,7 @@ func TestRateLimit_ThrottleSynchronous(t *testing.T) {
 
 func TestRateLimit_ThrottleConcurrent(t *testing.T) {
 	for _, e := range encoders {
-		for _, d := range drivers {
+		for _, d := range drivers(t) {
 			t.Run(d.string(), func(t *testing.T) {
 				var (
 					c           = createStore(t, d, e)
