@@ -57,6 +57,13 @@ func (rl *redisLock) GetCurrentOwner() (string, error) {
 	return res, err
 }
 
+// Expire implementation of the Lock interface
+func (rl *redisLock) Expire(duration time.Duration) (bool, error) {
+	res, err := rl.client.Eval(redisLuaExpireLockScript, []string{rl.name}, rl.owner, duration.Seconds()).Int64()
+
+	return res > 0, err
+}
+
 func (rl *redisLock) initBaseLock() *redisLock {
 	rl.lock = rl
 

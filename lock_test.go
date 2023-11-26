@@ -166,3 +166,31 @@ func TestLock_Block(t *testing.T) {
 		}
 	}
 }
+
+func TestLock_Expire(t *testing.T) {
+	for _, e := range encoders {
+		for _, d := range drivers(t, localDriver, redisDriver) {
+			t.Run(d.string(), func(t *testing.T) {
+				var (
+					cache    = createStore(t, d, e)
+					l        = cache.Lock("test", "test", 10*time.Second)
+					got, err = l.Acquire()
+				)
+				require.NoError(t, err)
+				require.True(t, got)
+
+				got, err = l.Expire(5 * time.Second)
+				require.NoError(t, err)
+				require.True(t, got)
+
+				got, err = l.Expire(0 * time.Second)
+				require.NoError(t, err)
+				require.True(t, got)
+
+				got, err = l.Expire(10 * time.Second)
+				require.NoError(t, err)
+				require.False(t, got)
+			})
+		}
+	}
+}

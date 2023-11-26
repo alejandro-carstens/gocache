@@ -77,6 +77,11 @@ func (l *localLock) GetCurrentOwner() (string, error) {
 	return owner, nil
 }
 
+// Expire implementation of the Lock interface
+func (l *localLock) Expire(time.Duration) (bool, error) {
+	return false, ErrNotImplemented
+}
+
 func (l *localLock) initBaseLock() *localLock {
 	l.lock = l
 

@@ -102,6 +102,9 @@ type (
 		// Release frees up a lock for use by
 		// a different concurrent process
 		Release() (bool, error)
+		// Expire allows to set a new expiration time on the lock. It will
+		// return true if the operation was successful, false otherwise
+		Expire(time.Duration) (bool, error)
 	}
 	// Lock represents the methods to be implemented by a cache lock
 	Lock interface {

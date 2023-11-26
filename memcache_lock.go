@@ -1,6 +1,7 @@
 package gocache
 
 import (
+	"errors"
 	"time"
 
 	"github.com/bradfitz/gomemcache/memcache"
@@ -27,19 +28,7 @@ type memcacheLock struct {
 
 // Acquire implementation of the Lock interface
 func (ml *memcacheLock) Acquire() (bool, error) {
-	err := ml.client.Add(&memcache.Item{
-		Key:        ml.name,
-		Value:      []byte(ml.owner),
-		Expiration: int32(ml.duration.Seconds()),
-	})
-	if err == memcache.ErrNotStored {
-		return false, nil
-	}
-	if err != nil {
-		return false, err
-	}
-
-	return true, nil
+	return ml.acquire(ml.duration)
 }
 
 // Release implementation of the Lock interface
@@ -63,14 +52,45 @@ func (ml *memcacheLock) ForceRelease() error {
 // GetCurrentOwner implementation of the Lock interface
 func (ml *memcacheLock) GetCurrentOwner() (string, error) {
 	item, err := ml.client.Get(ml.name)
-	if err == memcache.ErrCacheMiss {
+	if errors.Is(err, memcache.ErrCacheMiss) {
 		return "", nil
-	}
-	if err != nil {
+	} else if err != nil {
 		return "", err
 	}
 
 	return string(item.Value), nil
+}
+
+// Expire implementation of the Lock interface
+func (ml *memcacheLock) Expire(duration time.Duration) (bool, error) {
+	if duration.Seconds() == 0 {
+		if err := ml.ForceRelease(); err != nil {
+			return false, err
+		}
+
+		return true, nil
+	}
+	if err := ml.client.Touch(ml.name, int32(duration.Seconds())); err != nil && errors.Is(err, memcache.ErrCacheMiss) {
+		return false, nil
+	} else if err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
+func (ml *memcacheLock) acquire(duration time.Duration) (bool, error) {
+	if err := ml.client.Add(&memcache.Item{
+		Key:        ml.name,
+		Value:      []byte(ml.owner),
+		Expiration: int32(duration.Seconds()),
+	}); errors.Is(err, memcache.ErrNotStored) {
+		return false, nil
+	} else if err != nil {
+		return false, err
+	}
+
+	return true, nil
 }
 
 func (ml *memcacheLock) initBaseLock() *memcacheLock {
