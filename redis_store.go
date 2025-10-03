@@ -1,10 +1,11 @@
 package gocache
 
 import (
+	"context"
 	"errors"
 	"time"
 
-	"github.com/go-redis/redis"
+	"github.com/redis/go-redis/v9"
 
 	"github.com/alejandro-carstens/gocache/encoder"
 )
@@ -26,25 +27,24 @@ func NewRedisStore(cnf *RedisConfig, encoder encoder.Encoder) (*RedisStore, erro
 			val: cnf.Prefix,
 		},
 		client: redis.NewClient(&redis.Options{
-			Network:            cnf.Network,
-			Addr:               cnf.Addr,
-			Dialer:             cnf.Dialer,
-			OnConnect:          cnf.OnConnect,
-			Password:           cnf.Password,
-			DB:                 cnf.DB,
-			MaxRetries:         cnf.MaxRetries,
-			MinRetryBackoff:    cnf.MinRetryBackoff,
-			MaxRetryBackoff:    cnf.MaxRetryBackoff,
-			DialTimeout:        cnf.DialTimeout,
-			ReadTimeout:        cnf.ReadTimeout,
-			WriteTimeout:       cnf.WriteTimeout,
-			PoolSize:           cnf.PoolSize,
-			MinIdleConns:       cnf.MinIdleConns,
-			MaxConnAge:         cnf.MaxConnAge,
-			PoolTimeout:        cnf.PoolTimeout,
-			IdleTimeout:        cnf.IdleTimeout,
-			IdleCheckFrequency: cnf.IdleCheckFrequency,
-			TLSConfig:          cnf.TLSConfig,
+			Network:         cnf.Network,
+			Addr:            cnf.Addr,
+			Dialer:          cnf.Dialer,
+			OnConnect:       cnf.OnConnect,
+			Password:        cnf.Password,
+			DB:              cnf.DB,
+			MaxRetries:      cnf.MaxRetries,
+			MinRetryBackoff: cnf.MinRetryBackoff,
+			MaxRetryBackoff: cnf.MaxRetryBackoff,
+			DialTimeout:     cnf.DialTimeout,
+			ReadTimeout:     cnf.ReadTimeout,
+			WriteTimeout:    cnf.WriteTimeout,
+			PoolSize:        cnf.PoolSize,
+			MinIdleConns:    cnf.MinIdleConns,
+			PoolTimeout:     cnf.PoolTimeout,
+			ConnMaxLifetime: cnf.ConnMaxLifetime,
+			ConnMaxIdleTime: cnf.ConnMaxIdleTime,
+			TLSConfig:       cnf.TLSConfig,
 		}),
 		encoder: encoder,
 	}, nil
@@ -126,18 +126,18 @@ func (s *RedisStore) GetString(key string) (string, error) {
 
 // Increment increments an integer counter by a given value
 func (s *RedisStore) Increment(key string, value int64) (int64, error) {
-	return s.client.IncrBy(s.k(key), value).Result()
+	return s.client.IncrBy(context.TODO(), s.k(key), value).Result()
 }
 
 // Decrement decrements an integer counter by a given value
 func (s *RedisStore) Decrement(key string, value int64) (int64, error) {
-	return s.client.DecrBy(s.k(key), value).Result()
+	return s.client.DecrBy(context.TODO(), s.k(key), value).Result()
 }
 
 // Put puts a value in the given store for a predetermined amount of time in seconds
 func (s *RedisStore) Put(key string, value interface{}, duration time.Duration) error {
 	if isNumeric(value) || isBool(value) {
-		return s.client.Set(s.k(key), value, duration).Err()
+		return s.client.Set(context.TODO(), s.k(key), value, duration).Err()
 	}
 
 	val, err := s.encoder.Encode(value)
@@ -145,14 +145,14 @@ func (s *RedisStore) Put(key string, value interface{}, duration time.Duration) 
 		return err
 	}
 
-	return s.client.Set(s.k(key), val, duration).Err()
+	return s.client.Set(context.TODO(), s.k(key), val, duration).Err()
 }
 
 // Add an item to the cache only if an item doesn't already exist for the given key, or if the existing item has
 // expired. If the record was successfully added true will be returned else false will be returned
 func (s *RedisStore) Add(key string, value interface{}, duration time.Duration) (bool, error) {
 	if isNumeric(value) || isBool(value) {
-		res, err := s.client.Eval(redisLuaAddScript, []string{s.k(key)}, value, duration.Seconds()).String()
+		res, err := s.client.Eval(context.TODO(), redisLuaAddScript, []string{s.k(key)}, value, duration.Seconds()).Text()
 		if err != nil && !errors.Is(err, redis.Nil) {
 			return false, err
 		}
@@ -165,7 +165,7 @@ func (s *RedisStore) Add(key string, value interface{}, duration time.Duration) 
 		return false, err
 	}
 
-	res, err := s.client.Eval(redisLuaAddScript, []string{s.k(key)}, val, duration.Seconds()).String()
+	res, err := s.client.Eval(context.TODO(), redisLuaAddScript, []string{s.k(key)}, val, duration.Seconds()).Text()
 	if err != nil && !errors.Is(err, redis.Nil) {
 		return false, err
 	}
@@ -176,27 +176,27 @@ func (s *RedisStore) Add(key string, value interface{}, duration time.Duration) 
 // Forever puts a value in the given store until it is forgotten/evicted
 func (s *RedisStore) Forever(key string, value interface{}) error {
 	if isNumeric(value) || isBool(value) {
-		if err := s.client.Set(s.k(key), value, 0).Err(); err != nil {
+		if err := s.client.Set(context.TODO(), s.k(key), value, 0).Err(); err != nil {
 			return err
 		}
 
-		return s.client.Persist(s.k(key)).Err()
+		return s.client.Persist(context.TODO(), s.k(key)).Err()
 	}
 
 	val, err := s.encoder.Encode(value)
 	if err != nil {
 		return err
 	}
-	if err = s.client.Set(s.k(key), val, 0).Err(); err != nil {
+	if err = s.client.Set(context.TODO(), s.k(key), val, 0).Err(); err != nil {
 		return err
 	}
 
-	return s.client.Persist(s.k(key)).Err()
+	return s.client.Persist(context.TODO(), s.k(key)).Err()
 }
 
 // Flush flushes the store
 func (s *RedisStore) Flush() (bool, error) {
-	if err := s.client.FlushDB().Err(); err != nil {
+	if err := s.client.FlushDB(context.TODO()).Err(); err != nil {
 		return false, err
 	}
 
@@ -205,7 +205,7 @@ func (s *RedisStore) Flush() (bool, error) {
 
 // Forget forgets/evicts a given key-value pair from the store
 func (s *RedisStore) Forget(key string) (bool, error) {
-	res, err := s.client.Del(s.k(key)).Result()
+	res, err := s.client.Del(context.TODO(), s.k(key)).Result()
 	if err != nil && !errors.Is(err, redis.Nil) {
 		return false, nil
 	} else if err != nil {
@@ -227,7 +227,7 @@ func (s *RedisStore) ForgetMany(keys ...string) error {
 		if len(delKeys) < deleteLimit {
 			continue
 		}
-		if err := s.client.Del(delKeys...).Err(); err != nil {
+		if err := s.client.Del(context.TODO(), delKeys...).Err(); err != nil {
 			return checkErrNotFound(err)
 		}
 	}
@@ -235,7 +235,7 @@ func (s *RedisStore) ForgetMany(keys ...string) error {
 	if len(delKeys) == 0 {
 		return nil
 	}
-	if err := s.client.Del(delKeys...).Err(); err != nil {
+	if err := s.client.Del(context.TODO(), delKeys...).Err(); err != nil {
 		return checkErrNotFound(err)
 	}
 
@@ -244,10 +244,10 @@ func (s *RedisStore) ForgetMany(keys ...string) error {
 
 // PutMany puts many values in the given store until they are forgotten/evicted
 func (s *RedisStore) PutMany(entries ...Entry) error {
-	if _, err := s.client.TxPipelined(func(pipe redis.Pipeliner) error {
+	if _, err := s.client.TxPipelined(context.TODO(), func(pipe redis.Pipeliner) error {
 		for _, entry := range entries {
 			if isNumeric(entry.Value) || isBool(entry.Value) {
-				if err := pipe.Set(s.k(entry.Key), entry.Value, entry.Duration).Err(); err != nil {
+				if err := pipe.Set(context.TODO(), s.k(entry.Key), entry.Value, entry.Duration).Err(); err != nil {
 					return err
 				}
 
@@ -258,7 +258,7 @@ func (s *RedisStore) PutMany(entries ...Entry) error {
 			if err != nil {
 				return err
 			}
-			if err = pipe.Set(s.k(entry.Key), val, entry.Duration).Err(); err != nil {
+			if err = pipe.Set(context.TODO(), s.k(entry.Key), val, entry.Duration).Err(); err != nil {
 				return err
 			}
 		}
@@ -282,7 +282,7 @@ func (s *RedisStore) Many(keys ...string) (Items, error) {
 		prefixedKeys[i] = s.k(key)
 	}
 
-	results, err := s.client.MGet(prefixedKeys...).Result()
+	results, err := s.client.MGet(context.TODO(), prefixedKeys...).Result()
 	if err != nil {
 		return nil, err
 	}
@@ -365,7 +365,7 @@ func (s *RedisStore) Exists(key string) (bool, error) {
 	_, err := s.get(key).Result()
 	if err == nil {
 		return true, nil
-	} else if err != nil && isErrNotFound(err) {
+	} else if isErrNotFound(err) {
 		return false, nil
 	}
 
@@ -374,7 +374,7 @@ func (s *RedisStore) Exists(key string) (bool, error) {
 
 // Expire implementation of the Cache interface
 func (s *RedisStore) Expire(key string, duration time.Duration) error {
-	if err := s.client.Expire(s.k(key), duration).Err(); err != nil {
+	if err := s.client.Expire(context.TODO(), s.k(key), duration).Err(); err != nil {
 		return checkErrNotFound(err)
 	}
 
@@ -383,14 +383,14 @@ func (s *RedisStore) Expire(key string, duration time.Duration) error {
 
 // Lpush runs the Redis lpush command (used via reflection, do not delete)
 func (s *RedisStore) Lpush(segment, key string) error {
-	return s.client.LPush(segment, key).Err()
+	return s.client.LPush(context.TODO(), segment, key).Err()
 }
 
 // Lrange runs the Redis lrange command (used via reflection, do not delete)
 func (s *RedisStore) Lrange(key string, start, stop int64) []string {
-	return s.client.LRange(key, start, stop).Val()
+	return s.client.LRange(context.TODO(), key, start, stop).Val()
 }
 
 func (s *RedisStore) get(key string) *redis.StringCmd {
-	return s.client.Get(s.k(key))
+	return s.client.Get(context.TODO(), s.k(key))
 }
