@@ -10,7 +10,7 @@ services:
       - devnet
 
   memcache:
-    image: 'bitnami/memcached:latest'
+    image: 'memcached'
     expose:
       - 11211
     networks:

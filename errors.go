@@ -4,7 +4,7 @@ import (
 	"errors"
 
 	"github.com/bradfitz/gomemcache/memcache"
-	"github.com/go-redis/redis"
+	"github.com/redis/go-redis/v9"
 )
 
 var (

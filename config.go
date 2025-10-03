@@ -1,12 +1,13 @@
 package gocache
 
 import (
+	"context"
 	"crypto/tls"
 	"errors"
 	"net"
 	"time"
 
-	"github.com/go-redis/redis"
+	"github.com/redis/go-redis/v9"
 )
 
 var (
@@ -33,9 +34,13 @@ type (
 		Addr string
 		// Dialer creates new network connection and has priority over
 		// Network and Addr options.
-		Dialer func() (net.Conn, error)
+		Dialer func(ctx context.Context, network, addr string) (net.Conn, error)
 		// Hook that is called when new connection is established.
-		OnConnect func(*redis.Conn) error
+		OnConnect func(context.Context, *redis.Conn) error
+		// Username is used to authenticate the current connection
+		// with one of the connections defined in the ACL list when connecting
+		// to a Redis 6.0 instance, or greater, that is using the Redis ACL system.
+		Username string
 		// Optional password. Must match the password specified in the
 		// requirepass server configuration option.
 		Password string
@@ -85,6 +90,22 @@ type (
 		IdleCheckFrequency time.Duration
 		// TLS Config to use. When set TLS will be negotiated.
 		TLSConfig *tls.Config
+		// ConnMaxIdleTime is the maximum amount of time a connection may be idle.
+		// Should be less than server's timeout.
+		//
+		// Expired connections may be closed lazily before reuse.
+		// If d <= 0, connections are not closed due to a connection's idle time.
+		// -1 disables idle timeout check.
+		//
+		// default: 30 minutes
+		ConnMaxIdleTime time.Duration
+		// ConnMaxLifetime is the maximum amount of time a connection may be reused.
+		//
+		// Expired connections may be closed lazily before reuse.
+		// If <= 0, connections are not closed due to a connection's age.
+		//
+		// default: 0
+		ConnMaxLifetime time.Duration
 	}
 	// MemcacheConfig represents the configuration for a cache with a Memcache backend
 	MemcacheConfig struct {
