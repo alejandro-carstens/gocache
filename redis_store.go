@@ -30,6 +30,7 @@ func NewRedisStore(cnf *RedisConfig, encoder encoder.Encoder) (*RedisStore, erro
 			Network:         cnf.Network,
 			Addr:            cnf.Addr,
 			Dialer:          cnf.Dialer,
+			Username:        cnf.Username,
 			OnConnect:       cnf.OnConnect,
 			Password:        cnf.Password,
 			DB:              cnf.DB,
